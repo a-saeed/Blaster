@@ -3,6 +3,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFrameWork/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Blaster/Weapon/Weapon.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -21,6 +23,16 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true; //rotate the character towards the direction of movement.
 }
 
+
+void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//replication EX: once the overlapping weapon is set on the server blaster character, set it on all client blaster characters.
+	//C7_3: we rgister the variables we want to replicate here in this function, with a condition to replicate it to only the client that owns the character.
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -30,9 +42,7 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
-
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -78,5 +88,34 @@ void ABlasterCharacter::Turn(float value)
 	AddControllerYawInput(value);
 }
 
+void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	//C7_10: we know this function will only be called by the server, as seen in the weapon class hasAuthority fn.
+	//if a client blaster character overlapped with a weapon, then the server will replicate the overlappingWeapon variable to only this client as seen in C7_3
+	//if the server blaster character overlapped withh a weapon, then the overlappingWeapon variable will not replicate and will be set only on the sever.
+	if (OverlappingWeapon && IsLocallyControlled())
+	{
+		OverlappingWeapon->ShowPickupWidget(false); //C7_13: hide the pickup widget on end overlap for the server.
+	}
+
+	OverlappingWeapon = Weapon;
+
+	if (OverlappingWeapon && IsLocallyControlled()) //check if the blaster character that ovrelapped with the weapon is locally controlled (server) or not (then it's a client character)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+}
 
 
+void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	//C7_9: this function only gets called when this variable replicates from server to client. it doesn't get called on the server.
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon-> ShowPickupWidget(true);
+	}
+	if (LastWeapon) //C7_12: hide the pickup widget on end overlap.. what is the last value for overlappingWeapon before it changed and not yet replicated (either null or a weapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}

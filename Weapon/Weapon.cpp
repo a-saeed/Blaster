@@ -34,6 +34,7 @@ void AWeapon::BeginPlay()
 		AreaSphere-> SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
 	}
 	
 	if (PickupWidget) //hide pickup widget at the beginning.
@@ -42,17 +43,35 @@ void AWeapon::BeginPlay()
 	}
 }
 
+void AWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//show pickup widget on weapon only when the actor overlapping with its area sphere is a blaster character.
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if (BlasterCharacter && PickupWidget)
+	if (BlasterCharacter)
 	{
-		PickupWidget->SetVisibility(true);
+		BlasterCharacter->SetOverlappingWeapon(this); //C7_5
 	}
 }
 
-void AWeapon::Tick(float DeltaTime)
+void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	Super::Tick(DeltaTime);
+	//C7_11
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter)
+	{
+		BlasterCharacter->SetOverlappingWeapon(nullptr);
+	}
+}
+
+void AWeapon::ShowPickupWidget(bool bPickupWidget) //C7_7
+{
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(bPickupWidget);
+	}
 }

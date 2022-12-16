@@ -19,6 +19,9 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//C7_2: to make a class able to replicate variables, we have to override getLifeTimeProps to be able to replicate for this class
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -37,7 +40,15 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 		class UCameraComponent* FollowCamera;
 
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) //C7_1: used to designate this variable to be a replicated variable. linked to C7_8
+		class AWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+		void OnRep_OverlappingWeapon(AWeapon* LastWeapon); //C7_8: on replicating this variable (overlappingWeapon), execute this function. it can only take a param of the type of variable it replicates
+
 public:	
-	
+
+	//C7_4
+	void SetOverlappingWeapon(AWeapon* Weapon);
 
 };

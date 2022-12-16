@@ -25,6 +25,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	void ShowPickupWidget(bool bPickupWidget); //C7_6
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -33,9 +35,15 @@ protected:
 		virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,
 			AActor* OtherActor,
 			UPrimitiveComponent* OtherComp,
-			int32 OtherBodyIndex, bool bFromSweep,
+			int32 OtherBodyIndex,
+			bool bFromSweep,
 			const FHitResult& SweepResult);
 
+	UFUNCTION() 
+		void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex);
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
@@ -49,7 +57,5 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class UWidgetComponent* PickupWidget;
-public:	
-
-
+public:
 };
