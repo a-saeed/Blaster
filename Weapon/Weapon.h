@@ -29,6 +29,13 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION()  //this fn. isn't inherited. it's virtual as other classes may derive from weapon later and change what happens when the player overlpas with that certain weapon 
+		virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex, bool bFromSweep,
+			const FHitResult& SweepResult);
+
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
@@ -37,9 +44,11 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class USphereComponent* AreaSphere; //to detect overlap events with the weapon, just like a capsule comp.
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		EWeaponState WeaponState;
 
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+		class UWidgetComponent* PickupWidget;
 public:	
 
 

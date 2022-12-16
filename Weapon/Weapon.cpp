@@ -1,5 +1,7 @@
 #include "Weapon.h"
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 AWeapon::AWeapon()
 {
@@ -18,6 +20,9 @@ AWeapon::AWeapon()
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore); //we want it to detect overlaps only on the server, so we construct it ignore all collisions.
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); //only let the server enable its collision
 
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PicupWidget"));
+	PickupWidget->SetupAttachment(RootComponent);
+
 }
 
 void AWeapon::BeginPlay()
@@ -28,8 +33,23 @@ void AWeapon::BeginPlay()
 	{
 		AreaSphere-> SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 	}
 	
+	if (PickupWidget) //hide pickup widget at the beginning.
+	{
+		PickupWidget->SetVisibility(false);
+	}
+}
+
+void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//show pickup widget on weapon only when the actor overlapping with its area sphere is a blaster character.
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter && PickupWidget)
+	{
+		PickupWidget->SetVisibility(true);
+	}
 }
 
 void AWeapon::Tick(float DeltaTime)
