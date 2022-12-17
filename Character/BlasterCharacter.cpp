@@ -5,6 +5,7 @@
 #include "GameFrameWork/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -21,8 +22,10 @@ ABlasterCharacter::ABlasterCharacter()
 
 	bUseControllerRotationYaw = false; //lock player rotation while freely moving the camera.
 	GetCharacterMovement()->bOrientRotationToMovement = true; //rotate the character towards the direction of movement.
-}
 
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true); //set combat component to replicate.
+}
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -55,7 +58,18 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
 	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
 
-	
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);
+
+}
+
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (Combat)
+	{
+		Combat-> Character = this; //combat comp private vars (charatcer) are now available to blaster character since it's a friend.
+	}
 }
 
 void ABlasterCharacter::MoveForward(float value)
@@ -86,6 +100,14 @@ void ABlasterCharacter::LookUp(float value)
 void ABlasterCharacter::Turn(float value)
 {
 	AddControllerYawInput(value);
+}
+
+void ABlasterCharacter::EquipButtonPressed()
+{
+	if (Combat && HasAuthority()) //only equip weapon through the server.
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
