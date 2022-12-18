@@ -52,6 +52,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		class UCombatComponent* Combat;
 
+	UFUNCTION(Server, Reliable)
+		void ServerEquipButtonPressed();
 public:	
 
 	//C7_4

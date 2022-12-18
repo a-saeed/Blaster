@@ -2,6 +2,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 AWeapon::AWeapon()
 {
@@ -39,13 +40,20 @@ void AWeapon::BeginPlay()
 	
 	if (PickupWidget) //hide pickup widget at the beginning.
 	{
-		PickupWidget->SetVisibility(false);
+		ShowPickupWidget(false);
 	}
 }
 
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeapon, WeaponState); //repilcate the weapon state enum
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -66,6 +74,33 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		BlasterCharacter->SetOverlappingWeapon(nullptr);
 	}
+}
+
+void AWeapon::SetWeaponState(EWeaponState State)
+{
+	WeaponState = State; //this will be only be set by the server, but will replicate.
+
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Equipped:
+
+		ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	}
+	
+}
+
+void AWeapon::OnRep_WeaponState()
+{
+	/*
+	*   switch (WeaponState)
+		{
+		case EWeaponState::EWS_Equipped:
+			ShowPickupWidget(false);
+			break;
+		}
+	*/
 }
 
 void AWeapon::ShowPickupWidget(bool bPickupWidget) //C7_7

@@ -23,7 +23,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (!Character || !WeaponToEquip) return;
 
 	EquippedWeapon = WeaponToEquip;
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class.
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
 
 	const USkeletalMeshSocket* HandSocket = Character-> GetMesh()-> GetSocketByName(FName("RightHandSocket")); //we created a socket in the character skeletal mesh and named it RightHandSocket
 
@@ -33,6 +33,5 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 
 	EquippedWeapon->SetOwner(Character); //set this character as the owner of this weapon.
-	EquippedWeapon->ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.
 }
 

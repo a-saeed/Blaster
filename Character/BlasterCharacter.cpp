@@ -104,7 +104,24 @@ void ABlasterCharacter::Turn(float value)
 
 void ABlasterCharacter::EquipButtonPressed()
 {
-	if (Combat && HasAuthority()) //only equip weapon through the server.
+	if (Combat) //only equip weapon through the server.
+	{
+		if (HasAuthority()) //if ur the server, equip weapon
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipButtonPressed(); //ur a client whos's trying to equip a weapon, call the RPC
+		}	
+	}
+}
+
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation() //this is an RPC, we have to write "_implementation" in the function defintion in .cpp 
+{
+	//enable client blaster characters to also pickup a weapon when pressing E.
+	//this function will be called from the client and only the server will excecute it..
+	if (Combat)
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
 	}

@@ -25,6 +25,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; //we need to replicate the weapon state enum variable.
+
 	void ShowPickupWidget(bool bPickupWidget); //C7_6
 
 protected:
@@ -52,13 +54,16 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class USphereComponent* AreaSphere; //to detect overlap events with the weapon, just like a capsule comp.
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 		EWeaponState WeaponState;
+
+	UFUNCTION()
+		void OnRep_WeaponState(); //what should we do once the new value of weapon state replicates to clients
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class UWidgetComponent* PickupWidget;
 
 public:
 
-	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
+	void SetWeaponState(EWeaponState State);
 };
