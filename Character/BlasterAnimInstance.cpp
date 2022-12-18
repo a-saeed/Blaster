@@ -34,5 +34,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	//set is accelerating (if player is pressing move buttons)
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Length() > 0.f ? true : false;
 
+	//set is weapon equipped
 	bWeaponEquipped = BlasterCharacter->isWeaponEquipped();
+
+	//set is character crouched
+	bIsCrouched = BlasterCharacter->bIsCrouched;
 }
