@@ -35,6 +35,8 @@ protected:
 	void Turn(float value);
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+	void AimButtonPressed();
+	void AimButtonReleased();
 
 private:
 
@@ -55,10 +57,13 @@ private:
 
 	UFUNCTION(Server, Reliable)
 		void ServerEquipButtonPressed();
+
 public:	
 
 	//C7_4
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
 	bool isWeaponEquipped() const;
+
+	bool isAiming() const;
 };
