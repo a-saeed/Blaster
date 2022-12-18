@@ -59,4 +59,5 @@ public:
 	//C7_4
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
+	bool isWeaponEquipped() const;
 };
