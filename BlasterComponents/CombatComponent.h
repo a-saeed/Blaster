@@ -32,11 +32,14 @@ protected:
 	UFUNCTION(Server, Reliable) //aiming from a client machine doesn't replicate on other clients & server. create an RPC
 		void ServerSetAiming(bool bIsAiming);
 
+	UFUNCTION()
+		void OnRep_EquippedWeapon();
+
 private:
 
 	class ABlasterCharacter* Character;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 		class AWeapon* EquippedWeapon;
 
 	UPROPERTY(Replicated)
