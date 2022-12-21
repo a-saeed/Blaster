@@ -37,6 +37,7 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
 
 private:
 
@@ -58,6 +59,11 @@ private:
 	UFUNCTION(Server, Reliable)
 		void ServerEquipButtonPressed();
 
+	/***************** AIM OFFSET ************************/
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator LastBaseAimRotation;
+
 public:	
 
 	//C7_4
@@ -66,4 +72,7 @@ public:
 	bool isWeaponEquipped() const;
 
 	bool isAiming() const;
+
+	FORCEINLINE float GetAo_Yaw() { return AO_Yaw;} //used in anime instance class
+	FORCEINLINE float GetAo_Pitch() { return AO_Pitch;} //used in anime instance class
 };

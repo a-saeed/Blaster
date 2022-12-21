@@ -7,6 +7,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -46,12 +47,12 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	AimOffset(DeltaTime);
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -203,4 +204,37 @@ bool ABlasterCharacter::isWeaponEquipped() const
 bool ABlasterCharacter::isAiming() const
 {
 	return (Combat && Combat->bAiming);
+}
+
+/***************** AIM OFFSET ************************/
+
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	//we need to apply yaw aim offsets (looking left & right) only when the charcater is equipped & standing (not walking or jumping)
+	if (Combat && Combat->EquippedWeapon == nullptr) return;
+
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f; 
+	float Speed = Velocity.Length();
+
+	bool bInAir = GetCharacterMovement()->IsFalling();
+
+	if (Speed == 0.f && !bInAir) //standing still, not jumping
+	{
+		//the yaw offset we need is the delta btween the last pose for the character before it stopped walking/falling & the current pose that's affected by the mouse yaw input
+		FRotator CurrentBaseAimRotation(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaBaseAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentBaseAimRotation, LastBaseAimRotation);
+		AO_Yaw = DeltaBaseAimRotation.Yaw;
+		//stop character from following the controller (mouse).
+		bUseControllerRotationYaw = false;
+	}
+	if(Speed > 0.f || bInAir)
+	{
+		LastBaseAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f; //if not standing, set the aim offset yaw to zero(i.e. don't apply aim offsets while moving)
+		bUseControllerRotationYaw = true;
+	}
+
+	//for pitch, we can set it in any pose (walk, jump, stand, crouch)
+	AO_Pitch = GetBaseAimRotation().Pitch;
 }
