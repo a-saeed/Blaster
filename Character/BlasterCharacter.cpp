@@ -235,6 +235,6 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		bUseControllerRotationYaw = true;
 	}
 
-	//for pitch, we can set it in any pose (walk, jump, stand, crouch)
-	AO_Pitch = GetBaseAimRotation().Pitch;
+	//for pitch, we can set it in any pose (walk, jump, stand, crouch).. need to convert values from [270-360) to [-90,0)
+	AO_Pitch = GetBaseAimRotation().GetNormalized().Pitch;
 }
