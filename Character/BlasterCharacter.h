@@ -75,4 +75,6 @@ public:
 
 	FORCEINLINE float GetAo_Yaw() { return AO_Yaw;} //used in anime instance class
 	FORCEINLINE float GetAo_Pitch() { return AO_Pitch;} //used in anime instance class
+
+	AWeapon* GetEquippedWeapon();
 };

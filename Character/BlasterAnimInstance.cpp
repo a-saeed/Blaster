@@ -5,6 +5,7 @@
 #include "BlasterCharacter.h"
 #include "GameFrameWork/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -38,6 +39,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	//set is weapon equipped
 	bWeaponEquipped = BlasterCharacter->isWeaponEquipped();
 
+	//set equipped weapon
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
+
 	//set is character crouched
 	bIsCrouched = BlasterCharacter->bIsCrouched; //from character movement component
 
@@ -62,4 +66,20 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	//set aim offsets
 	AO_Yaw = BlasterCharacter->GetAo_Yaw();
 	AO_Pitch = BlasterCharacter->GetAo_Pitch();
+
+	//set left hand transform
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
+	{
+		//set LHT to the world transform of the socket on the weapon
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+		//transform it from world space to bone relative space on the skeleton of the character mesh.(we transform realtive to the right hand)
+		FVector OutPosition;
+		FRotator OutRotation; //the position and rotation of the left hand socket transformed to hand_r bone space.
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		
+		//now LHT is set to the location of the socket but it's transforme realtive to hand_r bone space.
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+		//we use this in the FABRIK algorithm im the anime bp
+	}
 }

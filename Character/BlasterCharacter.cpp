@@ -206,6 +206,12 @@ bool ABlasterCharacter::isAiming() const
 	return (Combat && Combat->bAiming);
 }
 
+AWeapon* ABlasterCharacter::GetEquippedWeapon()
+{
+	if(!Combat){ return nullptr; }
+	return Combat->EquippedWeapon;
+}
+
 /***************** AIM OFFSET ************************/
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
