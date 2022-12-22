@@ -33,6 +33,9 @@ ABlasterCharacter::ABlasterCharacter()
 	//don't make capsule and mesh block the camera
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	//set default turning pose to not turning
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -212,7 +215,7 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 	return Combat->EquippedWeapon;
 }
 
-/***************** AIM OFFSET ************************/
+/***************** AIM OFFSET & TURNING IN PLACE ************************/
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
@@ -233,14 +236,30 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		AO_Yaw = DeltaBaseAimRotation.Yaw;
 		//stop character from following the controller (mouse).
 		bUseControllerRotationYaw = false;
+
+		TurnInPlace(DeltaTime);
 	}
 	if(Speed > 0.f || bInAir)
 	{
 		LastBaseAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f; //if not standing, set the aim offset yaw to zero(i.e. don't apply aim offsets while moving)
 		bUseControllerRotationYaw = true;
+
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
 	//for pitch, we can set it in any pose (walk, jump, stand, crouch).. need to convert values from [270-360) to [-90,0)
 	AO_Pitch = GetBaseAimRotation().GetNormalized().Pitch;
+}
+
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if(AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
 }

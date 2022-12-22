@@ -82,4 +82,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
 		//we use this in the FABRIK algorithm im the anime bp
 	}
+
+	//set ETurningInPlace
+	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 }

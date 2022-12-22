@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -38,6 +39,7 @@ protected:
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
+	void TurnInPlace(float DeltaTime);
 
 private:
 
@@ -50,19 +52,23 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) //C7_1: used to designate this variable to be a replicated variable. linked to C7_8
 		class AWeapon* OverlappingWeapon;
 
-	UFUNCTION()
-		void OnRep_OverlappingWeapon(AWeapon* LastWeapon); //C7_8: on replicating this variable (overlappingWeapon), execute this function. it can only take a param of the type of variable it replicates
-
 	UPROPERTY(VisibleAnywhere)
 		class UCombatComponent* Combat;
+
+	/***************** ON_REPs & RPCs *******************/
+
+	UFUNCTION()
+		void OnRep_OverlappingWeapon(AWeapon* LastWeapon); //C7_8: on replicating this variable (overlappingWeapon), execute this function. it can only take a param of the type of variable it replicates
 
 	UFUNCTION(Server, Reliable)
 		void ServerEquipButtonPressed();
 
-	/***************** AIM OFFSET ************************/
+	/***************** AIM OFFSET & TURNING IN PLACE ************************/
 	float AO_Yaw;
 	float AO_Pitch;
 	FRotator LastBaseAimRotation;
+
+	ETurningInPlace TurningInPlace;
 
 public:	
 
@@ -77,4 +83,6 @@ public:
 	FORCEINLINE float GetAo_Pitch() { return AO_Pitch;} //used in anime instance class
 
 	AWeapon* GetEquippedWeapon();
+
+	FORCEINLINE ETurningInPlace GetTurningInPlace() { return TurningInPlace; }
 };
