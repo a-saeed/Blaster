@@ -231,17 +231,22 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	if (Speed == 0.f && !bInAir) //standing still, not jumping
 	{
 		//the yaw offset we need is the delta btween the last pose for the character before it stopped walking/falling & the current pose that's affected by the mouse yaw input
-		FRotator CurrentBaseAimRotation(0.f, GetBaseAimRotation().Yaw, 0.f);
-		FRotator DeltaBaseAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentBaseAimRotation, LastBaseAimRotation);
+		FRotator CurrentAimRotation(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaBaseAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, LastAimRotation);
 		AO_Yaw = DeltaBaseAimRotation.Yaw;
+		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning) //ie. if ao_yaw haven't exceeded 90 or -90
+		{
+			InterpAO_Yaw = AO_Yaw; //we get out of this (if) check with a vlaue for interpAO_Yaw = 90 or -90
+		}
+
 		//stop character from following the controller (mouse).
-		bUseControllerRotationYaw = false;
+		bUseControllerRotationYaw = true;
 
 		TurnInPlace(DeltaTime);
 	}
 	if(Speed > 0.f || bInAir)
 	{
-		LastBaseAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		LastAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f; //if not standing, set the aim offset yaw to zero(i.e. don't apply aim offsets while moving)
 		bUseControllerRotationYaw = true;
 
@@ -261,5 +266,17 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 	else if(AO_Yaw < -90.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning) //if we are turning
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw;
+
+		if (FMath::Abs(AO_Yaw) < 15.f) //once we've turned enough
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			LastAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); //since wev'e turned(i.e. MOVED) we need to reset the last aim rotation to the rotation we're currently in after turning.
+		}
 	}
 }

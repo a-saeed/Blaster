@@ -66,6 +66,7 @@ private:
 	/***************** AIM OFFSET & TURNING IN PLACE ************************/
 	float AO_Yaw;
 	float AO_Pitch;
+	float InterpAO_Yaw;
 	FRotator LastBaseAimRotation;
 
 	ETurningInPlace TurningInPlace;
