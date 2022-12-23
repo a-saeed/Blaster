@@ -40,6 +40,7 @@ protected:
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
 	void TurnInPlace(float DeltaTime);
+	virtual void Jump() override;
 
 private:
 
@@ -67,7 +68,7 @@ private:
 	float AO_Yaw;
 	float AO_Pitch;
 	float InterpAO_Yaw;
-	FRotator LastBaseAimRotation;
+	FRotator LastAimRotation;
 
 	ETurningInPlace TurningInPlace;
 

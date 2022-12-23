@@ -24,6 +24,7 @@ ABlasterCharacter::ABlasterCharacter()
 
 	bUseControllerRotationYaw = false; //lock player rotation while freely moving the camera.
 	GetCharacterMovement()->bOrientRotationToMovement = true; //rotate the character towards the direction of movement.
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 850.f, 0.f);
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true); //set combat component to replicate.
@@ -36,6 +37,10 @@ ABlasterCharacter::ABlasterCharacter()
 
 	//set default turning pose to not turning
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
+	//set net update frequency
+	NetUpdateFrequency = 66;
+	MinNetUpdateFrequency = 33;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -62,7 +67,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABlasterCharacter::Jump);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::moveRight);
@@ -113,6 +118,19 @@ void ABlasterCharacter::LookUp(float value)
 void ABlasterCharacter::Turn(float value)
 {
 	AddControllerYawInput(value);
+}
+
+void ABlasterCharacter::Jump()
+{
+	//make character stand up if jump button is pressed while crouching.
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Super::Jump();
+	}
 }
 
 void ABlasterCharacter::EquipButtonPressed()
