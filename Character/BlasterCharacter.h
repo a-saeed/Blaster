@@ -25,6 +25,9 @@ public:
 
 	virtual void PostInitializeComponents() override; //an inherited function to access the component once it's initialized.
 
+	/***************** ANIMATION MONTAGE FUNCTIONS ************************/
+	void PlayFireMontage(bool bAiming);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -41,6 +44,8 @@ protected:
 	void AimOffset(float DeltaTime);
 	void TurnInPlace(float DeltaTime);
 	virtual void Jump() override;
+	void FireButtonPressed();
+	void FireButtonReleased();
 
 private:
 
@@ -72,6 +77,10 @@ private:
 
 	ETurningInPlace TurningInPlace;
 
+	/***************** ANIMATION MONTAGE VARIABLES ************************/
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+		class UAnimMontage* FireWeaponMontage;
 public:	
 
 	//C7_4

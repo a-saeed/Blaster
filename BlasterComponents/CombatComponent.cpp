@@ -61,6 +61,16 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	ServerSetAiming(bIsAiming); //whether server or client, this rpc will be called from the respective machine and only executed on server, vraiable already replicates.
 }
 
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+
+	if (Character && bFireButtonPressed)
+	{
+		Character->PlayFireMontage(bAiming);
+	}
+}
+
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
 	bAiming = bIsAiming;

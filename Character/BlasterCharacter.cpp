@@ -8,6 +8,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Animation/AnimInstance.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -78,6 +79,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -130,6 +133,22 @@ void ABlasterCharacter::Jump()
 	else
 	{
 		Super::Jump();
+	}
+}
+
+void ABlasterCharacter::FireButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
 	}
 }
 
@@ -231,6 +250,21 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
 	if(!Combat){ return nullptr; }
 	return Combat->EquippedWeapon;
+}
+
+/***************** ANIMATION MONTAGE FUNCTIONS ************************/
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (!Combat || !Combat->EquippedWeapon) return;
+
+	UAnimInstance* AnimeInstance = GetMesh()->GetAnimInstance();
+	if (AnimeInstance && FireWeaponMontage)
+	{
+		AnimeInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName = bAiming ? FName("RifleAim") : FName("RifleHip"); //check which monatge section to play
+		AnimeInstance->Montage_JumpToSection(SectionName);
+	}
 }
 
 /***************** AIM OFFSET & TURNING IN PLACE ************************/
