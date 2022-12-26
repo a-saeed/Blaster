@@ -28,7 +28,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; //we need to replicate the weapon state enum variable.
 
 	void ShowPickupWidget(bool bPickupWidget); //C7_6
-	void Fire();
+	virtual void Fire(const FVector& HitTarget);
 
 protected:
 

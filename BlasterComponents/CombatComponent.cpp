@@ -139,7 +139,7 @@ void UCombatComponent::MulticastFire_Implementation()
 	if (Character && EquippedWeapon)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire();
+		EquippedWeapon->Fire(HitTarget);
 	}
 }
 				/// FBP: REP_NOTIFIES
@@ -182,9 +182,12 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		if (!TraceHitResult.bBlockingHit) //if we didn't hit smth. set the impact point to the end vector.
 		{
 			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
 		}
 		else
 		{
+			HitTarget = TraceHitResult.ImpactPoint;
+
 			DrawDebugSphere(GetWorld(),
 				TraceHitResult.ImpactPoint,
 				25.f,
