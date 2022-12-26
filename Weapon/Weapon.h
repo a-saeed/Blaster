@@ -28,6 +28,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; //we need to replicate the weapon state enum variable.
 
 	void ShowPickupWidget(bool bPickupWidget); //C7_6
+	void Fire();
 
 protected:
 
@@ -62,6 +63,13 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class UWidgetComponent* PickupWidget;
+
+	/*
+	*	ANIMATION ASSETS
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		class UAnimationAsset* FireAnimation;
 
 public:
 
