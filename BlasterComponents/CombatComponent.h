@@ -30,6 +30,8 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
 	/*
 	*	RPCs 
 	*/

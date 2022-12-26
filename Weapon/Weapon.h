@@ -47,6 +47,7 @@ protected:
 			AActor* OtherActor,
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);
+
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
@@ -58,11 +59,15 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 		EWeaponState WeaponState;
 
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+		class UWidgetComponent* PickupWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
+		float FiringRange;
+
 	UFUNCTION()
 		void OnRep_WeaponState(); //what should we do once the new value of weapon state replicates to clients
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		class UWidgetComponent* PickupWidget;
 
 	/*
 	*	ANIMATION ASSETS
@@ -76,4 +81,7 @@ public:
 	void SetWeaponState(EWeaponState State);
 
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
+
+	FORCEINLINE void SetWeaponFiringRange(float range) { FiringRange = range; }
+	FORCEINLINE float GetWeaponFiringRange() { return FiringRange; }
 };

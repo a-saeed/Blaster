@@ -4,10 +4,12 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFrameWork/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -26,6 +28,9 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	FHitResult OutHitResult;
+	TraceUnderCrosshairs(OutHitResult);
 }
 
 ///**************************************************************************************///
@@ -140,3 +145,52 @@ void UCombatComponent::MulticastFire_Implementation()
 				/// FBP: REP_NOTIFIES
 
 ///**************************************************************************************///
+
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	//make a line trace from the middle of the screen
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); //in screen space
+	//convert to world space
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
+
+	if (bScreenToWorld && EquippedWeapon)
+	{
+		//perform the line trace
+		FVector Start = CrosshairWorldPosition;
+		FVector End = CrosshairWorldPosition + CrosshairWorldDirection * EquippedWeapon->GetWeaponFiringRange(); //world direction is a unit vec.
+
+		GetWorld()->LineTraceSingleByChannel(TraceHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+
+		if (!TraceHitResult.bBlockingHit) //if we didn't hit smth. set the impact point to the end vector.
+		{
+			TraceHitResult.ImpactPoint = End;
+		}
+		else
+		{
+			DrawDebugSphere(GetWorld(),
+				TraceHitResult.ImpactPoint,
+				25.f,
+				32.f,
+				FColor::Red
+			);
+		}
+	}
+}
