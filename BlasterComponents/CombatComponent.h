@@ -30,8 +30,22 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	/*
+	*	RPCs 
+	*/
+
 	UFUNCTION(Server, Reliable) //aiming from a client machine doesn't replicate on other clients & server. create an RPC
 		void ServerSetAiming(bool bIsAiming);
+
+	UFUNCTION(Server, Reliable)
+		void ServerFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastFire();
+
+	/*
+	*	REP_NOTIFIES
+	*/
 
 	UFUNCTION()
 		void OnRep_EquippedWeapon();

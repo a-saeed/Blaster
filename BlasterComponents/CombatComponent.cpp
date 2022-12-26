@@ -10,6 +10,14 @@ UCombatComponent::UCombatComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon); //equipped weapon only gets set by the server, replicate it so that every charatcer see the new animation pose for the character that equipped the weapon..
+	DOREPLIFETIME(UCombatComponent, bAiming);
+}
+
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -20,14 +28,13 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon); //equipped weapon only gets set by the server, replicate it so that every charatcer see the new animation pose for the character that equipped the weapon..
-	DOREPLIFETIME(UCombatComponent, bAiming);
-}
-
+///**************************************************************************************///
+/*
+*
+* EquipWeapon , RPCs , REP_NOTIFIES
+*
+*/
+					/// EW
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip) return;
@@ -49,6 +56,25 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 }
 
+					///EW: RPCs
+
+					///EW: REP_NOTIFIES
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character) //on replicating equipped weapon to clients
+	{
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
+}
+
+///**************************************************************************************///
+/*
+*
+* SetAiming , RPCs , REP_NOTIFIES
+*
+*/
+					/// SA
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming; //bAiming is what's being checked every frame by the ABP to see whether to play the aiming pose or not. client can set it and see his aim pose before sending rpc to server to allow for a smooth xp. once rpc reaches server it will replicate to all clients to see this client's aim pose.
@@ -61,17 +87,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	ServerSetAiming(bIsAiming); //whether server or client, this rpc will be called from the respective machine and only executed on server, vraiable already replicates.
 }
 
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{
-	bFireButtonPressed = bPressed;
-
-	if (Character && bFireButtonPressed && EquippedWeapon)
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire();
-	}
-}
-
+					/// SA: RPCs
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -82,12 +98,45 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 		Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }
-
-void UCombatComponent::OnRep_EquippedWeapon()
+					/// SA: REP_NOTIFIES
+	
+///**************************************************************************************///
+/*
+*	
+* FireButtonPressed , RPCs , REP_NOTIFIES
+* 
+*/
+					/// FBP
+void UCombatComponent::FireButtonPressed(bool bPressed)
 {
-	if (EquippedWeapon && Character) //on replicating equipped weapon to clients
+	/*
+	* the default scenario before making any rpcs is that ONLY the client(or server) would see the fire weapon animation when shooting
+	* creating a server rpc only made it play on the server, since bFireButtonPressed is not replicated.
+	* we don't replicate bFireButtonPressed since we intend to implement automatic weapons, and replication only works when a variable changes value(replication would work for semi-auto).
+	* the fix is to keep the server rpc and within it call a multicast(server) rpc that will play the effect on all clients and server.
+	* the way to know it's a multicast server rpc: -a client/server press fire button -call serverFire(a server rpc.. not client) -call multicast rpc.
+	*/
+	bFireButtonPressed = bPressed;
+
+	if (bFireButtonPressed)
 	{
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-		Character->bUseControllerRotationYaw = true;
+		ServerFire();
 	}
 }
+					/// FBP: RPCs
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{
+	if (Character && EquippedWeapon)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire();
+	}
+}
+				/// FBP: REP_NOTIFIES
+
+///**************************************************************************************///
