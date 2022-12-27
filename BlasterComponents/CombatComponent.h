@@ -40,10 +40,10 @@ protected:
 		void ServerSetAiming(bool bIsAiming);
 
 	UFUNCTION(Server, Reliable)
-		void ServerFire();
+		void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastFire();
+		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
 	/*
 	*	REP_NOTIFIES
@@ -69,8 +69,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		float AimWalkSpeed = 300;
-
-	FVector HitTarget;
 
 public:	
 };

@@ -28,9 +28,6 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	FHitResult OutHitResult;
-	TraceUnderCrosshairs(OutHitResult);
 }
 
 ///**************************************************************************************///
@@ -125,21 +122,24 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 	if (bFireButtonPressed)
 	{
-		ServerFire();
+		FHitResult OutHitResult;
+		TraceUnderCrosshairs(OutHitResult); //returns an impact point
+
+		ServerFire(OutHitResult.ImpactPoint);
 	}
 }
 					/// FBP: RPCs
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulticastFire();
+	MulticastFire(TraceHitTarget);
 }
 
-void UCombatComponent::MulticastFire_Implementation()
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character && EquippedWeapon)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(HitTarget);
+		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
 				/// FBP: REP_NOTIFIES
@@ -167,7 +167,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		CrosshairWorldDirection
 	);
 
-	if (bScreenToWorld && EquippedWeapon)
+	if (bScreenToWorld)
 	{
 		//perform the line trace
 		FVector Start = CrosshairWorldPosition;
@@ -182,18 +182,6 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		if (!TraceHitResult.bBlockingHit) //if we didn't hit smth. set the impact point to the end vector.
 		{
 			TraceHitResult.ImpactPoint = End;
-			HitTarget = End;
-		}
-		else
-		{
-			HitTarget = TraceHitResult.ImpactPoint;
-
-			DrawDebugSphere(GetWorld(),
-				TraceHitResult.ImpactPoint,
-				25.f,
-				32.f,
-				FColor::Red
-			);
 		}
 	}
 }
