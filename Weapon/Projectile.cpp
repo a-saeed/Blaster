@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 AProjectile::AProjectile()
 {
@@ -43,6 +44,13 @@ void AProjectile::BeginPlay()
 			EAttachLocation::KeepWorldPosition
 		);
 	}
+
+	//bind custom-made OnHit fn to the collisionBox HitEvent(but only on the server)
+	if (HasAuthority()) //this check isn't meaningless since projectile class is set to replicate
+	{
+		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit); //it only generates on the server, we won't get hit events on clients.
+	}
+
 }
 
 void AProjectile::Tick(float DeltaTime)
@@ -51,3 +59,27 @@ void AProjectile::Tick(float DeltaTime)
 
 }
 
+/*
+* HIT EVENT
+*/
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	//to replicate OnHit FX to all clients, instead of creating a new multicast rpc.
+	//we can make use of the Destroyed() fn on the actor class that already does that for replicated variables
+	Destroy();
+}
+
+void AProjectile::Destroyed()
+{
+	Super::Destroyed();
+
+	//on hit, play FX
+	if (ImpactParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+	}
+	if (ImpactSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation());
+	}
+}
