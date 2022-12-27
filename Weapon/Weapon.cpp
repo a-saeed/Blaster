@@ -5,6 +5,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "Casing.h"
 
 AWeapon::AWeapon()
 {
@@ -118,5 +120,18 @@ void AWeapon::Fire(const FVector& HitTarget)
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false); //play the fire animation on the weapon skeletal mesh.
+	}
+	if (CasingClass)
+	{
+		//we need a location to spawn our Casing from. use the Shell socket on the weapon mesh.
+		const USkeletalMeshSocket* AmmoEject = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+		if (AmmoEject)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+
+			FTransform SocketTransform = AmmoEject->GetSocketTransform(WeaponMesh);
+			GetWorld()->SpawnActor<ACasing>(CasingClass, SocketTransform);
+		}
 	}
 }

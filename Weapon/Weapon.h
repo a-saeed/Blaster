@@ -72,9 +72,14 @@ private:
 	/*
 	*	ANIMATION ASSETS
 	*/
-
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		class UAnimationAsset* FireAnimation;
+
+	/*
+	*	BULLET SHELL
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		TSubclassOf<class ACasing> CasingClass;
 
 public:
 
