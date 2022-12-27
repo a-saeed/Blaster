@@ -23,11 +23,28 @@ protected:
 
 private:
 
+	/*
+	* BODY
+	*/
+
 	UPROPERTY(EditAnywhere)
 		class UBoxComponent* CollisionBox;
 
+	/*
+	* MOVEMENT
+	*/
+
 	UPROPERTY(VisibleAnywhere)
-		class UProjectileMovementComponent* ProjectileMovementComponent;;
+		class UProjectileMovementComponent* ProjectileMovementComponent;
+	/*
+	* FX
+	*/
+
+	UPROPERTY(EditAnywhere)
+		class UParticleSystem* Tracer;
+
+	class UParticleSystemComponent* TracerComponent;
+
 public:	
 	
 	

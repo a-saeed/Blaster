@@ -19,6 +19,13 @@ void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impac
 {
 	Super::Fire(HitTarget);
 	
+	//we can play animations of the weapon firing on all machines
+	//but the act of spawning a projectile should only happen on the server
+	//has authority checks if this weapon is spawned on the server or not
+	//since its parent weapon class is set to replicate,then so does projectile weapon
+	//after this check we know that projectile weapon has authority on the server only. and the projectile will only spawn on the server. lec 76
+	if (!HasAuthority()) return;
+
 	FActorSpawnParameters SpawnParams;
 
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
