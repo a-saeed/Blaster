@@ -6,6 +6,8 @@
 #include "GameFrameWork/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/HUD/BlasterHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -28,15 +30,17 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
 
-///**************************************************************************************///
+	if (EquippedWeapon)
+	{
+		SetHUDCrosshairs(DeltaTime);
+	}
+}
 /*
 *
 * EquipWeapon , RPCs , REP_NOTIFIES
 *
-*/
-					/// EW
+*/					/// EW
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip) return;
@@ -57,9 +61,6 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
-
-					///EW: RPCs
-
 					///EW: REP_NOTIFIES
 void UCombatComponent::OnRep_EquippedWeapon()
 {
@@ -69,14 +70,11 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->bUseControllerRotationYaw = true;
 	}
 }
-
-///**************************************************************************************///
 /*
 *
 * SetAiming , RPCs , REP_NOTIFIES
 *
-*/
-					/// SA
+*/					/// SA
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming; //bAiming is what's being checked every frame by the ABP to see whether to play the aiming pose or not. client can set it and see his aim pose before sending rpc to server to allow for a smooth xp. once rpc reaches server it will replicate to all clients to see this client's aim pose.
@@ -88,7 +86,6 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 	ServerSetAiming(bIsAiming); //whether server or client, this rpc will be called from the respective machine and only executed on server, vraiable already replicates.
 }
-
 					/// SA: RPCs
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
@@ -100,15 +97,11 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 		Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }
-					/// SA: REP_NOTIFIES
-	
-///**************************************************************************************///
 /*
 *	
 * FireButtonPressed , RPCs , REP_NOTIFIES
 * 
-*/
-					/// FBP
+*/					/// FBP
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	/*
@@ -133,7 +126,6 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 {
 	MulticastFire(TraceHitTarget);
 }
-
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character && EquippedWeapon)
@@ -142,10 +134,11 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
-				/// FBP: REP_NOTIFIES
-
-///**************************************************************************************///
-
+/*
+*
+* Crosshairs and HUD
+*
+*/
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	//make a line trace from the middle of the screen
@@ -184,4 +177,34 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			TraceHitResult.ImpactPoint = End;
 		}
 	}
+}
+
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
+{
+	//need to draw the crosshairs through Blaster HUD Draw fn.
+	//Player controller has access to HUD, we cast them to BlasterController and BlasterHUD.. from which we set the corsshairs textures
+	if (!Character || !Character->Controller) return;
+
+	if (!BlasterController)
+	{
+		BlasterController = Cast<ABlasterPlayerController>(Character->Controller);
+	}
+
+	if (!BlasterHUD)
+	{
+		BlasterHUD = Cast<ABlasterHUD>(BlasterController->GetHUD());
+	}
+
+	if (!BlasterController || !BlasterHUD) return;
+
+	FHUDPackage HUDPackage;
+
+	HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+	HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+	HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+	HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+	HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+
+	BlasterHUD->SetHUDPackage(HUDPackage);
+
 }

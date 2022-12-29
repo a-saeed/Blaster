@@ -4,7 +4,6 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTER_API UCombatComponent : public UActorComponent
 {
@@ -20,11 +19,11 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void EquipWeapon(class AWeapon* WeaponToEquip);
-
 protected:
 
 	virtual void BeginPlay() override;
+
+	void EquipWeapon(class AWeapon* WeaponToEquip);
 
 	void SetAiming(bool bIsAiming);
 
@@ -32,10 +31,11 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
+
 	/*
 	*	RPCs 
 	*/
-
 	UFUNCTION(Server, Reliable) //aiming from a client machine doesn't replicate on other clients & server. create an RPC
 		void ServerSetAiming(bool bIsAiming);
 
@@ -48,13 +48,17 @@ protected:
 	/*
 	*	REP_NOTIFIES
 	*/
-
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
 
 private:
 
+	/*
+	*	BODY
+	*/
 	class ABlasterCharacter* Character;
+	class ABlasterPlayerController* BlasterController;
+	class ABlasterHUD* BlasterHUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 		class AWeapon* EquippedWeapon;
@@ -64,6 +68,9 @@ private:
 
 	bool bFireButtonPressed;
 
+	/*
+	*	CHARACTER CONTROLS
+	*/
 	UPROPERTY(EditAnywhere)
 		float BaseWalkSpeed = 750;
 
