@@ -28,7 +28,27 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; //we need to replicate the weapon state enum variable.
 
 	void ShowPickupWidget(bool bPickupWidget); //C7_6
+
 	virtual void Fire(const FVector& HitTarget);
+
+	/**
+	*	TEXTURES FOR THE WEAPON CROSSHAIRS
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+		class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+		UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+		UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+		UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+		UTexture2D* CrosshairsBottom;
 
 protected:
 
@@ -47,27 +67,34 @@ protected:
 			AActor* OtherActor,
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);
-
 private:
 
+	/*
+	*	BODY
+	*/
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class USphereComponent* AreaSphere; //to detect overlap events with the weapon, just like a capsule comp.
 
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
-		EWeaponState WeaponState;
-
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class UWidgetComponent* PickupWidget;
+
+	/*
+	*	WEAPON PROPERTIES
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
+		EWeaponState WeaponState;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
 		float FiringRange;
 
+	/*
+	*	REP_NOTIFIES
+	*/
 	UFUNCTION()
 		void OnRep_WeaponState(); //what should we do once the new value of weapon state replicates to clients
-
 
 	/*
 	*	ANIMATION ASSETS
@@ -80,7 +107,6 @@ private:
 	*/
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		TSubclassOf<class ACasing> CasingClass;
-
 public:
 
 	void SetWeaponState(EWeaponState State);
