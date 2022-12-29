@@ -127,11 +127,12 @@ void AWeapon::Fire(const FVector& HitTarget)
 		const USkeletalMeshSocket* AmmoEject = WeaponMesh->GetSocketByName(FName("AmmoEject"));
 		if (AmmoEject)
 		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-
 			FTransform SocketTransform = AmmoEject->GetSocketTransform(WeaponMesh);
-			GetWorld()->SpawnActor<ACasing>(CasingClass, SocketTransform);
+			//add random rotation to the bullet shell when ejected.
+			FRotator SocketRotation = SocketTransform.GetRotation().Rotator();
+			SocketRotation.Pitch += FMath::RandRange(0.f, 45.f);
+			SocketRotation.Yaw += FMath::RandRange(0.f, 30.f);
+			GetWorld()->SpawnActor<ACasing>(CasingClass, SocketTransform.GetLocation(), SocketRotation);
 		}
 	}
 }

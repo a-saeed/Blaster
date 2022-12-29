@@ -19,11 +19,19 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION() //it has to be a ufunction to work
+		virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 private:
 
 	UPROPERTY(VisibleAnyWhere)
 		UStaticMeshComponent* CasingMesh;
 
+	UPROPERTY(EditAnyWhere)
+		float ShellEjectionImpulse;
+
+	UPROPERTY(EditAnyWhere)
+		class USoundCue* ShellSound;
 public:	
 
 };
