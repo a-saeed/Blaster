@@ -205,6 +205,25 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 	HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 	HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 
+	//Calculate Crosshairs Spread
+	//[0, maxWalkSpeed] -> [0,1]
+	FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
+	FVector2D VelocityMultiplierRange(0.f, 1.f);
+	FVector Velocity = Character->GetVelocity();
+	Velocity.Z = 0.f;
+
+	CrosshairsVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Length());
+
+	if (Character->GetCharacterMovement()->IsFalling())
+	{
+		CrosshairsInAirFactor = FMath::FInterpTo(CrosshairsInAirFactor, 2.25f, DeltaTime, 2.25f);
+	}
+	else
+	{
+		CrosshairsInAirFactor = FMath::FInterpTo(CrosshairsInAirFactor, 0.f, DeltaTime, 30.f);
+	}
+
+	HUDPackage.CrosshairSpread = CrosshairsVelocityFactor + CrosshairsInAirFactor;
 	BlasterHUD->SetHUDPackage(HUDPackage);
 
 }

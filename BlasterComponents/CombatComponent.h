@@ -77,5 +77,11 @@ private:
 	UPROPERTY(EditAnywhere)
 		float AimWalkSpeed = 300;
 
+	/*
+	*	CROSSHAIRS AND HUD
+	*/
+	float CrosshairsVelocityFactor;
+	float CrosshairsInAirFactor;
+
 public:	
 };
