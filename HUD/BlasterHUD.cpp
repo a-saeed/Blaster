@@ -11,7 +11,7 @@ void ABlasterHUD::DrawHUD()
 	if (GEngine)
 	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
-		const FVector2D ViewportCenter = (ViewportSize / 2.f, ViewportSize / 2.f);
+		const FVector2D ViewportCenter(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); //can't assign it with ( = )
 
 		if (HUDPackage.CrosshairsCenter)
 		{
@@ -44,12 +44,12 @@ void ABlasterHUD::DrawHUD()
 
 void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter)
 {
-	float TextureWidth = Texture->GetSizeX();
-	float TextureHeight = Texture->GetSizeY();
+	const float TextureWidth = Texture->GetSizeX();
+	const float TextureHeight = Texture->GetSizeY();
 
-	FVector2D TextureDrawPoint = (
-		ViewportCenter - (TextureWidth / 2.f), //Drag half its width and height left and up respectively
-		ViewportCenter - (TextureHeight / 2.f)
+	const FVector2D TextureDrawPoint (
+		ViewportCenter.X - (TextureWidth / 2.f) + Spread.X , //Drag half its width and height left and up respectively
+		ViewportCenter.Y - (TextureHeight / 2.f) + Spread.Y
 	);
 
 	DrawTexture(Texture,
