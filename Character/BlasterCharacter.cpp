@@ -332,3 +332,13 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		}
 	}
 }
+
+/*
+* Used for drawing purposes
+FVector ABlasterCharacter::GetHitTarget()
+{
+	if (!Combat) return FVector();
+
+	return Combat->HitTarget;
+}
+*/

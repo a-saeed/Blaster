@@ -35,6 +35,16 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	{
 		SetHUDCrosshairs(DeltaTime);
 	}
+	/*
+	* Used for drawing purposes
+	* 
+	* if (EquippedWeapon && Character && Character->IsLocallyControlled())
+	{
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		HitTarget = HitResult.ImpactPoint;
+	}
+	*/
 }
 /*
 *
@@ -164,6 +174,12 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	{
 		//perform the line trace
 		FVector Start = CrosshairWorldPosition;
+		//make the trace start front of the character, so we don't get a hit on the character.
+		if (Character)
+		{
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+		}
 		FVector End = CrosshairWorldPosition + CrosshairWorldDirection * EquippedWeapon->GetWeaponFiringRange(); //world direction is a unit vec.
 
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult,

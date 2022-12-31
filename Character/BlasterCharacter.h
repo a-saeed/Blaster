@@ -97,3 +97,4 @@ public:
 
 	FORCEINLINE ETurningInPlace GetTurningInPlace() { return TurningInPlace; }
 };
+	//FVector GetHitTarget(); drawing purposes

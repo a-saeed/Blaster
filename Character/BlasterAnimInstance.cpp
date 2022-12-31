@@ -81,6 +81,27 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
 		//we use this in the FABRIK algorithm im the anime bp
+
+		/*
+		*Draw 2 lines to show the diff between muzzle rotation and the crosshair location.
+		*
+		FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X)); //get the X direction from rotation
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MuzzleTipTransform.GetLocation() + MuzzleX * 1000.f, FColor::Red);
+
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), BlasterCharacter->GetHitTarget(), FColor::Orange);
+		*/
+
+		//fix the rotation of the muzzle(by fixing the hand bone rotation) so it points at hit target(only to autonomous proxies, no need for simulated proxies to see)
+		if (BlasterCharacter->IsLocallyControlled())
+		{
+			bIsLocallyControlled = true;
+
+			FTransform RightHandTransform = BlasterCharacter->GetMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World); //GetSocketTransform takes either a socket OR a bone name
+			RightHandRotation = UKismetMathLibrary::FindLookAtRotation( //the rotation needed to align those points together
+				RightHandTransform.GetLocation(),
+				RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+		}
 	}
 
 	//set ETurningInPlace
