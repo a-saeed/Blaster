@@ -8,6 +8,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 AProjectile::AProjectile()
 {
@@ -64,6 +65,12 @@ void AProjectile::Tick(float DeltaTime)
 */
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	//
+	ABlasterCharacter* BlasterCharatcer = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharatcer)
+	{
+		BlasterCharatcer->MulticastHit();
+	}
 	//to replicate OnHit FX to all clients, instead of creating a new multicast rpc.
 	//we can make use of the Destroyed() fn on the actor class that already does that for replicated variables
 	Destroy();

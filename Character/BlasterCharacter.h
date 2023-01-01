@@ -26,9 +26,13 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void PostInitializeComponents() override; //an inherited function to access the component once it's initialized.
-
-	/***************** ANIMATION MONTAGE FUNCTIONS ************************/
+	/*
+	*ANIMATION MONTAGES
+	*/
 	void PlayFireMontage(bool bAiming);
+	
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastHit();
 
 protected:
 
@@ -78,11 +82,16 @@ private:
 	FRotator LastAimRotation;
 
 	ETurningInPlace TurningInPlace;
-
-	/***************** ANIMATION MONTAGE VARIABLES ************************/
-
+	/*
+	* ANIMATION MONTAGE
+	*/
 	UPROPERTY(EditAnywhere, Category = "Combat")
 		class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+		class UAnimMontage* HitReactMontage;
+
+	void PlayHitreactMontage(); //used in multicast rpc
 	/*
 	* CAMERA
 	*/

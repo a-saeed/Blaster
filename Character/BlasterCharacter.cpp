@@ -256,9 +256,9 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 	if(!Combat){ return nullptr; }
 	return Combat->EquippedWeapon;
 }
-
-/***************** ANIMATION MONTAGE FUNCTIONS ************************/
-
+/*
+* ANIMATION MONTAGE
+*/
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {
 	if (!Combat || !Combat->EquippedWeapon) return;
@@ -272,6 +272,23 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+void ABlasterCharacter::MulticastHit_Implementation()
+{
+	PlayHitreactMontage();
+}
+
+void ABlasterCharacter::PlayHitreactMontage()
+{
+	if (!Combat || !Combat->EquippedWeapon) return;
+
+	UAnimInstance* AnimeInstance = GetMesh()->GetAnimInstance();
+	if (AnimeInstance && HitReactMontage)
+	{
+		AnimeInstance->Montage_Play(HitReactMontage);
+		FName SectionName("FromFront");
+		AnimeInstance->Montage_JumpToSection(SectionName);
+	}
+}
 /***************** AIM OFFSET & TURNING IN PLACE ************************/
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
