@@ -232,9 +232,9 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 	FVector2D VelocityMultiplierRange(0.f, 1.f);
 	FVector Velocity = Character->GetVelocity();
 	Velocity.Z = 0.f;
-
+	//Velocity Factor
 	CrosshairsVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Length());
-
+	//In Air Factor
 	if (Character->GetCharacterMovement()->IsFalling())
 	{
 		CrosshairsInAirFactor = FMath::FInterpTo(CrosshairsInAirFactor, 2.25f, DeltaTime, 2.25f);
@@ -243,8 +243,32 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 	{
 		CrosshairsInAirFactor = FMath::FInterpTo(CrosshairsInAirFactor, 0.f, DeltaTime, 30.f);
 	}
+	//Aim Factor
+	if (bAiming)
+	{
+		CrosshairsAimFactor = FMath::FInterpTo(CrosshairsAimFactor, 0.58f, DeltaTime, 30.f);
+	}
+	else
+	{
+		CrosshairsAimFactor = FMath::FInterpTo(CrosshairsAimFactor, 0.f, DeltaTime, 30.f);
+	}
+	//Shooting Factor
+	if (bFireButtonPressed)
+	{
+		CrosshairsShootingFactor = 0.75f;
+	}
+	else
+	{
+		CrosshairsShootingFactor = FMath::FInterpTo(CrosshairsShootingFactor, 0.f, DeltaTime, 40.f);
+	}
 
-	HUDPackage.CrosshairSpread = CrosshairsVelocityFactor + CrosshairsInAirFactor;
+	HUDPackage.CrosshairSpread = 
+		0.5f +								//base spread
+		CrosshairsVelocityFactor +
+		CrosshairsInAirFactor -
+		CrosshairsAimFactor +
+		CrosshairsShootingFactor
+		;
 	BlasterHUD->SetHUDPackage(HUDPackage);
 
 }

@@ -82,6 +82,8 @@ private:
 	*/
 	float CrosshairsVelocityFactor;
 	float CrosshairsInAirFactor;
+	float CrosshairsAimFactor;
+	float CrosshairsShootingFactor;
 
 	FVector HitTarget; //need in the anime instance to fix the weapon rotation
 
