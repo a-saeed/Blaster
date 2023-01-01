@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Animation/AnimInstance.h"
+#include "Blaster/Blaster.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -38,6 +39,9 @@ ABlasterCharacter::ABlasterCharacter()
 
 	//make mesh block the Visibility channel to be able to do line traces against it.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	//set the collision object type for the mesh to be the custom made skeletal mesh.
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 
 	//set default turning pose to not turning
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
