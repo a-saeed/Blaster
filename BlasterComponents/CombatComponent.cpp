@@ -7,7 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-#include "Blaster/HUD/BlasterHUD.h"
+//#include "Blaster/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
 
 UCombatComponent::UCombatComponent()
@@ -197,6 +197,21 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			TraceHitResult.ImpactPoint = End;
 		}
 	}
+
+	SetCrosshairsColor(TraceHitResult);
+}
+
+void UCombatComponent::SetCrosshairsColor(FHitResult& TraceHitResult)
+{
+	//check if the ator we hit implements the IInteractWithCrosshairsInterface
+	if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
+	{
+		HUDPackage.CrosshairsColor = FLinearColor::Red;
+	}
+	else
+	{
+		HUDPackage.CrosshairsColor = FLinearColor::White;
+	}
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
@@ -218,14 +233,19 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 
 	if (!BlasterController || !BlasterHUD) return;
 
-	FHUDPackage HUDPackage;
-
 	HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 	HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
 	HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
 	HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 	HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 
+	SetCrosshairsSpread(DeltaTime);
+
+	BlasterHUD->SetHUDPackage(HUDPackage);
+}
+
+void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
+{
 	//Calculate Crosshairs Spread
 	//[0, maxWalkSpeed] -> [0,1]
 	FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
@@ -262,15 +282,13 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 		CrosshairsShootingFactor = FMath::FInterpTo(CrosshairsShootingFactor, 0.f, DeltaTime, 40.f);
 	}
 
-	HUDPackage.CrosshairSpread = 
+	HUDPackage.CrosshairSpread =
 		0.5f +								//base spread
 		CrosshairsVelocityFactor +
 		CrosshairsInAirFactor -
 		CrosshairsAimFactor +
 		CrosshairsShootingFactor
 		;
-	BlasterHUD->SetHUDPackage(HUDPackage);
-
 }
 /*
 *

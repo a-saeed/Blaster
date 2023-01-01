@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -84,6 +85,9 @@ private:
 	float CrosshairsInAirFactor;
 	float CrosshairsAimFactor;
 	float CrosshairsShootingFactor;
+	FHUDPackage HUDPackage;
+	void SetCrosshairsColor(FHitResult& TraceHitResult);
+	void SetCrosshairsSpread(float DeltaTime);
 
 	FVector HitTarget; //need in the anime instance to fix the weapon rotation
 
