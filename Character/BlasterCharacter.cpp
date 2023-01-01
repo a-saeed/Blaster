@@ -36,6 +36,9 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
+	//make mesh block the Visibility channel to be able to do line traces against it.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
 	//set default turning pose to not turning
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
