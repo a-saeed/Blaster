@@ -65,6 +65,8 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	AimOffset(DeltaTime);
+
+	HideCameraIfCharatcterClose();
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -341,4 +343,29 @@ FVector ABlasterCharacter::GetHitTarget()
 	if (!Combat) return FVector();
 
 	return Combat->HitTarget;
+}
+
+/*
+* CAMERA
+*/
+void ABlasterCharacter::HideCameraIfCharatcterClose()
+{
+	if (!IsLocallyControlled()) return; //we only need to hide for our character
+
+	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Length() < CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->SetVisibility(false);
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->SetVisibility(true);
+		}
+	}
 }

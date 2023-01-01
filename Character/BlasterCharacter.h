@@ -83,6 +83,14 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 		class UAnimMontage* FireWeaponMontage;
+	/*
+	* CAMERA
+	*/
+	UPROPERTY(EditAnywhere)
+		float CameraThreshold = 200.f; //how close to other objects until our character dissapear
+
+	void HideCameraIfCharatcterClose();
+
 public:	
 
 	//C7_4
