@@ -98,9 +98,12 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 			bIsLocallyControlled = true;
 
 			FTransform RightHandTransform = BlasterCharacter->GetMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World); //GetSocketTransform takes either a socket OR a bone name
-			RightHandRotation = UKismetMathLibrary::FindLookAtRotation( //the rotation needed to align those points together
+			//interpolate hand rotation so Weapon doesn't snap if hit target location changes from far to close or vice versa (EX: aimimg far away and a character steps infront of weapon)
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation( //the rotation needed to align those points together
 				RightHandTransform.GetLocation(),
 				RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+
+			RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 15.f);
 		}
 	}
 
