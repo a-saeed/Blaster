@@ -96,5 +96,8 @@ public:
 	AWeapon* GetEquippedWeapon();
 
 	FORCEINLINE ETurningInPlace GetTurningInPlace() { return TurningInPlace; }
+	
+	FVector GetHitTarget();
+
+	FORCEINLINE UCameraComponent* GetFollowCamera() { return FollowCamera; } //used to access the FOV
 };
-	//FVector GetHitTarget(); drawing purposes

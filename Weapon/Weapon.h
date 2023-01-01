@@ -67,6 +67,16 @@ protected:
 			AActor* OtherActor,
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);
+
+	/*
+	* ZOOMED FOV WHILE AIMING.
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		float ZoomedFOV = 30.f; //amount to zoom depending on each weapon.
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		float ZoomInterpSpeed = 20.f;
+
 private:
 
 	/*
@@ -115,4 +125,7 @@ public:
 
 	FORCEINLINE void SetWeaponFiringRange(float range) { FiringRange = range; }
 	FORCEINLINE float GetWeaponFiringRange() { return FiringRange; }
+
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 };

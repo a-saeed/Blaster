@@ -83,7 +83,23 @@ private:
 	float CrosshairsVelocityFactor;
 	float CrosshairsInAirFactor;
 
-	//FVector HitTarget; drawing purposes
+	FVector HitTarget; //need in the anime instance to fix the weapon rotation
 
+	/*
+	* AIMING AND FOV
+	*/
+	//field of view when not aiming; Set to the camera's base FOV in BeginPlay
+	float DefaultFOV;
+
+	float CurrentFOV;
+
+	UPROPERTY(EditAnywhere , Category = "Combat")
+		float ZoomedFOV = 30.f; //not used till now
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+		float ZoomInterpSpeed = 20.f; //used to make all weapons unzoom at the same rate.
+
+	void InterpFOV(float DeltaTime);
+	
 public:	
 };

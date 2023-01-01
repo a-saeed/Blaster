@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Camera/CameraComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -25,26 +26,28 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//set defaultFOV
+	if (Character->GetFollowCamera())
+	{
+		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+		CurrentFOV = DefaultFOV;
+	}
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (EquippedWeapon)
-	{
-		SetHUDCrosshairs(DeltaTime);
-	}
-	/*
-	* Used for drawing purposes
-	* 
-	* if (EquippedWeapon && Character && Character->IsLocallyControlled())
+	if (Character && Character->IsLocallyControlled())
 	{
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
-		HitTarget = HitResult.ImpactPoint;
+		HitTarget = HitResult.ImpactPoint; //needed each frame in the anime instance to correct the weapon rotation.
+
+		SetHUDCrosshairs(DeltaTime);
+		InterpFOV(DeltaTime);
 	}
-	*/
 }
 /*
 *
@@ -151,6 +154,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 */
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
+	if (!EquippedWeapon) return;
 	//make a line trace from the middle of the screen
 	FVector2D ViewportSize;
 	if (GEngine && GEngine->GameViewport)
@@ -197,6 +201,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 {
+	if (!EquippedWeapon) return;
 	//need to draw the crosshairs through Blaster HUD Draw fn.
 	//Player controller has access to HUD, we cast them to BlasterController and BlasterHUD.. from which we set the corsshairs textures
 	if (!Character || !Character->Controller) return;
@@ -242,4 +247,27 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 	HUDPackage.CrosshairSpread = CrosshairsVelocityFactor + CrosshairsInAirFactor;
 	BlasterHUD->SetHUDPackage(HUDPackage);
 
+}
+/*
+*
+* AIMING AND FOV
+*
+*/
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (!EquippedWeapon) return;
+
+	if (bAiming)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed); //unzoom to defaultFOV at the same rate.
+	}
+
+	if (Character && Character->GetFollowCamera())
+	{
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+	}
 }
