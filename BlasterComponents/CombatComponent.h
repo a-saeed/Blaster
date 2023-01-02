@@ -85,6 +85,7 @@ private:
 	float CrosshairsInAirFactor;
 	float CrosshairsAimFactor;
 	float CrosshairsShootingFactor;
+	float CrosshairsOnTargetFactor;
 	FHUDPackage HUDPackage;
 	void SetCrosshairsColor(FHitResult& TraceHitResult);
 	void SetCrosshairsSpread(float DeltaTime);

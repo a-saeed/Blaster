@@ -128,10 +128,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 	if (bFireButtonPressed)
 	{
-		FHitResult OutHitResult;
-		TraceUnderCrosshairs(OutHitResult); //returns an impact point
-
-		ServerFire(OutHitResult.ImpactPoint);
+		ServerFire(HitTarget);
 	}
 }
 					/// FBP: RPCs
@@ -281,13 +278,30 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 	{
 		CrosshairsShootingFactor = FMath::FInterpTo(CrosshairsShootingFactor, 0.f, DeltaTime, 40.f);
 	}
+	//Crosshairs On Target Factor
+	if (HUDPackage.CrosshairsColor == FLinearColor::Red)
+	{
+		if (bAiming && Velocity.Length() <= 0.f)
+		{
+			CrosshairsOnTargetFactor = 0;
+		}
+		else
+		{
+			CrosshairsOnTargetFactor = FMath::FInterpTo(CrosshairsOnTargetFactor, 0.36f, DeltaTime, 30.f);
+		}
+	}
+	else
+	{
+		CrosshairsOnTargetFactor = FMath::FInterpTo(CrosshairsOnTargetFactor, 0.f, DeltaTime, 30.f);
+	}
 
 	HUDPackage.CrosshairSpread =
 		0.5f +								//base spread
 		CrosshairsVelocityFactor +
 		CrosshairsInAirFactor -
 		CrosshairsAimFactor +
-		CrosshairsShootingFactor
+		CrosshairsShootingFactor - 
+		CrosshairsOnTargetFactor
 		;
 }
 /*
