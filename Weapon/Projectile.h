@@ -19,6 +19,8 @@ public:
 
 	virtual void Destroyed() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -48,7 +50,6 @@ private:
 	/*
 	* FX
 	*/
-
 	UPROPERTY(EditAnywhere)
 		class UParticleSystem* Tracer;
 
@@ -56,9 +57,23 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		UParticleSystem* ImpactParticles;
-
+	
 	UPROPERTY(EditAnywhere)
 		class USoundCue* ImpactSound;
+
+	UPROPERTY(EditAnywhere)
+		UParticleSystem* CharacterImpactParticles;
+	
+	UPROPERTY(EditAnywhere)
+		class USoundCue* CharacterImpactSound;
+	
+	UPROPERTY(Replicated)
+		UParticleSystem* ParticlesToPlay;
+
+	UPROPERTY(Replicated)
+		USoundCue* SoundToPlay;
+
+	void SetEffects(AActor* OtherActor);
 
 public:	
 	

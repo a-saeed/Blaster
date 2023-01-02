@@ -10,6 +10,7 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
+#include "Net/UnrealNetwork.h"
 
 AProjectile::AProjectile()
 {
@@ -29,6 +30,14 @@ AProjectile::AProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+}
+
+void AProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AProjectile, ParticlesToPlay);
+	DOREPLIFETIME(AProjectile, SoundToPlay);
 }
 
 void AProjectile::BeginPlay()
@@ -67,28 +76,43 @@ void AProjectile::Tick(float DeltaTime)
 */
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	//
-	ABlasterCharacter* BlasterCharatcer = Cast<ABlasterCharacter>(OtherActor);
-	if (BlasterCharatcer)
+	SetEffects(OtherActor);
+
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+
+	if (BlasterCharacter)
 	{
-		BlasterCharatcer->MulticastHit();
+		BlasterCharacter->MulticastHit();
 	}
-	//to replicate OnHit FX to all clients, instead of creating a new multicast rpc.
-	//we can make use of the Destroyed() fn on the actor class that already does that for replicated variables
-	Destroy();
+
+	SetLifeSpan(0.001f);
 }
 
+void AProjectile::SetEffects(AActor* OtherActor)
+{
+	if (OtherActor->Implements<UInteractWithCrosshairsInterface>())
+	{
+		ParticlesToPlay = CharacterImpactParticles;
+		SoundToPlay = CharacterImpactSound;
+	}
+	else
+	{
+		ParticlesToPlay = ImpactParticles;
+		SoundToPlay = ImpactSound;
+	}
+}
 void AProjectile::Destroyed()
 {
 	Super::Destroyed();
 
 	//on hit, play FX
-	if (ImpactParticles)
+	if (ParticlesToPlay)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticlesToPlay, GetActorTransform());
 	}
-	if (ImpactSound)
+
+	if (SoundToPlay)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
 	}
 }
