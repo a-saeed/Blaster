@@ -107,6 +107,14 @@ private:
 		float ZoomInterpSpeed = 20.f; //used to make all weapons unzoom at the same rate.
 
 	void InterpFOV(float DeltaTime);
-	
+	/*
+	* AUTOMATIC FIRE
+	*/
+	FTimerHandle FireTimer;
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	void FireTimerFinished();
+
 public:	
 };

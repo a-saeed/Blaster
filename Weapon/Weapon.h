@@ -117,6 +117,14 @@ private:
 	*/
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		TSubclassOf<class ACasing> CasingClass;
+	/*
+	*   AUTOMATIC FIRE
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		float FireDelay = 0.15f; //fire rate
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		bool bAutomatic = true;
 public:
 
 	void SetWeaponState(EWeaponState State);
@@ -128,4 +136,7 @@ public:
 
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+
+	FORCEINLINE float GetFireDelay() const { return FireDelay; }
+	FORCEINLINE float IsAutomatic() const { return bAutomatic; }
 };

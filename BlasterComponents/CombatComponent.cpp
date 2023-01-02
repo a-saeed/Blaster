@@ -7,8 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-//#include "Blaster/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -126,9 +126,11 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	*/
 	bFireButtonPressed = bPressed;
 
-	if (bFireButtonPressed)
+	if (bFireButtonPressed && bCanFire)
 	{
+		bCanFire = false;
 		ServerFire(HitTarget);
+		StartFireTimer();
 	}
 }
 					/// FBP: RPCs
@@ -142,6 +144,28 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+/*
+*
+* AUTOMATIC FIRE
+*
+*/
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->GetFireDelay());
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (!EquippedWeapon) return;
+
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->IsAutomatic())
+	{
+		FireButtonPressed(true);
 	}
 }
 /*
