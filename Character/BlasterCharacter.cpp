@@ -10,6 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Animation/AnimInstance.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -63,6 +64,16 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	//limit the pitch to (70, -70)
+	if (Controller)
+	{
+		ABlasterPlayerController* BlasterController = Cast<ABlasterPlayerController>(Controller);
+		if (BlasterController)
+		{
+			BlasterController->PlayerCameraManager->ViewPitchMax = 70.f;
+			BlasterController->PlayerCameraManager->ViewPitchMin = -70.f;
+		}
+	}
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
