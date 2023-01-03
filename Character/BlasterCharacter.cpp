@@ -59,6 +59,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	//replication EX: once the overlapping weapon is set on the server blaster character, set it on all client blaster characters.
 	//C7_3: we rgister the variables we want to replicate here in this function, with a condition to replicate it to only the client that owns the character.
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -400,4 +401,10 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 			Combat->EquippedWeapon->GetWeaponMesh()->SetVisibility(true);
 		}
 	}
+}
+/*
+* PLAYER STATS
+*/
+void ABlasterCharacter::OnRep_Health()
+{
 }

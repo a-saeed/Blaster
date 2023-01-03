@@ -99,7 +99,17 @@ private:
 		float CameraThreshold = 200.f; //how close to other objects until our character dissapear
 
 	void HideCameraIfCharatcterClose();
+	/*
+	* PLAYER STATS
+	*/
+	UPROPERTY(EditAnywhere, Category = "PlayerStats")
+		float MaxHealth = 100.f;
 
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+		float Health = 100.f;
+	//health rep notify
+	UFUNCTION()
+		void OnRep_Health();
 public:	
 
 	//C7_4
