@@ -17,9 +17,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Destroyed() override;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UFUNCTION(NetMulticast, Reliable)
+		void Multicast_OnHit(AActor* OtherActor);
 
 protected:
 	
@@ -67,11 +66,9 @@ private:
 	UPROPERTY(EditAnywhere)
 		class USoundCue* CharacterImpactSound;
 	
-	UPROPERTY(Replicated)
-		UParticleSystem* ParticlesToPlay;
+	UParticleSystem* ParticlesToPlay;
 
-	UPROPERTY(Replicated)
-		USoundCue* SoundToPlay;
+	USoundCue* SoundToPlay;
 
 	void SetEffects(AActor* OtherActor);
 

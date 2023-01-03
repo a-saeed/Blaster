@@ -32,14 +32,6 @@ AProjectile::AProjectile()
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 }
 
-void AProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AProjectile, ParticlesToPlay);
-	DOREPLIFETIME(AProjectile, SoundToPlay);
-}
-
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
@@ -70,13 +62,13 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
 /*
 * HIT EVENT
 */
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	SetEffects(OtherActor);
+	Multicast_OnHit(OtherActor);
+		//SetEffects(OtherActor);
 
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
@@ -85,7 +77,33 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		BlasterCharacter->MulticastHit();
 	}
 
-	SetLifeSpan(0.001f);
+	Destroy();
+}
+
+
+void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
+{
+	//which surface did we hit?
+	if (OtherActor->Implements<UInteractWithCrosshairsInterface>())
+	{
+		ParticlesToPlay = CharacterImpactParticles;
+		SoundToPlay = CharacterImpactSound;
+	}
+	else
+	{
+		ParticlesToPlay = ImpactParticles;
+		SoundToPlay = ImpactSound;
+	}
+	//on hit, play FX
+	if (ParticlesToPlay)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticlesToPlay, GetActorTransform());
+	}
+
+	if (SoundToPlay)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
+	}
 }
 
 void AProjectile::SetEffects(AActor* OtherActor)
@@ -99,20 +117,5 @@ void AProjectile::SetEffects(AActor* OtherActor)
 	{
 		ParticlesToPlay = ImpactParticles;
 		SoundToPlay = ImpactSound;
-	}
-}
-void AProjectile::Destroyed()
-{
-	Super::Destroyed();
-
-	//on hit, play FX
-	if (ParticlesToPlay)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticlesToPlay, GetActorTransform());
-	}
-
-	if (SoundToPlay)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
 	}
 }
