@@ -30,10 +30,12 @@ public:
 	* ANIMATION MONTAGES
 	*/
 	void PlayFireMontage(bool bAiming);
+	void PlayElimMontage();
 	/*
 	* ELIMINATION
 	*/
-	void Eliminate();
+	UFUNCTION(NetMulticast, Reliable)
+		void Eliminate();
 
 protected:
 
@@ -97,6 +99,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 		class UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+		class UAnimMontage* ElimMontage;
+
 	void PlayHitreactMontage(); //used in multicast rpc
 	/*
 	* CAMERA
@@ -124,6 +129,11 @@ private:
 	//health rep notify
 	UFUNCTION()
 		void OnRep_Health();
+	/*
+	* ELIMINATION
+	*/
+	bool bElimed = false; //used in anime instance
+
 public:	
 
 	//C7_4
@@ -143,4 +153,6 @@ public:
 	FVector GetHitTarget();
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() { return FollowCamera; } //used to access the FOV
+
+	FORCEINLINE bool IsElimmed() const { return bElimed; }
 };

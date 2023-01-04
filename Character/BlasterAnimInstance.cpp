@@ -109,4 +109,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	//set ETurningInPlace
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+
+	//set bEliminated
+	bElimmed = BlasterCharacter->IsElimmed();
 }

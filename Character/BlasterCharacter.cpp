@@ -316,6 +316,15 @@ void ABlasterCharacter::PlayHitreactMontage()
 		AnimeInstance->Montage_JumpToSection(SectionName);
 	}
 }
+
+void ABlasterCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimeInstance = GetMesh()->GetAnimInstance();
+	if (AnimeInstance && ElimMontage)
+	{
+		AnimeInstance->Montage_Play(ElimMontage);
+	}
+}
 /***************** AIM OFFSET & TURNING IN PLACE ************************/
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
@@ -457,6 +466,8 @@ void ABlasterCharacter::UpdateHUDHealth()
 /*
 * ELIMINATION
 */
-void ABlasterCharacter::Eliminate()
+void ABlasterCharacter::Eliminate_Implementation()
 {
+	bElimed = true;
+	PlayElimMontage();
 }
