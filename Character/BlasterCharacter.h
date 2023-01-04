@@ -30,9 +30,6 @@ public:
 	*ANIMATION MONTAGES
 	*/
 	void PlayFireMontage(bool bAiming);
-	
-	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastHit();
 
 protected:
 
@@ -71,6 +68,7 @@ private:
 
 	class ABlasterPlayerController* BlasterPlayerController;
 
+	void LimitPitchView();
 	/***************** ON_REPs & RPCs *******************/
 
 	UFUNCTION()
@@ -111,6 +109,14 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 		float Health = 100.f;
+
+	//Callback to Unreal's OnTakeAnyDamage() Delegate
+	UFUNCTION()
+		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCausor);
+
+	//called each time damage is received
+	void UpdateHUDHealth();
+
 	//health rep notify
 	UFUNCTION()
 		void OnRep_Health();

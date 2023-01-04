@@ -67,17 +67,14 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (Controller)
+	LimitPitchView();
+
+	UpdateHUDHealth(); //set to max health
+
+	//bind ReceiveDamage to OnTakeAnyDamage delgate, only take damage on the server
+	if (HasAuthority())
 	{
-		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-		if (BlasterPlayerController)
-		{
-			//limit the pitch to (70, -70)
-			BlasterPlayerController->PlayerCameraManager->ViewPitchMax = 70.f;
-			BlasterPlayerController->PlayerCameraManager->ViewPitchMin = -70.f;
-			//set hud health values
-			BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
-		}
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 }
 
@@ -115,6 +112,20 @@ void ABlasterCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat-> Character = this; //combat comp private vars (charatcer) are now available to blaster character since it's a friend.
+	}
+}
+
+void ABlasterCharacter::LimitPitchView()
+{
+	if (Controller)
+	{
+		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+		if (BlasterPlayerController)
+		{
+			//limit the pitch to (70, -70)
+			BlasterPlayerController->PlayerCameraManager->ViewPitchMax = 70.f;
+			BlasterPlayerController->PlayerCameraManager->ViewPitchMin = -70.f;
+		}
 	}
 }
 
@@ -292,11 +303,6 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitreactMontage();
-}
-
 void ABlasterCharacter::PlayHitreactMontage()
 {
 	if (!Combat || !Combat->EquippedWeapon) return;
@@ -409,6 +415,29 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 /*
 * PLAYER STATS
 */
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCausor)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth); // 0.f < H-D > MH .. health is repliacated, call onRep_Health
+
+	UpdateHUDHealth();
+	PlayHitreactMontage();
+}
+
 void ABlasterCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
+	PlayHitreactMontage();
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	if (Controller && !BlasterPlayerController)
+	{
+		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+	}
+	if (BlasterPlayerController)
+	{
+		//set hud health values
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
