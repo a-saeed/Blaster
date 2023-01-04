@@ -27,9 +27,13 @@ public:
 
 	virtual void PostInitializeComponents() override; //an inherited function to access the component once it's initialized.
 	/*
-	*ANIMATION MONTAGES
+	* ANIMATION MONTAGES
 	*/
 	void PlayFireMontage(bool bAiming);
+	/*
+	* ELIMINATION
+	*/
+	void Eliminate();
 
 protected:
 

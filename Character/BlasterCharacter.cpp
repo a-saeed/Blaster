@@ -12,6 +12,7 @@
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster//GameMode/BlasterGameMode.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -421,6 +422,18 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 
 	UpdateHUDHealth();
 	PlayHitreactMontage();
+
+	if (Health == 0.f)
+	{
+		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+		if (BlasterPlayerController)
+		{
+			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+		}
+	}
 }
 
 void ABlasterCharacter::OnRep_Health()
@@ -440,4 +453,10 @@ void ABlasterCharacter::UpdateHUDHealth()
 		//set hud health values
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
+}
+/*
+* ELIMINATION
+*/
+void ABlasterCharacter::Eliminate()
+{
 }
