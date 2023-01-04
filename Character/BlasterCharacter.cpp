@@ -11,6 +11,7 @@
 #include "Animation/AnimInstance.h"
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -65,14 +66,17 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	//limit the pitch to (70, -70)
+	
 	if (Controller)
 	{
-		ABlasterPlayerController* BlasterController = Cast<ABlasterPlayerController>(Controller);
-		if (BlasterController)
+		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+		if (BlasterPlayerController)
 		{
-			BlasterController->PlayerCameraManager->ViewPitchMax = 70.f;
-			BlasterController->PlayerCameraManager->ViewPitchMin = -70.f;
+			//limit the pitch to (70, -70)
+			BlasterPlayerController->PlayerCameraManager->ViewPitchMax = 70.f;
+			BlasterPlayerController->PlayerCameraManager->ViewPitchMin = -70.f;
+			//set hud health values
+			BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 		}
 	}
 }

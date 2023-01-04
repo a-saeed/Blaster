@@ -22,9 +22,9 @@ private:
 		class UProgressBar* HealthBar;
 
 	UPROPERTY(meta = (BindWidget))
-		class UTextblock* HealthText;
+		class UTextBlock* HealthText;
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
-	FORCEINLINE UTextblock* GetHealthText() const { return HealthText; }
+	FORCEINLINE UTextBlock* GetHealthText() const { return HealthText; }
 };

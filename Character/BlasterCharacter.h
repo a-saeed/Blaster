@@ -54,7 +54,9 @@ protected:
 	void FireButtonReleased();
 
 private:
-
+	/*
+	* BODY
+	*/
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 		class USpringArmComponent* CameraBoom;
 
@@ -66,6 +68,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 		class UCombatComponent* Combat;
+
+	class ABlasterPlayerController* BlasterPlayerController;
 
 	/***************** ON_REPs & RPCs *******************/
 
