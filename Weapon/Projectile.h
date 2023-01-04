@@ -69,9 +69,6 @@ private:
 	UParticleSystem* ParticlesToPlay;
 
 	USoundCue* SoundToPlay;
-
-	void SetEffects(AActor* OtherActor);
-
 public:	
 	
 	

@@ -68,7 +68,6 @@ void AProjectile::Tick(float DeltaTime)
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Multicast_OnHit(OtherActor);
-		//SetEffects(OtherActor);
 
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
@@ -103,19 +102,5 @@ void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
 	if (SoundToPlay)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
-	}
-}
-
-void AProjectile::SetEffects(AActor* OtherActor)
-{
-	if (OtherActor->Implements<UInteractWithCrosshairsInterface>())
-	{
-		ParticlesToPlay = CharacterImpactParticles;
-		SoundToPlay = CharacterImpactSound;
-	}
-	else
-	{
-		ParticlesToPlay = ImpactParticles;
-		SoundToPlay = ImpactSound;
 	}
 }
