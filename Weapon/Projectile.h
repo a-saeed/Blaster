@@ -27,23 +27,24 @@ protected:
 	/*
 	* HIT EVENT
 	*/
-
 	UFUNCTION() //it has to be a ufunction to work
 		virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+	/*
+	* DAMAGE
+	*/
+	UPROPERTY(EditAnywhere)
+		float Damage = 20.f;
 private:
 
 	/*
 	* BODY
 	*/
-
 	UPROPERTY(EditAnywhere)
 		class UBoxComponent* CollisionBox;
 
 	/*
 	* MOVEMENT
 	*/
-
 	UPROPERTY(VisibleAnywhere)
 		class UProjectileMovementComponent* ProjectileMovementComponent;
 	/*

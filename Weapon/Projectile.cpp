@@ -69,16 +69,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 {
 	Multicast_OnHit(OtherActor);
 
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-
-	if (BlasterCharacter)
-	{
-		BlasterCharacter->MulticastHit();
-	}
-
 	Destroy();
 }
-
 
 void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
 {
