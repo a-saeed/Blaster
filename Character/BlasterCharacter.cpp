@@ -12,7 +12,8 @@
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-#include "Blaster//GameMode/BlasterGameMode.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
+#include "TimerManager.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -52,6 +53,9 @@ ABlasterCharacter::ABlasterCharacter()
 	//set net update frequency
 	NetUpdateFrequency = 66;
 	MinNetUpdateFrequency = 33;
+
+	//set spawn handling
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -325,6 +329,7 @@ void ABlasterCharacter::PlayElimMontage()
 		AnimeInstance->Montage_Play(ElimMontage);
 	}
 }
+
 /***************** AIM OFFSET & TURNING IN PLACE ************************/
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
@@ -466,8 +471,26 @@ void ABlasterCharacter::UpdateHUDHealth()
 /*
 * ELIMINATION
 */
-void ABlasterCharacter::Eliminate_Implementation()
+void ABlasterCharacter::Eliminate()//only called on server
+{
+	MulticastEliminate();
+	//set timer that wil trigger respawn
+	GetWorldTimerManager().SetTimer(
+		ElimTimerHandle,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay);
+}
+
+void ABlasterCharacter::MulticastEliminate_Implementation()
 {
 	bElimed = true;
 	PlayElimMontage();
+}
+
+void ABlasterCharacter::ElimTimerFinished()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	//respawn player
+	BlasterGameMode->RequestRespawn(this, Controller);
 }

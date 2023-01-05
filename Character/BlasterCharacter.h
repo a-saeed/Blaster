@@ -34,8 +34,10 @@ public:
 	/*
 	* ELIMINATION
 	*/
+	void Eliminate(); //only on the server
+
 	UFUNCTION(NetMulticast, Reliable)
-		void Eliminate();
+		void MulticastEliminate();
 
 protected:
 
@@ -113,7 +115,7 @@ private:
 	/*
 	* PLAYER STATS
 	*/
-	UPROPERTY(EditAnywhere, Category = "PlayerStats")
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float MaxHealth = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
@@ -133,6 +135,13 @@ private:
 	* ELIMINATION
 	*/
 	bool bElimed = false; //used in anime instance
+
+	FTimerHandle ElimTimerHandle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Elimination")
+		float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
 
 public:	
 
