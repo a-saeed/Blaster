@@ -131,7 +131,6 @@ public:
 
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
 
-	FORCEINLINE void SetWeaponFiringRange(float range) { FiringRange = range; }
 	FORCEINLINE float GetWeaponFiringRange() { return FiringRange; }
 
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }

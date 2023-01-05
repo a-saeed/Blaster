@@ -11,8 +11,6 @@ AProjectileWeapon::AProjectileWeapon()
 void AProjectileWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SetWeaponFiringRange(40000);
 }
 
 void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impact point of the line trace done in combat comp.
