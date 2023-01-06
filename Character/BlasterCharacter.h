@@ -201,4 +201,7 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() { return FollowCamera; } //used to access the FOV
 
 	FORCEINLINE bool IsElimmed() const { return bElimed; }
+
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };
