@@ -40,6 +40,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastEliminate();
 
+	virtual void Destroyed() override;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -164,7 +166,20 @@ private:
 		void UpdateDissolveMaterial(float DissolveValue);
 
 	void StartDissolve();
+	/*
+	* ELIM BOT
+	*/
+	UPROPERTY(EditAnywhere, Category = "ElimBot")
+		class UParticleSystem* ElimBotEffect;
 
+	UPROPERTY(EditAnywhere, Category = "ElimBot")
+		class UParticleSystemComponent* ElimBotComponent; //to store the bot and destroy it
+
+	UPROPERTY(EditAnywhere, Category = "ElimBot")
+		class USoundCue* ElimSound;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+		class USoundCue* SpawnSound;
 public:	
 
 	//C7_4
