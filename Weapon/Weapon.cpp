@@ -90,21 +90,43 @@ void AWeapon::SetWeaponState(EWeaponState State)
 
 		ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+
+	case EWeaponState::EWS_Dropped:
+
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	}
-	
 }
 
 void AWeapon::OnRep_WeaponState()
 {
-	/*
-	*   switch (WeaponState)
-		{
-		case EWeaponState::EWS_Equipped:
-			ShowPickupWidget(false);
-			break;
-		}
-	*/
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Equipped:
+
+		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+
+	case EWeaponState::EWS_Dropped:
+
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+	}
 }
 
 void AWeapon::ShowPickupWidget(bool bPickupWidget) //C7_7

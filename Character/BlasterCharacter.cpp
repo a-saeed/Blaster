@@ -476,6 +476,11 @@ void ABlasterCharacter::UpdateHUDHealth()
 */
 void ABlasterCharacter::Eliminate()//only called on server
 {
+	if (Combat)
+	{
+		Combat->DropWeapon();
+	}
+
 	MulticastEliminate();
 	//set timer that wil trigger respawn
 	GetWorldTimerManager().SetTimer(

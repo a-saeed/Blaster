@@ -51,9 +51,21 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 /*
 *
-* EquipWeapon , RPCs , REP_NOTIFIES
+* DopWeapon, EquipWeapon , RPCs , REP_NOTIFIES
 *
-*/					/// EW
+*/		
+void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
+{
+	if (!EquippedWeapon) return;
+
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Dropped); //replicated
+
+	EquippedWeapon->GetWeaponMesh()->DetachFromComponent(DetachRules);
+	EquippedWeapon->SetOwner(nullptr);
+}	
+					/// EW
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip) return;
@@ -77,8 +89,18 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 					///EW: REP_NOTIFIES
 void UCombatComponent::OnRep_EquippedWeapon()
 {
+	/*need to make sure that the weapon state gets replicated first before we attach the weapon as we can't attach if physics is still enabeled*/
 	if (EquippedWeapon && Character) //on replicating equipped weapon to clients
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
+
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket")); //we created a socket in the character skeletal mesh and named it RightHandSocket
+
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh()); //attach the weapon to the character mesh
+		}
+	/*--------------------------------------------------------------------------------------*/
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 	}

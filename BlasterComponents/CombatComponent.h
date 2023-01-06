@@ -24,6 +24,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	void DropWeapon();
+
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
 	void SetAiming(bool bIsAiming);
