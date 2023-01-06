@@ -56,6 +56,9 @@ ABlasterCharacter::ABlasterCharacter()
 
 	//set spawn handling
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	//construct the dissolve timeline
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -486,6 +489,21 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 {
 	bElimed = true;
 	PlayElimMontage();
+	//we want all machines to see the dissolve effect
+	if (DissolveMaterialInstance)
+	{
+		//if it's vaild, create the dynamic version based on it.
+		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+
+		//set the mesh with newly created dynamic material instance
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+
+		//set the parametes we created in the Material instance in blueprint (glow, Dissolve)
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), -0.55f); //0.55 is when the material isn't dissolved at all
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	//play the timeline with the function we created
+	StartDissolve();
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -493,4 +511,30 @@ void ABlasterCharacter::ElimTimerFinished()
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	//respawn player
 	BlasterGameMode->RequestRespawn(this, Controller);
+}
+/*
+* DISSOLVE EFFECTS
+*/
+void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
+{
+	if (DynamicDissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+	}
+}
+
+void ABlasterCharacter::StartDissolve()
+{
+	//when the dissolve timeline gets played, this function is called.
+	//bind callback function to the dissolve timeline track
+	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
+
+	//add the float cureve to the timeline
+	if (DissolveCurve && DissolveTimeline)
+	{
+		//set the dissolve timeline to use the dissolve curve and associte that curve with the dissolveTrack.which has our UpdateDissolveMaterial callback bound to it
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		//start the timeline
+		DissolveTimeline->Play();
+	}
 }
