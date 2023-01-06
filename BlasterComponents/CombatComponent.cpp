@@ -258,7 +258,6 @@ void UCombatComponent::SetCrosshairsColor(FHitResult& TraceHitResult)
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 {
-	if (!EquippedWeapon) return;
 	//need to draw the crosshairs through Blaster HUD Draw fn.
 	//Player controller has access to HUD, we cast them to BlasterController and BlasterHUD.. from which we set the corsshairs textures
 	if (!Character || !Character->Controller) return;
@@ -275,11 +274,22 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 
 	if (!BlasterController || !BlasterHUD) return;
 
-	HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
-	HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
-	HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-	HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
-	HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+	if (EquippedWeapon)
+	{
+		HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+		HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+		HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+		HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+		HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+	}
+	else
+	{
+		HUDPackage.CrosshairsCenter = nullptr;
+		HUDPackage.CrosshairsTop = nullptr;
+		HUDPackage.CrosshairsRight = nullptr;
+		HUDPackage.CrosshairsLeft = nullptr;
+		HUDPackage.CrosshairsBottom = nullptr;
+	}
 
 	SetCrosshairsSpread(DeltaTime);
 
