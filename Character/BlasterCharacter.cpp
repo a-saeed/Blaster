@@ -504,6 +504,17 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	}
 	//play the timeline with the function we created
 	StartDissolve();
+
+	//Disable character movement once eliminated
+	GetCharacterMovement()->DisableMovement(); //Stop moving with WASD.
+	GetCharacterMovement()->StopMovementImmediately(); //Prevents us from rotating character.
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+	//Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
