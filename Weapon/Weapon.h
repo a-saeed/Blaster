@@ -100,6 +100,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
 		float FiringRange;
 
+	void SetWeaponMeshPhysics(bool bEnable);
+
 	/*
 	*	REP_NOTIFIES
 	*/
