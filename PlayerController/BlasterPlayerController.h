@@ -25,6 +25,10 @@ public:
 	void SetHUDScore(float Score);
 
 	void SetHUDDefeats(int32 Defeats);
+	/*
+	* Ammo HUD
+	*/
+	void SetHUDWeaponAmmo(int32 WeaponAmmoAmount);
 
 protected:
 

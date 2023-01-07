@@ -7,6 +7,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Casing.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 AWeapon::AWeapon()
 {
@@ -58,6 +59,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState); //repilcate the weapon state enum
+	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -91,6 +93,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetWeaponMeshPhysics(false);
+
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -161,6 +164,54 @@ void AWeapon::Fire(const FVector& HitTarget)
 			SocketRotation.Pitch += FMath::RandRange(0.f, 45.f);
 			SocketRotation.Yaw += FMath::RandRange(0.f, 30.f);
 			GetWorld()->SpawnActor<ACasing>(CasingClass, SocketTransform.GetLocation(), SocketRotation);
+		}
+	}
+
+	SpendRound();
+}
+/*
+*
+*  AMMO
+*
+*/
+void AWeapon::SpendRound()
+{
+	--Ammo;
+
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Owner()
+{
+	/*need to set the ammo hud when the weapon is just equipped, we can't set it if the weapon's owner isn't set yet*/
+	/*in combat component, once the the weapon is equipped on the server(or dropped), we set its owner, owner is replicated by default in actor class*/
+	/*once the owner is set on the server and is replicated, this is a good time to set the HUD ammo for all clients*/
+	Super::OnRep_Owner();
+	if (Owner)
+	{
+		SetHUDAmmo(); 
+	}
+	else //owner just got set to nullptr on the server ( drop() )
+	{
+		BlasterOwnerCharacter = nullptr;
+		BlasterOwnerController = nullptr;
+	}
+}
+
+void AWeapon::SetHUDAmmo()
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter)
+	{
+		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
+		if (BlasterOwnerController)
+		{
+			BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
 		}
 	}
 }

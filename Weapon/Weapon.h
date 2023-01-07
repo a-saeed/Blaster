@@ -30,7 +30,14 @@ public:
 	void ShowPickupWidget(bool bPickupWidget); //C7_6
 
 	virtual void Fire(const FVector& HitTarget);
+	/*
+	*
+	*  AMMO
+	*
+	*/
+	virtual void OnRep_Owner() override;
 
+	void SetHUDAmmo();
 	/**
 	*	TEXTURES FOR THE WEAPON CROSSHAIRS
 	*/
@@ -127,6 +134,28 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		bool bAutomatic = true;
+	/*
+	* 
+	*  AMMO
+	*  
+	*/
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+		int32 Ammo = 0;
+
+	UPROPERTY(EditAnywhere)
+		int32 MagCapacity = 50;
+
+	UFUNCTION()
+		void OnRep_Ammo();
+
+	void SpendRound();
+
 public:
 
 	void SetWeaponState(EWeaponState State);
@@ -140,4 +169,7 @@ public:
 
 	FORCEINLINE float GetFireDelay() const { return FireDelay; }
 	FORCEINLINE float IsAutomatic() const { return bAutomatic; }
+
+	FORCEINLINE void SetOwnerCharacter(ABlasterCharacter* Character){ BlasterOwnerCharacter = Character; }
+	FORCEINLINE void SetOwnerController(ABlasterPlayerController* Controller) { BlasterOwnerController = Controller; }
 };

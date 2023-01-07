@@ -64,11 +64,19 @@ void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
 
 	EquippedWeapon->GetWeaponMesh()->DetachFromComponent(DetachRules);
 	EquippedWeapon->SetOwner(nullptr);
+	/*a weapon shouldn't store info about a player that dropped it*/
+	EquippedWeapon->SetOwnerCharacter(nullptr);
+	EquippedWeapon->SetOwnerController(nullptr);
 }	
 					/// EW
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip) return;
+	/*if we already have an equipped weapon, drop it if we are to equip another weapon*/
+	if (EquippedWeapon)
+	{
+		DropWeapon();
+	}
 
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
@@ -81,6 +89,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 
 	EquippedWeapon->SetOwner(Character); //set this character as the owner of this weapon.
+	/*will trigger OnRep_Ammo in the weapon class*/
+	EquippedWeapon->SetHUDAmmo();
 
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;

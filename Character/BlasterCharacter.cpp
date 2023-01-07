@@ -518,6 +518,12 @@ void ABlasterCharacter::Eliminate()//only called on server
 
 void ABlasterCharacter::MulticastEliminate_Implementation()
 {
+	/*if character is elimmed, set the ammo HUD to zero*/
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
+
 	bElimed = true;
 	PlayElimMontage();
 	//we want all machines to see the dissolve effect
