@@ -17,6 +17,8 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 public:
 
 	void SetHUDHealth(float Health, float MaxHealth); //called in blaster character
+	
+	void SetHUDScore(float Score);
 
 protected:
 
