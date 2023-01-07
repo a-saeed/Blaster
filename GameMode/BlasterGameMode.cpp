@@ -61,6 +61,7 @@ AActor* ABlasterGameMode::FindPlayerStartWithLeastPlayersInrange()
 		for (AActor* Character : BlasterCharacters)
 		{
 			float DistanceToActor = (PlayerStarts[i]->GetActorLocation() - Character->GetActorLocation()).Size();
+
 			if (DistanceToActor < PlayerStartRange) //can be changed in BP
 			{
 				PlayerCountInRange++;
@@ -71,9 +72,8 @@ AActor* ABlasterGameMode::FindPlayerStartWithLeastPlayersInrange()
 		{
 			LeastPlayerStartIndex = i;
 			MinPlayerCount = PlayerCountInRange;
-			PlayerCountInRange = 0;
-			UE_LOG(LogTemp, Warning, TEXT("new MIN: %d"), LeastPlayerStartIndex);
 		}
+		PlayerCountInRange = 0;
 	}
 
 	return PlayerStarts[LeastPlayerStartIndex];
