@@ -18,6 +18,7 @@
 #include "particles/ParticleSystem.h"
 #include "particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -101,6 +102,21 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	AimOffset(DeltaTime);
 
 	HideCameraIfCharatcterClose();
+	PollInit();
+}
+
+void ABlasterCharacter::PollInit()
+{
+	if (BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		//on the frame that player state is not null
+		if (BlasterPlayerState)
+		{
+			//init score to 0
+			BlasterPlayerState->AddToScore(0.f);
+		}
+	}
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

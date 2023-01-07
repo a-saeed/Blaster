@@ -60,6 +60,8 @@ protected:
 	virtual void Jump() override;
 	void FireButtonPressed();
 	void FireButtonReleased();
+	/*poll for ane relevant classes(player state) and once they're available, initialize our HUD*/
+	void PollInit();
 
 private:
 	/*
@@ -78,6 +80,8 @@ private:
 		class UCombatComponent* Combat;
 
 	class ABlasterPlayerController* BlasterPlayerController;
+
+	class ABlasterPlayerState* BlasterPlayerState;
 
 	void LimitPitchView();
 	/***************** ON_REPs & RPCs *******************/
