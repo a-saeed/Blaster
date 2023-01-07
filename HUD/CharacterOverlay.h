@@ -23,8 +23,15 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 		class UTextBlock* HealthText;
+	/*
+	* SCORE
+	*/
+	UPROPERTY(meta = (BindWidget))
+		UTextBlock* ScoreAmount;
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
 	FORCEINLINE UTextBlock* GetHealthText() const { return HealthText; }
+
+	FORCEINLINE UTextBlock* GetScoreText() const { return ScoreAmount; }
 };
