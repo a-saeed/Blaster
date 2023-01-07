@@ -38,11 +38,43 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 	}
 	if (ElimmedController)
 	{
-		//respawn at at a random player start
-		TArray<AActor*> PlayerStarts;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStarts);
-		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
+		AActor* PlayerStart = FindPlayerStartWithLeastPlayersInrange();
 
-		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]); //character gets destroyed.. but the controller still exists to posses another.
+		RestartPlayerAtPlayerStart(ElimmedController, PlayerStart); //character gets destroyed.. but the controller still exists to posses another.
 	}
+}
+
+AActor* ABlasterGameMode::FindPlayerStartWithLeastPlayersInrange()
+{
+	//respawn player at player start with least players in range
+	TArray<AActor*> PlayerStarts;
+	TArray<AActor*> BlasterCharacters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStarts);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABlasterCharacter::StaticClass(), BlasterCharacters);
+
+	int32 LeastPlayerStartIndex = 0;
+	int32 PlayerCountInRange = 0;
+	int32 MinPlayerCount = TNumericLimits<int32>::Max();
+
+	for (int32 i = 0; i < PlayerStarts.Num(); i++)
+	{
+		for (AActor* Character : BlasterCharacters)
+		{
+			float DistanceToActor = (PlayerStarts[i]->GetActorLocation() - Character->GetActorLocation()).Size();
+			if (DistanceToActor < PlayerStartRange) //can be changed in BP
+			{
+				PlayerCountInRange++;
+			}
+		}
+
+		if (PlayerCountInRange < MinPlayerCount)
+		{
+			LeastPlayerStartIndex = i;
+			MinPlayerCount = PlayerCountInRange;
+			PlayerCountInRange = 0;
+			UE_LOG(LogTemp, Warning, TEXT("new MIN: %d"), LeastPlayerStartIndex);
+		}
+	}
+
+	return PlayerStarts[LeastPlayerStartIndex];
 }

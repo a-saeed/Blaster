@@ -22,6 +22,10 @@ public:
 	
 protected:
 
+	AActor* FindPlayerStartWithLeastPlayersInrange();
+
+	UPROPERTY(EditAnywhere)
+	int32 PlayerStartRange = 2500;
 private:
 
 public:
