@@ -15,10 +15,16 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
-
+	/*
+	* Blaster Character HUD
+	*/
 	void SetHUDHealth(float Health, float MaxHealth); //called in blaster character
-	
+	/*
+	* Player state HUD
+	*/
 	void SetHUDScore(float Score);
+
+	void SetHUDDefeats(int32 Defeats);
 
 protected:
 

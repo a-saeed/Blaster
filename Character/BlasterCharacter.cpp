@@ -115,6 +115,7 @@ void ABlasterCharacter::PollInit()
 		{
 			//init score to 0
 			BlasterPlayerState->AddToScore(0.f);
+			BlasterPlayerState->AddToDefeats(0);
 		}
 	}
 }

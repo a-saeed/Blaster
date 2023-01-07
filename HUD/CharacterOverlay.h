@@ -28,10 +28,18 @@ private:
 	*/
 	UPROPERTY(meta = (BindWidget))
 		UTextBlock* ScoreAmount;
+	/*
+	* DEFEATS
+	*/
+	UPROPERTY(meta = (BindWidget))
+		UTextBlock* DefeatsAmount;
+
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
 	FORCEINLINE UTextBlock* GetHealthText() const { return HealthText; }
 
 	FORCEINLINE UTextBlock* GetScoreText() const { return ScoreAmount; }
+
+	FORCEINLINE UTextBlock* GetDefeatsText() const { return DefeatsAmount; }
 };
