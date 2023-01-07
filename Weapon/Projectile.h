@@ -67,8 +67,10 @@ private:
 	UPROPERTY(EditAnywhere)
 		class USoundCue* CharacterImpactSound;
 	
+	UPROPERTY()
 	UParticleSystem* ParticlesToPlay;
 
+	UPROPERTY()
 	USoundCue* SoundToPlay;
 public:	
 	

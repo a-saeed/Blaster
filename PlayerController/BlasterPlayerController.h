@@ -33,7 +33,7 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
 private:
-
+	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
 public:

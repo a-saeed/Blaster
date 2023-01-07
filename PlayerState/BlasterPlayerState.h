@@ -36,7 +36,10 @@ public:
 
 private:
 
+	UPROPERTY()
 	class ABlasterCharacter* BlasterCharacter;
+
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterController;
 	/*
 	*

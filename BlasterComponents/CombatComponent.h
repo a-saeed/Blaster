@@ -59,8 +59,11 @@ private:
 	/*
 	*	BODY
 	*/
+	UPROPERTY()
 	class ABlasterCharacter* Character;
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterController;
+	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)

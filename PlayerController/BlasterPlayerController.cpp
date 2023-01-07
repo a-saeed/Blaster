@@ -72,8 +72,7 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->GetCharacterOverlay() &&
-		BlasterHUD->GetCharacterOverlay()->GetDefeatsText() &&
-		BlasterHUD->GetCharacterOverlay()->GetEliminatedText();
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsText();
 
 	if (bHUDValid)
 	{

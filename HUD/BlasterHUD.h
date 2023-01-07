@@ -50,6 +50,7 @@ private:
 	/*
 	* CHARACTER OVERLAY WIDGET
 	*/
+	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
 
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")

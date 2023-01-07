@@ -79,8 +79,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		class UCombatComponent* Combat;
 
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
+	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
 	void LimitPitchView();
