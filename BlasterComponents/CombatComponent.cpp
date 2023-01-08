@@ -9,6 +9,7 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
+#include "Sound/SoundCue.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -157,12 +158,16 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	* the way to know it's a multicast server rpc: -a client/server press fire button -call serverFire(a server rpc.. not client) -call multicast rpc.
 	*/
 	bFireButtonPressed = bPressed;
-
-	if (bFireButtonPressed && bCanFire)
+	
+	if (bFireButtonPressed && CanFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
 		StartFireTimer();
+	}
+	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && EmptySound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
 	}
 }
 					/// FBP: RPCs
@@ -199,6 +204,10 @@ void UCombatComponent::FireTimerFinished()
 	{
 		FireButtonPressed(true);
 	}
+}
+bool UCombatComponent::CanFire()
+{
+	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire;
 }
 /*
 *
@@ -335,7 +344,7 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 		CrosshairsAimFactor = FMath::FInterpTo(CrosshairsAimFactor, 0.f, DeltaTime, 30.f);
 	}
 	//Shooting Factor
-	if (bFireButtonPressed)
+	if (bFireButtonPressed && EquippedWeapon && !EquippedWeapon->IsEmpty())
 	{
 		CrosshairsShootingFactor = 0.75f;
 	}

@@ -121,5 +121,10 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 
+	bool CanFire();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+		class USoundCue* EmptySound;
+
 public:	
 };

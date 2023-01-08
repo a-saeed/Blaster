@@ -145,10 +145,10 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon Properties")
 		int32 Ammo = 0;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		int32 MagCapacity = 50;
 
 	UFUNCTION()
@@ -172,4 +172,6 @@ public:
 
 	FORCEINLINE void SetOwnerCharacter(ABlasterCharacter* Character){ BlasterOwnerCharacter = Character; }
 	FORCEINLINE void SetOwnerController(ABlasterPlayerController* Controller) { BlasterOwnerController = Controller; }
+
+	FORCEINLINE bool IsEmpty() { return Ammo <= 0; }
 };
