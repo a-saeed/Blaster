@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -155,6 +156,13 @@ private:
 		void OnRep_Ammo();
 
 	void SpendRound();
+	/*
+	*
+	*  WEAPON TYPESS
+	*
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Type")
+		EWeaponType WeaponType;
 
 public:
 
@@ -174,4 +182,6 @@ public:
 	FORCEINLINE void SetOwnerController(ABlasterPlayerController* Controller) { BlasterOwnerController = Controller; }
 
 	FORCEINLINE bool IsEmpty() { return Ammo <= 0; }
+
+	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
 };

@@ -36,6 +36,11 @@ void UCombatComponent::BeginPlay()
 		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 		CurrentFOV = DefaultFOV;
 	}
+	/*initialize carried ammo only on the server*/
+	if (Character->HasAuthority())
+	{
+		InitializeCarriedAmmo();
+	}
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -71,7 +76,7 @@ void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
 	EquippedWeapon->SetOwnerCharacter(nullptr);
 	EquippedWeapon->SetOwnerController(nullptr);
 }	
-					/// EW
+	
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip) return;
@@ -91,15 +96,21 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh()); //attach the weapon to the character mesh
 	}
 
-	EquippedWeapon->SetOwner(Character); //set this character as the owner of this weapon.
-	/*will trigger OnRep_Ammo in the weapon class*/
+	/*will trigger OnRep_Owner in the weapon class*/
+	EquippedWeapon->SetOwner(Character);
+
+	/*dispaly ammo amount in the weapon just equipped*/
 	EquippedWeapon->SetHUDAmmo();
+
+	/*set and display carried ammo on the server once weapon equipped, will trigger OnRep_CarriedAmmo*/
+	SetCarriedAmmoBasedOnWeaponType();
+	UpdateHUDCarriedAmmo();
 
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
-					///EW: REP_NOTIFIES
+					
 void UCombatComponent::OnRep_EquippedWeapon()
 {
 	/*need to make sure that the weapon state gets replicated first before we attach the weapon as we can't attach if physics is still enabeled*/
@@ -122,7 +133,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 *
 * SetAiming , RPCs , REP_NOTIFIES
 *
-*/					/// SA
+*/				
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming; //bAiming is what's being checked every frame by the ABP to see whether to play the aiming pose or not. client can set it and see his aim pose before sending rpc to server to allow for a smooth xp. once rpc reaches server it will replicate to all clients to see this client's aim pose.
@@ -134,7 +145,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 	ServerSetAiming(bIsAiming); //whether server or client, this rpc will be called from the respective machine and only executed on server, vraiable already replicates.
 }
-					/// SA: RPCs
+					
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -149,7 +160,7 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 *	
 * FireButtonPressed , RPCs , REP_NOTIFIES
 * 
-*/					/// FBP
+*/					
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	/*
@@ -172,7 +183,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
 	}
 }
-					/// FBP: RPCs
+					
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget);
@@ -405,9 +416,32 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 }
 /*
 * 
-* WEAPON PROPERTIES
+* CARRIED AMMO
 * 
 */
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+}
+
+void UCombatComponent::SetCarriedAmmoBasedOnWeaponType()
+{
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()]; //replicated and therfore will triiger OnRep_CarriedAmmo
+	}
+}
+
 void UCombatComponent::OnRep_CarriedAmmo()
 {
+	UpdateHUDCarriedAmmo();
+}
+
+void UCombatComponent::UpdateHUDCarriedAmmo()
+{
+	BlasterController = BlasterController == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : BlasterController;
+	if (BlasterController)
+	{
+		BlasterController->SetHUDCarriedAmmo(CarriedAmmo);
+	}
 }

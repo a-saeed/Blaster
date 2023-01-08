@@ -135,6 +135,15 @@ private:
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
+	void InitializeCarriedAmmo();
+
+	void SetCarriedAmmoBasedOnWeaponType();
+	
+	void UpdateHUDCarriedAmmo();
+
+	UPROPERTY(EditAnywhere)
+		int32 StartingARAmmo = 30;
+
 	UFUNCTION()
 		void OnRep_CarriedAmmo();
 
