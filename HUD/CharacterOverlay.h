@@ -38,6 +38,10 @@ private:
 	*/
 	UPROPERTY(meta = (BindWidget))
 		UTextBlock* WeaponAmmoAmount;
+
+	UPROPERTY(meta = (BindWidget))
+		UTextBlock* CarriedAmmoAmount;
+
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
@@ -48,4 +52,5 @@ public:
 	FORCEINLINE UTextBlock* GetDefeatsText() const { return DefeatsAmount; }
 
 	FORCEINLINE UTextBlock* GetAmmoText() const { return WeaponAmmoAmount; }
+	FORCEINLINE UTextBlock* GetCarriedAmmoText() const { return CarriedAmmoAmount; }
 };

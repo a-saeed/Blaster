@@ -29,6 +29,7 @@ public:
 	* Ammo HUD
 	*/
 	void SetHUDWeaponAmmo(int32 WeaponAmmoAmount);
+	void SetHUDCarriedAmmo(int32 CarriedAmmoAmount);
 
 protected:
 
