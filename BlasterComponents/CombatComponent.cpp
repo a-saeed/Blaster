@@ -22,6 +22,8 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon); //equipped weapon only gets set by the server, replicate it so that every charatcer see the new animation pose for the character that equipped the weapon..
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	/*only the ownning client needs to see his own carried ammo..opposite to the ammo on the weapon as if a client dropped itand another picked it, it needs to see the how much ammo was used*/
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 }
 
 void UCombatComponent::BeginPlay()
@@ -400,4 +402,12 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	{
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
+}
+/*
+* 
+* WEAPON PROPERTIES
+* 
+*/
+void UCombatComponent::OnRep_CarriedAmmo()
+{
 }

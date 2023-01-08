@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Weapon/Weapontypes.h"
 #include "CombatComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -125,6 +126,17 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 		class USoundCue* EmptySound;
+	/*
+	* Carried Ammo
+	*/
+	 /*Carried ammo for the currently equipped weapon*/
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+		int32 CarriedAmmo;
+
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UFUNCTION()
+		void OnRep_CarriedAmmo();
 
 public:	
 };
