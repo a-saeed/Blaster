@@ -87,6 +87,7 @@ void ABlasterCharacter::BeginPlay()
 
 	LimitPitchView();
 
+	Health = MaxHealth;
 	UpdateHUDHealth(); //set to max health
 
 	//bind ReceiveDamage to OnTakeAnyDamage delgate, only take damage on the server
