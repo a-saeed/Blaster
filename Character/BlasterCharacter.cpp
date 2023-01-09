@@ -138,6 +138,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -220,6 +221,14 @@ void ABlasterCharacter::FireButtonReleased()
 	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->FireButtonPressed(false);
+	}
+}
+
+void ABlasterCharacter::ReloadButtonPressed()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->Reload();
 	}
 }
 
@@ -357,6 +366,27 @@ void ABlasterCharacter::PlayElimMontage()
 	if (AnimeInstance && ElimMontage)
 	{
 		AnimeInstance->Montage_Play(ElimMontage);
+	}
+}
+
+void ABlasterCharacter::PlayReloadMontage()
+{
+	if (!Combat || !Combat->EquippedWeapon) return;
+
+	UAnimInstance* AnimeInstance = GetMesh()->GetAnimInstance();
+	if (AnimeInstance && ReloadMontage)
+	{
+		AnimeInstance->Montage_Play(ReloadMontage);
+		FName SectionName;
+
+		switch (Combat->EquippedWeapon->GetWeaponType())
+		{
+		case(EWeaponType::EWT_AssaultRifle):
+			SectionName = FName("Rifle");
+			break;
+		}	
+
+		AnimeInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
