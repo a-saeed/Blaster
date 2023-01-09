@@ -19,6 +19,7 @@
 #include "particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -603,7 +604,6 @@ void ABlasterCharacter::ElimTimerFinished()
 	BlasterGameMode->RequestRespawn(this, Controller);
 }
 
-
 void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();
@@ -639,4 +639,13 @@ void ABlasterCharacter::StartDissolve()
 		//start the timeline
 		DissolveTimeline->Play();
 	}
+}
+/*
+* Public Setters/Getters
+*/
+ECombatState ABlasterCharacter::GetCombatState()
+{
+	if (!Combat) return ECombatState::ECS_MAX;
+
+	return Combat->CombatState;
 }
