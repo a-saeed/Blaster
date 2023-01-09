@@ -103,14 +103,27 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon->SetHUDAmmo();
 
 	/*set and display carried ammo on the server once weapon equipped, will trigger OnRep_CarriedAmmo*/
-	SetCarriedAmmoBasedOnWeaponType();
+	SetCarriedAmmoOnEquip();
 	UpdateHUDCarriedAmmo();
 
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
-					
+	
+void UCombatComponent::Reload()
+{
+	if (CarriedAmmo > 0)
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	Character->PlayReloadMontage();
+}
+
 void UCombatComponent::OnRep_EquippedWeapon()
 {
 	/*need to make sure that the weapon state gets replicated first before we attach the weapon as we can't attach if physics is still enabeled*/
@@ -178,9 +191,16 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		ServerFire(HitTarget);
 		StartFireTimer();
 	}
-	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && EmptySound)
+	else if (bFireButtonPressed && EquippedWeapon->IsEmpty())
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
+		if (CarriedAmmo == 0 && EmptySound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
+		}
+		else
+		{
+			Reload();
+		}	
 	}
 }
 					
@@ -424,11 +444,15 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
 }
 
-void UCombatComponent::SetCarriedAmmoBasedOnWeaponType()
+void UCombatComponent::SetCarriedAmmoOnEquip()
 {
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()]; //replicated and therfore will triiger OnRep_CarriedAmmo
+	}
+	else
+	{
+		CarriedAmmo = 0; //may want to add a rare weapon that no player has its type of ammo.
 	}
 }
 

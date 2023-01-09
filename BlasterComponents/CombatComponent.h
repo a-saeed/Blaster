@@ -24,36 +24,45 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-
+	/*
+	* Drop/Equip weapon
+	*/
 	void DropWeapon();
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
+	UFUNCTION()
+		void OnRep_EquippedWeapon();
+	/*
+	* Aiming
+	*/
 	void SetAiming(bool bIsAiming);
 
-	void FireButtonPressed(bool bPressed);
-
-	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
-
-	void SetHUDCrosshairs(float DeltaTime);
-
-	/*
-	*	RPCs 
-	*/
 	UFUNCTION(Server, Reliable) //aiming from a client machine doesn't replicate on other clients & server. create an RPC
 		void ServerSetAiming(bool bIsAiming);
+	/*
+	* Fire
+	*/
+	void FireButtonPressed(bool bPressed);
 
 	UFUNCTION(Server, Reliable)
 		void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
-
 	/*
-	*	REP_NOTIFIES
+	* Reload
 	*/
-	UFUNCTION()
-		void OnRep_EquippedWeapon();
+	void Reload();
+
+	UFUNCTION(Server, Reliable)
+		void ServerReload();
+	/*
+	* Corsshairs
+	*/
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime);
 
 private:
 
@@ -137,7 +146,7 @@ private:
 
 	void InitializeCarriedAmmo();
 
-	void SetCarriedAmmoBasedOnWeaponType();
+	void SetCarriedAmmoOnEquip();
 	
 	void UpdateHUDCarriedAmmo();
 
