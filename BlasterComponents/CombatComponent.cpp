@@ -10,6 +10,7 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -24,6 +25,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	/*only the ownning client needs to see his own carried ammo..opposite to the ammo on the weapon as if a client dropped itand another picked it, it needs to see the how much ammo was used*/
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
+	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
 void UCombatComponent::BeginPlay()
@@ -110,19 +112,6 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
-	
-void UCombatComponent::Reload()
-{
-	if (CarriedAmmo > 0)
-	{
-		ServerReload();
-	}
-}
-
-void UCombatComponent::ServerReload_Implementation()
-{
-	Character->PlayReloadMontage();
-}
 
 void UCombatComponent::OnRep_EquippedWeapon()
 {
@@ -137,10 +126,56 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		{
 			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh()); //attach the weapon to the character mesh
 		}
-	/*--------------------------------------------------------------------------------------*/
+		/*--------------------------------------------------------------------------------------*/
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 	}
+}
+/*
+*
+* Reload
+*
+*/
+void UCombatComponent::Reload()
+{
+	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)//already reloading
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::FinishReloading() //called from animation bluprint
+{
+	/*this is an anim notify function which will be called when the reload animation has finished.*/
+	if (!Character) return;
+	/*we call it on the server only and since combat state is replicated, it will trigger OnRep_CombatState*/
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied; //reset combat state to unoccupied.
+	}
+}
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	if (!Character) return;
+	
+	CombatState = ECombatState::ECS_Reloading; //trigger OnRep_CombatState.
+	HandleReload();
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	}
+}
+
+void UCombatComponent::HandleReload()
+{
+	Character->PlayReloadMontage();
 }
 /*
 *

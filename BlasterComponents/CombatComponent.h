@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/Weapon/Weapontypes.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -57,6 +58,11 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 		void ServerReload();
+
+	void HandleReload();
+
+	UFUNCTION(BlueprintCallable)
+		void FinishReloading();
 	/*
 	* Corsshairs
 	*/
@@ -155,6 +161,13 @@ private:
 
 	UFUNCTION()
 		void OnRep_CarriedAmmo();
+	/*
+	* Combat State
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+		ECombatState CombatState = ECombatState::ECS_Unoccupied; //start of as unoccpied
 
+	UFUNCTION()
+		void OnRep_CombatState();
 public:	
 };
