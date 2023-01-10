@@ -153,6 +153,11 @@ void UCombatComponent::FinishReloading() //called from animation bluprint
 	{
 		CombatState = ECombatState::ECS_Unoccupied; //reset combat state to unoccupied.
 	}
+	//allow an attemp to fire after reloading and if the fire button is pressed, this will be called locally whether on server or client.
+	if (bFireButtonPressed)
+	{
+		FireButtonPressed(true);
+	}
 }
 
 void UCombatComponent::ServerReload_Implementation()
@@ -169,6 +174,13 @@ void UCombatComponent::OnRep_CombatState()
 	{
 	case ECombatState::ECS_Reloading:
 		HandleReload();
+		break;
+	
+	case ECombatState::ECS_Unoccupied:
+		if (bFireButtonPressed)
+		{
+			FireButtonPressed(true);
+		}
 		break;
 	}
 }
@@ -246,7 +258,7 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	if (Character && EquippedWeapon)
+	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
