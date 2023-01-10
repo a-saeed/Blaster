@@ -243,6 +243,7 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 {
 	MulticastFire(TraceHitTarget);
 }
+
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character && EquippedWeapon)
@@ -273,9 +274,10 @@ void UCombatComponent::FireTimerFinished()
 		FireButtonPressed(true);
 	}
 }
+
 bool UCombatComponent::CanFire()
 {
-	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire;
+	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 /*
 *
