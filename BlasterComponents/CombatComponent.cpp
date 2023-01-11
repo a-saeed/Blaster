@@ -109,6 +109,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	UpdateHUDCarriedAmmo();
 
 	PlayEquipSound();
+
+	AutoReloadIfEmpty();
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
@@ -245,16 +247,9 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		ServerFire(HitTarget);
 		StartFireTimer();
 	}
-	else if (bFireButtonPressed && EquippedWeapon->IsEmpty())
+	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && CarriedAmmo == 0 && EmptySound)
 	{
-		if (CarriedAmmo == 0 && EmptySound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
-		}
-		else
-		{
-			Reload();
-		}	
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
 	}
 }
 					
@@ -292,6 +287,8 @@ void UCombatComponent::FireTimerFinished()
 	{
 		FireButtonPressed(true);
 	}
+
+	AutoReloadIfEmpty();
 }
 
 bool UCombatComponent::CanFire()
@@ -555,5 +552,13 @@ void UCombatComponent::PlayEquipSound()
 	if (EquippedWeapon->EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedWeapon->EquipSound, Character->GetActorLocation());
+	}
+}
+
+void UCombatComponent::AutoReloadIfEmpty()
+{
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 }

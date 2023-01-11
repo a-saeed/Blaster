@@ -32,8 +32,6 @@ protected:
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
-	void PlayEquipSound();
-
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
 	/*
@@ -172,5 +170,13 @@ private:
 
 	UFUNCTION()
 		void OnRep_CombatState();
+	/*
+	*
+	* COSMETICS
+	*
+	*/
+	void AutoReloadIfEmpty();
+	void PlayEquipSound();
+
 public:	
 };
