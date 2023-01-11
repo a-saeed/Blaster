@@ -138,25 +138,9 @@ void UCombatComponent::OnRep_EquippedWeapon()
 */
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)//already reloading
+	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading && !EquippedWeapon->IsFull())//already reloading
 	{
 		ServerReload();
-	}
-}
-
-void UCombatComponent::FinishReloading() //called from animation bluprint
-{
-	/*this is an anim notify function which will be called when the reload animation has finished.*/
-	if (!Character) return;
-	/*we call it on the server only and since combat state is replicated, it will trigger OnRep_CombatState*/
-	if (Character->HasAuthority())
-	{
-		CombatState = ECombatState::ECS_Unoccupied; //reset combat state to unoccupied.
-	}
-	//allow an attemp to fire after reloading and if the fire button is pressed, this will be called locally whether on server or client.
-	if (bFireButtonPressed)
-	{
-		FireButtonPressed(true);
 	}
 }
 
@@ -189,6 +173,26 @@ void UCombatComponent::HandleReload()
 {
 	Character->PlayReloadMontage();
 }
+
+void UCombatComponent::FinishReloading() //called from animation bluprint
+{
+	/*this is an anim notify function which will be called when the reload animation has finished.*/
+	if (!Character) return;
+	/*we call it on the server only and since combat state is replicated, it will trigger OnRep_CombatState*/
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied; //reset combat state to unoccupied.
+
+		UpdateAmmoValues(); //ammo won't update instantly, update after reload animation finishes.
+		UpdateHUDCarriedAmmo();
+	}
+	//allow an attemp to fire after reloading and if the fire button is pressed, this will be called locally whether on server or client.
+	if (bFireButtonPressed)
+	{
+		FireButtonPressed(true);
+	}
+}
+
 /*
 *
 * SetAiming , RPCs , REP_NOTIFIES
@@ -517,4 +521,24 @@ void UCombatComponent::UpdateHUDCarriedAmmo()
 	{
 		BlasterController->SetHUDCarriedAmmo(CarriedAmmo);
 	}
+}
+
+void UCombatComponent::UpdateAmmoValues()
+{
+	if (!EquippedWeapon) return;
+
+	int32 RequiredAmmo = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetCurrentAmmo();
+
+	if (CarriedAmmo <= RequiredAmmo)
+	{
+		EquippedWeapon->AddAmmo(CarriedAmmo);
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] = 0;
+	}
+	else
+	{
+		EquippedWeapon->AddAmmo(RequiredAmmo);
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= RequiredAmmo;
+	}
+
+	CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 }

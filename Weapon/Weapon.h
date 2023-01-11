@@ -182,6 +182,10 @@ public:
 	FORCEINLINE void SetOwnerController(ABlasterPlayerController* Controller) { BlasterOwnerController = Controller; }
 
 	FORCEINLINE bool IsEmpty() { return Ammo <= 0; }
+	FORCEINLINE bool IsFull() { return Ammo == MagCapacity; }
+	FORCEINLINE int32 GetCurrentAmmo() { return Ammo; }
+	FORCEINLINE int32 GetMagCapacity() { return MagCapacity; }
+	void AddAmmo(int32 AmmoAmount);
 
 	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
 };

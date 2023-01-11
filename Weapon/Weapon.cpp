@@ -181,6 +181,13 @@ void AWeapon::SpendRound()
 	SetHUDAmmo();
 }
 
+void AWeapon::AddAmmo(int32 AmmoAmount)
+{
+	Ammo = FMath::Clamp(Ammo + AmmoAmount, 0, GetMagCapacity());
+
+	SetHUDAmmo();
+}
+
 void AWeapon::OnRep_Ammo()
 {
 	SetHUDAmmo();

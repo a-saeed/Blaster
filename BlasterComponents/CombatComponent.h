@@ -63,6 +63,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 		void FinishReloading();
+	void UpdateAmmoValues();
 	/*
 	* Corsshairs
 	*/
