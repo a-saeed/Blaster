@@ -108,6 +108,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	SetCarriedAmmoOnEquip();
 	UpdateHUDCarriedAmmo();
 
+	PlayEquipSound();
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
@@ -129,6 +130,8 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		/*--------------------------------------------------------------------------------------*/
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+
+		PlayEquipSound();
 	}
 }
 /*
@@ -541,4 +544,16 @@ void UCombatComponent::UpdateAmmoValues()
 	}
 
 	CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+}
+/*
+*
+* COSMETICS
+*
+*/
+void UCombatComponent::PlayEquipSound()
+{
+	if (EquippedWeapon->EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedWeapon->EquipSound, Character->GetActorLocation());
+	}
 }

@@ -57,6 +57,13 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 		UTexture2D* CrosshairsBottom;
+	/*
+	*
+	*  Equip Sound. Each weapon has a unique equip sound
+	*
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class USoundCue* EquipSound;
 
 protected:
 

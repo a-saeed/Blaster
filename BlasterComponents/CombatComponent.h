@@ -32,6 +32,8 @@ protected:
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
+	void PlayEquipSound();
+
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
 	/*
