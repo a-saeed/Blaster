@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
 
+
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -111,5 +112,19 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmoAmount)
 		//set Defeats text
 		FString CarriedAmmoText = FString::Printf(TEXT("%d"), CarriedAmmoAmount); //generate a formatted string
 		BlasterHUD->GetCharacterOverlay()->GetCarriedAmmoText()->SetText(FText::FromString(CarriedAmmoText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDWeaponType(FText WeaponTypeText)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetWeaponTypeText();
+
+	if (bHUDValid)
+	{
+		BlasterHUD->GetCharacterOverlay()->GetWeaponTypeText()->SetText(WeaponTypeText);
 	}
 }

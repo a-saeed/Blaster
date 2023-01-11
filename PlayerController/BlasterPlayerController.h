@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "BlasterPlayerController.generated.h"
-
 /**
  * 
  */
@@ -30,7 +30,10 @@ public:
 	*/
 	void SetHUDWeaponAmmo(int32 WeaponAmmoAmount);
 	void SetHUDCarriedAmmo(int32 CarriedAmmoAmount);
-
+	/*
+	* Weapon Type HUD
+	*/
+	void SetHUDWeaponType(FText WeaponTypeText);
 protected:
 
 	virtual void BeginPlay() override;

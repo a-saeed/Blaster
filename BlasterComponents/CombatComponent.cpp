@@ -58,6 +58,10 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		SetHUDCrosshairs(DeltaTime);
 		InterpFOV(DeltaTime);
 	}
+	if (EquippedWeapon)
+	{
+		UpdateHUDWeaponType();
+	}
 }
 /*
 *
@@ -560,5 +564,16 @@ void UCombatComponent::AutoReloadIfEmpty()
 	if (EquippedWeapon->IsEmpty())
 	{
 		Reload();
+	}
+}
+
+void UCombatComponent::UpdateHUDWeaponType()
+{
+	if (!EquippedWeapon) return; 
+
+	BlasterController = BlasterController == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : BlasterController;
+	if (BlasterController)
+	{
+		BlasterController->SetHUDWeaponType(UEnum::GetDisplayValueAsText(EquippedWeapon->GetWeaponType()));
 	}
 }

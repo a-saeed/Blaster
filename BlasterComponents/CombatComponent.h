@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
-#include "Blaster/Weapon/Weapontypes.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
@@ -177,6 +177,6 @@ private:
 	*/
 	void AutoReloadIfEmpty();
 	void PlayEquipSound();
-
+	void UpdateHUDWeaponType();
 public:	
 };
