@@ -8,13 +8,18 @@
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
 
-
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	//set the BlasterHUD
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+}
+
+void ABlasterPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	SetHUDTime();
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -26,6 +31,18 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	{
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 	}
+}
+
+void ABlasterPlayerController::SetHUDTime()
+{
+	uint32 SecondsLeft = FMath::CeilToInt32(MatchTime - GetWorld()->GetTimeSeconds());
+
+	if (CountdownInt != SecondsLeft) //only update the HUD after 1 second has passed.
+	{
+		SetHUDMatchCountdown(MatchTime - GetWorld()->GetTimeSeconds());
+	}
+
+	CountdownInt = SecondsLeft;
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -126,5 +143,24 @@ void ABlasterPlayerController::SetHUDWeaponType(FText WeaponTypeText)
 	if (bHUDValid)
 	{
 		BlasterHUD->GetCharacterOverlay()->GetWeaponTypeText()->SetText(WeaponTypeText);
+	}
+}
+
+void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText();
+
+	if (bHUDValid)
+	{
+		//set MatchCountdown text in 00:00 format
+		int32 Minutes = FMath::FloorToInt(CountdownTime / 60);
+		int32 Seconds = CountdownTime - Minutes * 60;
+
+		FString MatchCountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds); //generate a formatted string
+		BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetText(FText::FromString(MatchCountdownText));
 	}
 }

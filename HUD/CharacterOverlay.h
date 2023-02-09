@@ -46,6 +46,11 @@ private:
 	*/
 	UPROPERTY(meta = (BindWidget))
 		UTextBlock* WeaponTypeText;
+	/*
+	* Match Countdown Timer
+	*/
+	UPROPERTY(meta = (BindWidget))
+		UTextBlock* MatchCountdownText;
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
@@ -59,4 +64,6 @@ public:
 	FORCEINLINE UTextBlock* GetCarriedAmmoText() const { return CarriedAmmoAmount; }
 
 	FORCEINLINE UTextBlock* GetWeaponTypeText() const { return WeaponTypeText; }
+
+	FORCEINLINE UTextBlock* GetMatchCountdownText() const { return MatchCountdownText; }
 };
