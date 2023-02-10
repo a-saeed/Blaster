@@ -16,18 +16,30 @@ class BLASTER_API ABlasterGameMode : public AGameMode
 	
 public:
 
+	ABlasterGameMode();
+
+	virtual void Tick(float DeltaTime) override;
+
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimPlayerController, ABlasterPlayerController* AttackerPlayerController);
 
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 	
+	UPROPERTY(EditDefaultsOnly)
+		float WarmupTime = 10.f;
+
 protected:
+
+	virtual void BeginPlay() override;
 
 	AActor* FindPlayerStartWithLeastPlayersInrange();
 
 	UPROPERTY(EditAnywhere)
 	int32 PlayerStartRange = 2500;
+	
 private:
 
+	float CountdownTime = 0.f;
+	float LevelStartingTime = 0.f;
 public:
 
 };
