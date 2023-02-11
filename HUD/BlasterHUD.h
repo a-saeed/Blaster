@@ -36,6 +36,7 @@ public:
 	virtual void DrawHUD() override;
 	
 	void AddCharacterOverlay(); //called by the player controller
+	void AddAnnouncement();
 
 protected:
 
@@ -57,10 +58,19 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 		TSubclassOf<class UUserWidget> CharacterOverlayClass;
+	/*
+	* ANNOUNCEMENT WIDGET
+	*/
+	class UAnnouncement* Announcement;
+
+	UPROPERTY(EditAnywhere, Category = "Announcements")
+		TSubclassOf<class UUserWidget> AnnouncementClass;
 
 public:
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 
 	FORCEINLINE UCharacterOverlay* GetCharacterOverlay(){ return CharacterOverlay; }
+
+	FORCEINLINE UAnnouncement* GetAnnouncement(){ return Announcement; }
 };
