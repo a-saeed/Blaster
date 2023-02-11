@@ -30,6 +30,7 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void OnMatchStateSet() override;
 
 	AActor* FindPlayerStartWithLeastPlayersInrange();
 

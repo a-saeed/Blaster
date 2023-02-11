@@ -13,7 +13,6 @@ ABlasterGameMode::ABlasterGameMode()
 	bDelayedStart = true;
 }
 
-
 void ABlasterGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -32,6 +31,21 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		if (CountdownTime <= 0.f)
 		{
 			StartMatch();
+		}
+	}
+}
+
+void ABlasterGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+
+	//inform every player controller in the game of the current match state. 
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
+	{
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayerController)
+		{
+			BlasterPlayerController->OnMatchStateSet(MatchState);
 		}
 	}
 }
