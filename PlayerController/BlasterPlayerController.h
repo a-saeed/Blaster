@@ -41,6 +41,10 @@ public:
 	*/
 	void SetHUDMatchCountdown(float CountdownTime);
 	/*
+	* Announcement warmup countdown
+	*/
+	void SetHUDAnnouncementCountdown(float CountdownTime);
+	/*
 	* Sync time between client and server
 	*/
 	virtual void ReceivedPlayer() override; //sync with server clock as soon as possible;
@@ -77,7 +81,6 @@ protected:
 	float TimeSyncRunningTime = 0.f;
 
 	void CheckTimeSync(float DeltaTime);
-
 	/*
 	* Poll for character overlay
 	*/
@@ -87,12 +90,21 @@ protected:
 	*/
 	void HandleMatchHasStarted();
 
+	UFUNCTION(Server, Reliable)							//needed for players who want to join midgame. Change HUD based on match state.
+		void ServerCheckMatchState();
+
+	UFUNCTION(Client, Reliable)							//send match state and timers information from server to all clients once when they join. 														
+		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartTime);
+
 private:
 
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
-	float MatchTime = 120.f;								//total match time, will be moved to game mode class later.
+	/*Filled from BlasterGameMode*/
+	float LevelStartingTime = 0.f;							//at which time did the Blaster map got loaded
+	float MatchTime = 0.f;									//total match time.
+	float Warmuptime = 0.f;
 
 	uint32 CountdownInt = 0;								//used to update the HUD every second
 	
