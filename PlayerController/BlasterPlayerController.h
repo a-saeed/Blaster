@@ -15,6 +15,8 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	/*
 	* Blaster Character HUD
 	*/
@@ -42,6 +44,10 @@ public:
 	* Sync time between client and server
 	*/
 	virtual void ReceivedPlayer() override; //sync with server clock as soon as possible;
+	/*
+	* Handle different behavior for match states
+	*/
+	void OnMatchStateSet(FName State);
 
 protected:
 
@@ -50,12 +56,13 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnPossess(APawn* InPawn) override;
-
-	//show amount of match time left 
-	void SetHUDTime();
 	/*
 	* Sync time between client and server
 	*/
+
+	//show amount of match time left 
+	void SetHUDTime();
+
 	//Request the current server time, passing in the client's time when the request was sent.
 	UFUNCTION(Server, Reliable)
 		void ServerRequestServerTime(float TimeOfClientRequest);
@@ -74,7 +81,10 @@ protected:
 	float TimeSyncRunningTime = 0.f;
 
 	void CheckTimeSync(float DeltaTime);
-
+	/*
+	* Poll for character overlay
+	*/
+	void PollInit();
 private:
 
 	UPROPERTY()
@@ -85,6 +95,25 @@ private:
 
 	//used to update the HUD every second
 	uint32 CountdownInt = 0;
+
+	//match state is used in player controller since it's responsible for showing the HUD, we want to delay the overlay widget until match has begun.
+	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
+	FName MatchState;
+
+	UFUNCTION()
+		void OnRep_MatchState();
+	/*
+	* Character overlay and "cached" variables
+	*/
+	UPROPERTY()
+		class UCharacterOverlay* CharacterOverlay;
+
+	bool bInitializeCharacterOverlay = false; //used later
+
+	float HUDHealth;
+	float HUDMaxHealth;
+	float HUDScore;
+	int32 HUDDefeats;
 
 public:
 

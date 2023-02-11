@@ -7,6 +7,18 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
+#include "Blaster/HUD/CharacterOverlay.h"
+/*
+*  Overriden functions
+*/
+void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+}
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -22,16 +34,18 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 
 	CheckTimeSync(DeltaTime);
+
+	PollInit();
 }
 
-void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
+void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
-	TimeSyncRunningTime += DeltaTime;
-
-	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	Super::OnPossess(InPawn);
+	//on possessing the character, set the hud health
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
+	if (BlasterCharacter)
 	{
-		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
-		TimeSyncRunningTime = 0.f;
+		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 	}
 }
 
@@ -44,15 +58,36 @@ void ABlasterPlayerController::ReceivedPlayer()
 		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
 	}
 }
-
-void ABlasterPlayerController::OnPossess(APawn* InPawn)
+/*
+* Poll for character overlay, since health, score and defeats values are initialized BEFORE the overlay is valid. which shouldn't be true.
+*/
+void ABlasterPlayerController::PollInit()
 {
-	Super::OnPossess(InPawn);
-	//on possessing the character, set the hud health
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
-	if (BlasterCharacter)
+	if (CharacterOverlay == nullptr)
 	{
-		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
+		if (BlasterHUD && BlasterHUD->GetCharacterOverlay())
+		{
+			CharacterOverlay = BlasterHUD->GetCharacterOverlay();
+			if (CharacterOverlay)
+			{
+				SetHUDHealth(HUDHealth, HUDMaxHealth);
+				SetHUDScore(HUDScore);
+				SetHUDDefeats(HUDDefeats);
+			}
+		}
+	}
+}
+/*
+*  HUD Timers
+*/
+void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+
+	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.f;
 	}
 }
 
@@ -67,7 +102,6 @@ void ABlasterPlayerController::SetHUDTime()
 
 	CountdownInt = SecondsLeft;
 }
-
 /*
 *  Sync time between client and server
 */
@@ -97,6 +131,33 @@ float ABlasterPlayerController::GetServerTime()
 	}
 }
 /*
+* Handle different behavior for match states, to be called from the game mode.
+*/
+void ABlasterPlayerController::OnMatchStateSet(FName State)
+{
+	MatchState = State; //the state passed from the game mode.
+
+	if (MatchState == MatchState::InProgress) //MatchState::InProgress is in the game mode namespace
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddCharacterOverlay();
+		}
+	}
+}
+void ABlasterPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress) //MatchState::InProgress is in the game mode namespace
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddCharacterOverlay();
+		}
+	}
+}
+/*
 *  HUDs used in other classes
 */
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -120,6 +181,12 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth)); //generate a formatted string
 		BlasterHUD->GetCharacterOverlay()->GetHealthText()->SetText(FText::FromString(HealthText));
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDHealth = Health;
+		HUDMaxHealth = MaxHealth;
+	}
 }
 
 void ABlasterPlayerController::SetHUDScore(float Score)
@@ -136,6 +203,11 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::CeilToInt(Score)); //generate a formatted string
 		BlasterHUD->GetCharacterOverlay()->GetScoreText()->SetText(FText::FromString(ScoreText));
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDScore = Score;
+	}
 }
 
 void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
@@ -151,6 +223,11 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 		//set Defeats text
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats); //generate a formatted string
 		BlasterHUD->GetCharacterOverlay()->GetDefeatsText()->SetText(FText::FromString(DefeatsText));
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDDefeats = Defeats;
 	}
 }
 
