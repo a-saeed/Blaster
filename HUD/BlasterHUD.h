@@ -35,6 +35,8 @@ public:
 
 	virtual void DrawHUD() override;
 	
+	void AddCharacterOverlay(); //called by the player controller
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -55,8 +57,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 		TSubclassOf<class UUserWidget> CharacterOverlayClass;
-
-	void AddCharacterOverlay();
 
 public:
 
