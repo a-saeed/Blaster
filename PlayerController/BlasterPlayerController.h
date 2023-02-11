@@ -13,7 +13,7 @@ UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -59,21 +59,17 @@ protected:
 	/*
 	* Sync time between client and server
 	*/
+	void SetHUDTime();									//show amount of match time left 
 
-	//show amount of match time left 
-	void SetHUDTime();
-
-	//Request the current server time, passing in the client's time when the request was sent.
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Reliable)							//Request the current server time, passing in the client's time when the request was sent.
 		void ServerRequestServerTime(float TimeOfClientRequest);
 
-	//Reports the current server time to the client in response to ServerRequestServerTime..
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(Client, Reliable)							//Reports the current server time to the client in response to ServerRequestServerTime..
 		void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
 
-	float ClientServerDelta = 0.f; //difference between client and server time.
+	float ClientServerDelta = 0.f;						//difference between client and server time.
 
-	virtual float GetServerTime(); //synced with server world clock; NOT OVERRIDEN
+	virtual float GetServerTime();						//synced with server world clock; NOT OVERRIDEN
 
 	UPROPERTY(EditAnywhere, Category = "Time")
 		float TimeSyncFrequency = 5.f;
@@ -81,6 +77,7 @@ protected:
 	float TimeSyncRunningTime = 0.f;
 
 	void CheckTimeSync(float DeltaTime);
+
 	/*
 	* Poll for character overlay
 	*/
@@ -95,14 +92,11 @@ private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
-	//total match time, will be moved to game mode class later.
-	float MatchTime = 120.f; 
+	float MatchTime = 120.f;								//total match time, will be moved to game mode class later.
 
-	//used to update the HUD every second
-	uint32 CountdownInt = 0;
-
-	//match state is used in player controller since it's responsible for showing the HUD, we want to delay the overlay widget until match has begun.
-	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
+	uint32 CountdownInt = 0;								//used to update the HUD every second
+	
+	UPROPERTY(ReplicatedUsing = OnRep_MatchState)			//match state is used in player controller since it's responsible for showing the HUD, we want to delay the overlay widget until match has begun.
 	FName MatchState;
 
 	UFUNCTION()
@@ -113,7 +107,7 @@ private:
 	UPROPERTY()
 		class UCharacterOverlay* CharacterOverlay;
 
-	bool bInitializeCharacterOverlay = false; //used later
+	bool bInitializeCharacterOverlay = false;				//used later
 
 	float HUDHealth;
 	float HUDMaxHealth;

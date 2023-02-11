@@ -25,12 +25,11 @@ void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//set the BlasterHUD
-	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	BlasterHUD = Cast<ABlasterHUD>(GetHUD());			//set the BlasterHUD
 
 	if (BlasterHUD)
 	{
-		BlasterHUD->AddAnnouncement(); //HUD isn't valid yet in WaitingToStart match state. need to be in begin play.
+		BlasterHUD->AddAnnouncement();					//HUD isn't valid yet in WaitingToStart match state. need to be in begin play.
 	}
 }
 
@@ -47,7 +46,7 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	//on possessing the character, set the hud health
+	/*on possessing the character, set the hud health*/
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
 	if (BlasterCharacter)
 	{
@@ -101,7 +100,7 @@ void ABlasterPlayerController::SetHUDTime()
 {
 	uint32 SecondsLeft = FMath::CeilToInt32(MatchTime - GetServerTime());
 
-	if (CountdownInt != SecondsLeft) //only update the HUD after 1 second has passed.
+	if (CountdownInt != SecondsLeft)				//only update the HUD after 1 second has passed.
 	{
 		SetHUDMatchCountdown(MatchTime - GetServerTime());
 	}
@@ -141,9 +140,9 @@ float ABlasterPlayerController::GetServerTime()
 */
 void ABlasterPlayerController::OnMatchStateSet(FName State)
 {
-	MatchState = State; //the state passed from the game mode.
+	MatchState = State;									//the state passed from the game mode.
 
-	if (MatchState == MatchState::InProgress) //MatchState::InProgress is in the game mode namespace
+	if (MatchState == MatchState::InProgress)			//MatchState::InProgress is in the game mode namespace
 	{
 		HandleMatchHasStarted();
 	}
@@ -159,7 +158,7 @@ void ABlasterPlayerController::OnRep_MatchState()
 
 void ABlasterPlayerController::HandleMatchHasStarted()
 {
-	/* -check for blasterHUD -Add character overlay -Hide Announcement*/
+	/* -Check for blasterHUD -Add character overlay -Hide Announcement */
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD)
 	{
@@ -167,8 +166,7 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 
 		if (BlasterHUD->GetAnnouncement())
 		{
-			//hide announcemenet widget when game starts.
-			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);
+			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);				//hide announcemenet widget when game starts.
 		}
 	}
 }
@@ -189,11 +187,11 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 	if (bHUDValid)
 	{
-		//calc and set health bar
-		const float HealthPercentage = Health / MaxHealth;
-		BlasterHUD->GetCharacterOverlay()->GetHealthBar()->SetPercent(HealthPercentage);
-		//calc and set health text
-		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth)); //generate a formatted string
+		/*calc and set health bar*/
+		const float HealthPercentage = Health / MaxHealth;																
+		BlasterHUD->GetCharacterOverlay()->GetHealthBar()->SetPercent(HealthPercentage);	
+		/*calc and set health text*/
+		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		BlasterHUD->GetCharacterOverlay()->GetHealthText()->SetText(FText::FromString(HealthText));
 	}
 	else
@@ -214,8 +212,8 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 
 	if (bHUDValid)
 	{
-		//set Score text
-		FString ScoreText = FString::Printf(TEXT("%d"), FMath::CeilToInt(Score)); //generate a formatted string
+		/*set Score text*/
+		FString ScoreText = FString::Printf(TEXT("%d"), FMath::CeilToInt(Score));
 		BlasterHUD->GetCharacterOverlay()->GetScoreText()->SetText(FText::FromString(ScoreText));
 	}
 	else
@@ -235,8 +233,8 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 
 	if (bHUDValid)
 	{
-		//set Defeats text
-		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats); //generate a formatted string
+		/*set Defeats text*/
+		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		BlasterHUD->GetCharacterOverlay()->GetDefeatsText()->SetText(FText::FromString(DefeatsText));
 	}
 	else
@@ -256,8 +254,8 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 WeaponAmmoAmount)
 
 	if (bHUDValid)
 	{
-		//set Defeats text
-		FString AmmoText = FString::Printf(TEXT("%d"), WeaponAmmoAmount); //generate a formatted string
+		/*set Defeats text*/
+		FString AmmoText = FString::Printf(TEXT("%d"), WeaponAmmoAmount);
 		BlasterHUD->GetCharacterOverlay()->GetAmmoText()->SetText(FText::FromString(AmmoText));
 	}
 }
@@ -272,8 +270,8 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmoAmount)
 
 	if (bHUDValid)
 	{
-		//set Defeats text
-		FString CarriedAmmoText = FString::Printf(TEXT("%d"), CarriedAmmoAmount); //generate a formatted string
+		/*set Carried Ammo text*/
+		FString CarriedAmmoText = FString::Printf(TEXT("%d"), CarriedAmmoAmount);
 		BlasterHUD->GetCharacterOverlay()->GetCarriedAmmoText()->SetText(FText::FromString(CarriedAmmoText));
 	}
 }
@@ -302,11 +300,11 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 
 	if (bHUDValid)
 	{
-		//set MatchCountdown text in 00:00 format
+		/*set MatchCountdown text in 00:00 format*/
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60);
 		int32 Seconds = CountdownTime - Minutes * 60;
 
-		FString MatchCountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds); //generate a formatted string
+		FString MatchCountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetText(FText::FromString(MatchCountdownText));
 	}
 }
