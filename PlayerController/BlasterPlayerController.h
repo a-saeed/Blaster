@@ -85,6 +85,11 @@ protected:
 	* Poll for character overlay
 	*/
 	void PollInit();
+	/*
+	* Handle match states
+	*/
+	void HandleMatchHasStarted();
+
 private:
 
 	UPROPERTY()

@@ -10,6 +10,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/HUD/CharacterOverlay.h"
+#include "Blaster/HUD/Announcement.h"
 /*
 *  Overriden functions
 */
@@ -26,6 +27,11 @@ void ABlasterPlayerController::BeginPlay()
 
 	//set the BlasterHUD
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+
+	if (BlasterHUD)
+	{
+		BlasterHUD->AddAnnouncement(); //HUD isn't valid yet in WaitingToStart match state. need to be in begin play.
+	}
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -139,21 +145,30 @@ void ABlasterPlayerController::OnMatchStateSet(FName State)
 
 	if (MatchState == MatchState::InProgress) //MatchState::InProgress is in the game mode namespace
 	{
-		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-		if (BlasterHUD)
-		{
-			BlasterHUD->AddCharacterOverlay();
-		}
+		HandleMatchHasStarted();
 	}
 }
+
 void ABlasterPlayerController::OnRep_MatchState()
 {
 	if (MatchState == MatchState::InProgress) //MatchState::InProgress is in the game mode namespace
 	{
-		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-		if (BlasterHUD)
+		HandleMatchHasStarted();
+	}
+}
+
+void ABlasterPlayerController::HandleMatchHasStarted()
+{
+	/* -check for blasterHUD -Add character overlay -Hide Announcement*/
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		BlasterHUD->AddCharacterOverlay();
+
+		if (BlasterHUD->GetAnnouncement())
 		{
-			BlasterHUD->AddCharacterOverlay();
+			//hide announcemenet widget when game starts.
+			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }
