@@ -89,6 +89,7 @@ protected:
 	* Handle match states
 	*/
 	void HandleMatchHasStarted();
+	void HandleCooldown();
 
 	UFUNCTION(Server, Reliable)							//needed for players who want to join midgame. Change HUD based on match state.
 		void ServerCheckMatchState();

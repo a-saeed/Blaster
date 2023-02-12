@@ -156,6 +156,10 @@ void ABlasterPlayerController::OnMatchStateSet(FName State)
 	{
 		HandleMatchHasStarted();
 	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
 }
 
 void ABlasterPlayerController::OnRep_MatchState()
@@ -163,6 +167,10 @@ void ABlasterPlayerController::OnRep_MatchState()
 	if (MatchState == MatchState::InProgress)			//MatchState::InProgress is in the game mode namespace
 	{
 		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
 	}
 }
 
@@ -181,6 +189,20 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 	}
 }
 
+void ABlasterPlayerController::HandleCooldown()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		BlasterHUD->GetCharacterOverlay()->RemoveFromParent();
+
+		if (BlasterHUD->GetAnnouncement())
+		{
+			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Visible);				//hide announcemenet widget when game starts.
+		}
+	}
+}
+
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
 	/* If a player wants to join midgame, based on the current match state, access game mode to fill in the values of Match time and warmup time.*/
@@ -191,9 +213,9 @@ void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 		Warmuptime = BlasterGameMode->WarmupTime;
 		LevelStartingTime = BlasterGameMode->LevelStartingTime;
 
-		MatchState = BlasterGameMode->GetMatchState();					//triggers OnRep_MatchState()
+		MatchState = BlasterGameMode->GetMatchState();								//triggers OnRep_MatchState()
 
-		ClientJoinMidgame(MatchState, Warmuptime, MatchTime, LevelStartingTime);
+		ClientJoinMidgame(MatchState, Warmuptime, MatchTime, LevelStartingTime);	//only the client that invoked the server rpc will execute this fn.
 	}
 }
 
