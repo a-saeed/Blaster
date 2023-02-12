@@ -606,7 +606,10 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	GetCharacterMovement()->StopMovementImmediately(); //Prevents us from rotating character.
 
 	bDisableGameplay = true;
-
+	if (Combat)											//Disable shooting if eliminated
+	{
+		Combat->FireButtonPressed(false);
+	}
 	//Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -639,7 +642,16 @@ void ABlasterCharacter::Destroyed()
 	{
 		ElimBotComponent->DestroyComponent();
 	}
-	if (Combat && Combat->EquippedWeapon)
+
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	bool bShouldAlsoDestroyWeapon =
+		Combat &&
+		Combat->EquippedWeapon &&
+		BlasterGameMode &&
+		BlasterGameMode->GetMatchState() != MatchState::InProgress;
+
+	if (bShouldAlsoDestroyWeapon)
 	{
 		Combat->EquippedWeapon->Destroy();										//Don't leave the weapon hanging once cooldown state is over.
 	}
