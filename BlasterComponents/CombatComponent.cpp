@@ -371,17 +371,26 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 	//Player controller has access to HUD, we cast them to BlasterController and BlasterHUD.. from which we set the corsshairs textures
 	if (!Character || !Character->Controller) return;
 
-	if (!BlasterController)
-	{
-		BlasterController = Cast<ABlasterPlayerController>(Character->Controller);
-	}
+	BlasterController = BlasterController == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : BlasterController;
 
-	if (!BlasterHUD)
+	if (BlasterController)
 	{
-		BlasterHUD = Cast<ABlasterHUD>(BlasterController->GetHUD());
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(BlasterController->GetHUD()) : BlasterHUD;
 	}
 
 	if (!BlasterController || !BlasterHUD) return;
+
+	if (Character && Character->GetDisableGameplay())						//erase crroshairs gameplay is disabled;
+	{
+		HUDPackage.CrosshairsCenter = nullptr;
+		HUDPackage.CrosshairsTop = nullptr;
+		HUDPackage.CrosshairsRight = nullptr;
+		HUDPackage.CrosshairsLeft = nullptr;
+		HUDPackage.CrosshairsBottom = nullptr;
+
+		BlasterHUD->SetHUDPackage(HUDPackage);
+		return;
+	}
 
 	if (EquippedWeapon)
 	{
@@ -476,6 +485,11 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 void UCombatComponent::InterpFOV(float DeltaTime)
 {
 	if (!EquippedWeapon) return;
+
+	if (Character && Character->GetDisableGameplay())
+	{
+		bAiming = false;
+	}
 
 	if (bAiming)
 	{

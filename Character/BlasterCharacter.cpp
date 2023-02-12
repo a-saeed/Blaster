@@ -75,6 +75,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	//C7_3: we rgister the variables we want to replicate here in this function, with a condition to replicate it to only the client that owns the character.
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, Health);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -101,6 +102,13 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bDisableGameplay)											//disable rotation in place and control rotation
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
 	AimOffset(DeltaTime);
 
 	HideCameraIfCharatcterClose();
@@ -168,6 +176,8 @@ void ABlasterCharacter::LimitPitchView()
 
 void ABlasterCharacter::MoveForward(float value)
 {
+	if (bDisableGameplay) return;
+
 	if (Controller != nullptr && value != 0)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -178,6 +188,8 @@ void ABlasterCharacter::MoveForward(float value)
 
 void ABlasterCharacter::moveRight(float value)
 {
+	if (bDisableGameplay) return;
+
 	if (Controller != nullptr && value != 0)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -198,6 +210,7 @@ void ABlasterCharacter::Turn(float value)
 
 void ABlasterCharacter::Jump()
 {
+	if (bDisableGameplay) return;
 	//make character stand up if jump button is pressed while crouching.
 	if (bIsCrouched)
 	{
@@ -211,6 +224,8 @@ void ABlasterCharacter::Jump()
 
 void ABlasterCharacter::FireButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->FireButtonPressed(true);
@@ -219,6 +234,8 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->FireButtonPressed(false);
@@ -227,6 +244,8 @@ void ABlasterCharacter::FireButtonReleased()
 
 void ABlasterCharacter::ReloadButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->Reload();
@@ -235,6 +254,8 @@ void ABlasterCharacter::ReloadButtonPressed()
 
 void ABlasterCharacter::EquipButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat) //only equip weapon through the server.
 	{
 		if (HasAuthority()) //if ur the server, equip weapon
@@ -260,6 +281,8 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation() //this is an R
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (bIsCrouched) //bIsCrouched, Crouch, unCrouch ae all memebers of character movement comp.
 	{
 		UnCrouch();
@@ -272,6 +295,8 @@ void ABlasterCharacter::CrouchButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat)
 	{
 		Combat->SetAiming(true); //setAiming will also send an rpc to server to replicate bAiming.
@@ -280,6 +305,8 @@ void ABlasterCharacter::AimButtonPressed()
 
 void ABlasterCharacter::AimButtonReleased()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat)
 	{
 		Combat->SetAiming(false);
@@ -577,10 +604,9 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	//Disable character movement once eliminated
 	GetCharacterMovement()->DisableMovement(); //Stop moving with WASD.
 	GetCharacterMovement()->StopMovementImmediately(); //Prevents us from rotating character.
-	if (BlasterPlayerController)
-	{
-		DisableInput(BlasterPlayerController);
-	}
+
+	bDisableGameplay = true;
+
 	//Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -612,6 +638,10 @@ void ABlasterCharacter::Destroyed()
 	if (ElimBotComponent)
 	{
 		ElimBotComponent->DestroyComponent();
+	}
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Destroy();										//Don't leave the weapon hanging once cooldown state is over.
 	}
 }
 /*

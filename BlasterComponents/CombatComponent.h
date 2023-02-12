@@ -21,6 +21,10 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	/*
+	* Fire
+	*/
+	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
 
 protected:
 
@@ -44,8 +48,6 @@ protected:
 	/*
 	* Fire
 	*/
-	void FireButtonPressed(bool bPressed);
-
 	UFUNCTION(Server, Reliable)
 		void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 

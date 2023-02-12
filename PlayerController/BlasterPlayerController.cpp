@@ -12,6 +12,7 @@
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/HUD/Announcement.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 
 /*
 *  Overriden functions
@@ -217,6 +218,13 @@ void ABlasterPlayerController::HandleCooldown()
 
 			SetHUDAnnouncementInfoText(FString());
 		}
+	}
+
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if (BlasterCharacter && BlasterCharacter->GetCombatComponent())
+	{
+		BlasterCharacter->bDisableGameplay = true;
+		BlasterCharacter->GetCombatComponent()->FireButtonPressed(false);						//stop if firing once cooldown state is reached.
 	}
 }
 

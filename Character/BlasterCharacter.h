@@ -44,6 +44,9 @@ public:
 
 	virtual void Destroyed() override;
 
+	UPROPERTY(Replicated)
+		bool bDisableGameplay = false;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -89,6 +92,7 @@ private:
 	class ABlasterPlayerState* BlasterPlayerState;
 
 	void LimitPitchView();
+
 	/***************** ON_REPs & RPCs *******************/
 
 	UFUNCTION()
@@ -194,6 +198,8 @@ private:
 		class USoundCue* SpawnSound;
 public:	
 
+	FORCEINLINE UCombatComponent* GetCombatComponent() const { return Combat; }
+
 	//C7_4
 	void SetOverlappingWeapon(AWeapon* Weapon);
 
@@ -218,4 +224,6 @@ public:
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
 	ECombatState GetCombatState();
+
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 };
