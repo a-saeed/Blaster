@@ -13,6 +13,8 @@
 #include "Blaster/HUD/Announcement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/GameState/BlasterGameState.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 /*
 *  Overriden functions
@@ -216,7 +218,38 @@ void ABlasterPlayerController::HandleCooldown()
 			FString AnnouncementText("New Match Starts In: ");
 			SetHUDAnnouncementText(AnnouncementText);
 
-			SetHUDAnnouncementInfoText(FString());
+			/*Show the top scoring players in the Announ. widget*/
+			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(GetWorld()));
+			ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+
+			if (BlasterGameState && BlasterPlayerState)
+			{
+				TArray<ABlasterPlayerState*> TopPlayers = BlasterGameState->TopScoringPlayers;
+				FString InfoTextString;
+
+				if (TopPlayers.Num() == 0)
+				{
+					InfoTextString = FString("No One Scored A Single Kill..");
+				}
+				else if (TopPlayers.Num() == 1 && TopPlayers[0] == BlasterPlayerState)
+				{
+					InfoTextString = FString("You Are The Top Scorer..");
+				}
+				else if (TopPlayers.Num() == 1)
+				{
+					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
+				}
+				else if(TopPlayers.Num() > 1)
+				{
+					InfoTextString = FString("Players Tied For The Win: \n");
+
+					for (ABlasterPlayerState* TiedPlayer : TopPlayers)
+					{
+						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+					}
+				}
+				SetHUDAnnouncementInfoText(InfoTextString);
+			}
 		}
 	}
 
