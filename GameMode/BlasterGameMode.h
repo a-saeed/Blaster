@@ -17,7 +17,7 @@ UCLASS()
 class BLASTER_API ABlasterGameMode : public AGameMode
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	ABlasterGameMode();
@@ -27,7 +27,7 @@ public:
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimPlayerController, ABlasterPlayerController* AttackerPlayerController);
 
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
-	
+
 	UPROPERTY(EditDefaultsOnly)
 		float WarmupTime = 10.f;
 
@@ -47,11 +47,13 @@ protected:
 	AActor* FindPlayerStartWithLeastPlayersInrange();
 
 	UPROPERTY(EditAnywhere)
-	int32 PlayerStartRange = 2500;
-	
+		int32 PlayerStartRange = 2500;
+
 private:
 
 	float CountdownTime = 0.f;
+
 public:
 
+	FORCEINLINE float GetCountdownTime() const {return CountdownTime;}
 };

@@ -104,6 +104,17 @@ void ABlasterPlayerController::SetHUDTime()
 
 	uint32 SecondsLeft = FMath::CeilToInt32(TimeLeft);
 
+	/*
+	* if (HasAuthority())								//if on the server, get the countdown time directly from the game mode
+	{
+		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld())) : BlasterGameMode;
+		if (BlasterGameMode)
+		{
+			SecondsLeft = FMath::CeilToInt32(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
+		}
+	}
+	*/
+
 	if (CountdownInt != SecondsLeft)				//only update the HUD after 1 second has passed.
 	{
 		if (MatchState == MatchState::WaitingToStart || MatchState == MatchState::Cooldown)
@@ -212,7 +223,7 @@ void ABlasterPlayerController::HandleCooldown()
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
 	/* If a player wants to join midgame, based on the current match state, access game mode to fill in the values of Match time and warmup time.*/
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (BlasterGameMode)
 	{
 		MatchTime = BlasterGameMode->MatchTime;

@@ -103,6 +103,9 @@ private:
 
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+	
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
 
 	/*Filled from BlasterGameMode*/
 	float LevelStartingTime = 0.f;							//at which time did the Blaster map got loaded
