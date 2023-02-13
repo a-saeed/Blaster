@@ -114,7 +114,7 @@ private:
 	float CooldownTime = 0.f;
 
 	uint32 CountdownInt = 0;								//used to update the HUD every second
-	
+
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)			//match state is used in player controller since it's responsible for showing the HUD, we want to delay the overlay widget until match has begun.
 	FName MatchState;
 
@@ -132,6 +132,18 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+	/*
+	* Timer Blink / Sound
+	*/
+	FTimerHandle BlinkTimer;
+	void BlinkTimerFinished();
+
+	bool bAlarmplayed = false;
+
+	UPROPERTY(EditAnywhere, Category = "Timer")
+		class USoundCue* TickSound;
+
+	void TimeRunningOut();
 
 public:
 

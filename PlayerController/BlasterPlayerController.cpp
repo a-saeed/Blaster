@@ -15,6 +15,7 @@
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Sound/SoundCue.h"
 
 /*
 *  Overriden functions
@@ -430,6 +431,11 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 			return;
 		}
 
+		if (CountdownTime <= 30.f)
+		{
+			/* -play clock tick sound .. -Turn timer red .. -Blink timer*/
+			TimeRunningOut();
+		}
 		/*set MatchCountdown text in 00:00 format*/
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60);
 		int32 Seconds = CountdownTime - Minutes * 60;
@@ -437,6 +443,26 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 		FString MatchCountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetText(FText::FromString(MatchCountdownText));
 	}
+}
+
+void ABlasterPlayerController::TimeRunningOut()
+{
+	if (!bAlarmplayed && TickSound)
+	{
+		FVector Location = FVector(0, 0, 0);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), TickSound, Location);
+		bAlarmplayed = true;
+	}
+
+	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetColorAndOpacity(FSlateColor(FLinearColor::Red));
+	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetVisibility(ESlateVisibility::Visible);
+
+	GetWorldTimerManager().SetTimer(BlinkTimer, this, &ABlasterPlayerController::BlinkTimerFinished, 0.75f);
+}
+
+void ABlasterPlayerController::BlinkTimerFinished()
+{
+	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
