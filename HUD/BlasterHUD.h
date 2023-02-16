@@ -15,11 +15,18 @@ struct FHUDPackage
 	GENERATED_BODY()
 
 public:
-	class UTexture2D* CrosshairsCenter;
-	UTexture2D* CrosshairsTop;
-	UTexture2D* CrosshairsRight;
-	UTexture2D* CrosshairsLeft;
-	UTexture2D* CrosshairsBottom;
+
+	UPROPERTY()
+		class UTexture2D* CrosshairsCenter;
+	UPROPERTY()
+		UTexture2D* CrosshairsTop;
+	UPROPERTY()
+		UTexture2D* CrosshairsRight;
+	UPROPERTY()
+		UTexture2D* CrosshairsLeft;
+	UPROPERTY()
+		UTexture2D* CrosshairsBottom;
+
 	float CrosshairSpread;
 	FLinearColor CrosshairsColor;
 };
@@ -61,6 +68,7 @@ private:
 	/*
 	* ANNOUNCEMENT WIDGET
 	*/
+	UPROPERTY()
 	class UAnnouncement* Announcement;
 
 	UPROPERTY(EditAnywhere, Category = "Announcements")

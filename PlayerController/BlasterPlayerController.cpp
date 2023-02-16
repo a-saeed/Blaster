@@ -108,16 +108,15 @@ void ABlasterPlayerController::SetHUDTime()
 
 	uint32 SecondsLeft = FMath::CeilToInt32(TimeLeft);
 
-	/*
-	* if (HasAuthority())								//if on the server, get the countdown time directly from the game mode
+	if (HasAuthority())								//if on the server, get the countdown time directly from the game mode
 	{
 		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld())) : BlasterGameMode;
 		if (BlasterGameMode)
 		{
+			LevelStartingTime = BlasterGameMode->LevelStartingTime;
 			SecondsLeft = FMath::CeilToInt32(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
 		}
 	}
-	*/
 
 	if (CountdownInt != SecondsLeft)				//only update the HUD after 1 second has passed.
 	{
@@ -198,6 +197,12 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 	{
 		BlasterHUD->AddCharacterOverlay();
 
+		/*Possible later fix for HUD health
+			if (BlasterHUD->GetCharacterOverlay() == nullptr)
+			{
+				BlasterHUD->AddCharacterOverlay();
+			}
+		*/	
 		if (BlasterHUD->GetAnnouncement())
 		{
 			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);				//hide announcemenet widget when game starts.
@@ -455,14 +460,14 @@ void ABlasterPlayerController::TimeRunningOut()
 	}
 
 	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetColorAndOpacity(FSlateColor(FLinearColor::Red));
-	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetVisibility(ESlateVisibility::Visible);
+	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetVisibility(ESlateVisibility::Hidden);
 
-	GetWorldTimerManager().SetTimer(BlinkTimer, this, &ABlasterPlayerController::BlinkTimerFinished, 0.75f);
+	GetWorldTimerManager().SetTimer(BlinkTimer, this, &ABlasterPlayerController::BlinkTimerFinished, 0.25f);
 }
 
 void ABlasterPlayerController::BlinkTimerFinished()
 {
-	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetVisibility(ESlateVisibility::Hidden);
+	BlasterHUD->GetCharacterOverlay()->GetMatchCountdownText()->SetVisibility(ESlateVisibility::Visible);
 }
 
 void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
