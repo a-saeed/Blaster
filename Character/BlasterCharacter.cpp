@@ -581,6 +581,8 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
+		BlasterPlayerController->SetHUDCarriedAmmo(0);
+		BlasterPlayerController->SetHUDWeaponType(FText::FromString(" "));
 	}
 
 	bElimed = true;

@@ -58,10 +58,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		SetHUDCrosshairs(DeltaTime);
 		InterpFOV(DeltaTime);
 	}
-	if (EquippedWeapon)
-	{
-		UpdateHUDWeaponType();
-	}
 }
 /*
 *
@@ -94,6 +90,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
+	UpdateHUDWeaponType();
 
 	const USkeletalMeshSocket* HandSocket = Character-> GetMesh()-> GetSocketByName(FName("RightHandSocket")); //we created a socket in the character skeletal mesh and named it RightHandSocket
 
@@ -138,6 +135,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->bUseControllerRotationYaw = true;
 
 		PlayEquipSound();
+		UpdateHUDWeaponType();
 	}
 }
 /*
