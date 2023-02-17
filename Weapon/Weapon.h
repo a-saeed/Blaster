@@ -112,9 +112,6 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 		EWeaponState WeaponState;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
-		float FiringRange;
-
 	void SetWeaponMeshPhysics(bool bEnable);
 
 	/*
@@ -176,8 +173,6 @@ public:
 	void SetWeaponState(EWeaponState State);
 
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
-
-	FORCEINLINE float GetWeaponFiringRange() { return FiringRange; }
 
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }

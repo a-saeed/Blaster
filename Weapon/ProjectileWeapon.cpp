@@ -4,10 +4,6 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Projectile.h"
 
-AProjectileWeapon::AProjectileWeapon()
-{
-}
-
 void AProjectileWeapon::BeginPlay()
 {
 	Super::BeginPlay();
