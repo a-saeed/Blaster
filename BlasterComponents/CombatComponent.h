@@ -160,6 +160,9 @@ private:
 	void UpdateHUDCarriedAmmo();
 
 	UPROPERTY(EditAnywhere)
+		int32 StartingRocketAmmo = 2;
+
+	UPROPERTY(EditAnywhere)
 		int32 StartingARAmmo = 30;
 
 	UFUNCTION()

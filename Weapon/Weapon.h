@@ -43,19 +43,19 @@ public:
 	*	TEXTURES FOR THE WEAPON CROSSHAIRS
 	*/
 
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		class UTexture2D* CrosshairsCenter;
 
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		UTexture2D* CrosshairsTop;
 
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		UTexture2D* CrosshairsRight;
 
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		UTexture2D* CrosshairsLeft;
 
-	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		UTexture2D* CrosshairsBottom;
 	/*
 	*
@@ -168,7 +168,7 @@ private:
 	*  WEAPON TYPESS
 	*
 	*/
-	UPROPERTY(EditAnywhere, Category = "Weapon Type")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		EWeaponType WeaponType;
 
 public:
