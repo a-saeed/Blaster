@@ -195,14 +195,8 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD)
 	{
-		BlasterHUD->AddCharacterOverlay();
+		if(BlasterHUD->GetCharacterOverlay() == nullptr) BlasterHUD->AddCharacterOverlay();	   //Don't add character overlay twice
 
-		/*Possible later fix for HUD health
-			if (BlasterHUD->GetCharacterOverlay() == nullptr)
-			{
-				BlasterHUD->AddCharacterOverlay();
-			}
-		*/	
 		if (BlasterHUD->GetAnnouncement())
 		{
 			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);				//hide announcemenet widget when game starts.
