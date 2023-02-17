@@ -39,4 +39,15 @@ private:
 	float DestroyTime = 3.f;
 
 	void DestroyTimerFinished();
+	/*
+	* Looping sound
+	*/
+	UPROPERTY(EditAnywhere)
+	USoundCue* RocketLoopingSound;
+
+	UPROPERTY()
+	UAudioComponent* RocketLoopingSoundComponent;
+
+	UPROPERTY(EditAnywhere)
+	USoundAttenuation* RocketLoopingSoundAttenuation;			//att needed as default gets unset when created dynamically
 };

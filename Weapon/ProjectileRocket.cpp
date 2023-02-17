@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
 
 AProjectileRocket::AProjectileRocket()
 {
@@ -20,6 +21,7 @@ void AProjectileRocket::BeginPlay()
 {
 	Super::BeginPlay();
 
+	/*Create Smoke trail*/
 	if (TrailSystem)
 	{
 		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
@@ -31,7 +33,23 @@ void AProjectileRocket::BeginPlay()
 			EAttachLocation::KeepWorldPosition,	
 			false);
 	}
-
+	/*Play Attached rocket sound and stop OnHit .. not when the projectile is destroyed.. since destruction is delayed*/
+	if (RocketLoopingSound && RocketLoopingSoundAttenuation)
+	{
+		RocketLoopingSoundComponent = UGameplayStatics::SpawnSoundAttached(RocketLoopingSound,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			EAttachLocation::KeepWorldPosition,
+			false,
+			1.f,
+			1.f,
+			0.f,
+			RocketLoopingSoundAttenuation,
+			(USoundConcurrency *)nullptr,
+			false
+		);
+	}
 	/*Allow all clients to register a hit event*/
 	if (!HasAuthority()) 
 	{
@@ -47,6 +65,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	* -Play FX
 	* -Hide rocket mesh & Disable collision
 	* -Deactivate the system instance stored in the niagara component(the one we created in begin play) to stop generating more particles
+	* -Stop playing rocket sound
 	* -Actually destroy the projectile after the smoke trail has finished
 	*/
 
@@ -93,6 +112,11 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	if (TrailSystemComponent && TrailSystemComponent->GetSystemInstance())
 	{
 		TrailSystemComponent->GetSystemInstance()->Deactivate();
+	}
+
+	if (RocketLoopingSoundComponent && RocketLoopingSoundComponent->IsPlaying())
+	{
+		RocketLoopingSoundComponent->Stop();
 	}
 	/*Destroy the projectile after a timer to let smoke trail finish*/
 	GetWorldTimerManager().SetTimer(
