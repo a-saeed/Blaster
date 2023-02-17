@@ -3,6 +3,11 @@
 
 #include "ProjectileRocket.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Components/BoxComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Sound/SoundCue.h"
 
 AProjectileRocket::AProjectileRocket()
 {
@@ -11,16 +16,48 @@ AProjectileRocket::AProjectileRocket()
 	RocketMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);							//the mesh is purely cosmetic.. coliosion  box is responsible for collision
 }
 
+void AProjectileRocket::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (TrailSystem)
+	{
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,	
+			false);
+	}
+
+	/*Allow all clients to register a hit event*/
+	if (!HasAuthority()) 
+	{
+		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
+	}
+}
+
 void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	/*
+	* -Both Server and clients can now register hit events
+	* -Deal Damagae only on the server
+	* -Play FX
+	* -Hide rocket mesh & Disable collision
+	* -Deactivate the system instance stored in the niagara component(the one we created in begin play) to stop generating more particles
+	* -Actually destroy the projectile after the smoke trail has finished
+	*/
+
 	/*Get Instigator controller from Instigator pawn in order to apply damage*/
 	APawn* FiringPawn = GetInstigator();
-	if (FiringPawn)
+	if (FiringPawn && HasAuthority())
 	{
 		AController* FiringController = FiringPawn->GetController();
 		if (FiringController)
 		{
-			UGameplayStatics::ApplyRadialDamageWithFalloff(
+			 UGameplayStatics::ApplyRadialDamageWithFalloff(
 				GetWorld(),				
 				Damage,								//BaseDamage
 				Damage / 4,							//MinDamage
@@ -35,5 +72,37 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 		}
 	}
 
-	Super::OnHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);                //Destoys projectile and play particle effects agter applying damage.
+	if (ParticlesToPlay)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticlesToPlay, GetActorTransform());
+	}
+	if (SoundToPlay)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
+	}
+
+	if (RocketMesh)
+	{
+		RocketMesh->SetVisibility(false);
+	}
+	if (CollisionBox)
+	{
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	if (TrailSystemComponent && TrailSystemComponent->GetSystemInstance())
+	{
+		TrailSystemComponent->GetSystemInstance()->Deactivate();
+	}
+	/*Destroy the projectile after a timer to let smoke trail finish*/
+	GetWorldTimerManager().SetTimer(
+		DestroyTimer,
+		this,
+		&AProjectileRocket::DestroyTimerFinished,
+		DestroyTime);
+}
+
+void AProjectileRocket::DestroyTimerFinished()
+{
+	Destroy();
 }
