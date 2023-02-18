@@ -34,4 +34,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* CharacterImpactSound;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* BeamParticles;
 };
