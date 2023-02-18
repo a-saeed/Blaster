@@ -9,12 +9,17 @@
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
+#include "Blaster/Weapon/RocketMovementComponent.h"
 
 AProjectileRocket::AProjectileRocket()
 {
 	RocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("RocketMesh")));
 	RocketMesh->SetupAttachment(RootComponent);
 	RocketMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);							//the mesh is purely cosmetic.. coliosion  box is responsible for collision
+
+	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent"));
+	RocketMovementComponent->bRotationFollowsVelocity = true;
+	RocketMovementComponent->SetIsReplicated(true);
 }
 
 void AProjectileRocket::BeginPlay()
@@ -60,6 +65,7 @@ void AProjectileRocket::BeginPlay()
 void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	/*
+	* -If Hit self, Return to not apply damage; Rocket launcher will continue moving to check for other hits
 	* -Both Server and clients can now register hit events
 	* -Deal Damagae only on the server
 	* -Play FX
@@ -69,6 +75,10 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	* -Actually destroy the projectile after the smoke trail has finished
 	*/
 
+	if (OtherActor == GetOwner())
+	{
+		return;
+	}
 	/*Get Instigator controller from Instigator pawn in order to apply damage*/
 	APawn* FiringPawn = GetInstigator();
 	if (FiringPawn && HasAuthority())

@@ -25,6 +25,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* RocketMesh;
 
+	UPROPERTY(VisibleAnywhere)
+	class URocketMovementComponent* RocketMovementComponent;
+
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* TrailSystem;
 

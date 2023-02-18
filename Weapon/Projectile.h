@@ -47,12 +47,13 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 		class USoundCue* SoundToPlay;
-private:
 	/*
 	* MOVEMENT
 	*/
 	UPROPERTY(VisibleAnywhere)
 		class UProjectileMovementComponent* ProjectileMovementComponent;
+
+private:
 	/*
 	* FX
 	*/
