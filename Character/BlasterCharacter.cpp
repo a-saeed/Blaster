@@ -65,6 +65,10 @@ ABlasterCharacter::ABlasterCharacter()
 
 	//construct the dissolve timeline
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
+	//make Rockets/Grenades spawn at muzzle fl;ash socket location also when not in the server's view
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
