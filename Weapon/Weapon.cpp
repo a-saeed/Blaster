@@ -94,7 +94,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetWeaponMeshPhysics(false);
-
+		EnablePhysicsSMG(true);
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -104,6 +104,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 		SetWeaponMeshPhysics(true);
+		EnablePhysicsSMG(false);
 		break;
 	}
 }
@@ -116,11 +117,13 @@ void AWeapon::OnRep_WeaponState()
 
 		ShowPickupWidget(false);
 		SetWeaponMeshPhysics(false);
+		EnablePhysicsSMG(true);
 		break;
 
 	case EWeaponState::EWS_Dropped:
 
 		SetWeaponMeshPhysics(true);
+		EnablePhysicsSMG(false);
 		break;
 	}
 }
@@ -136,6 +139,26 @@ void AWeapon::SetWeaponMeshPhysics(bool bEnable)
 	else
 	{
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AWeapon::EnablePhysicsSMG(bool bEnable)
+{
+	/*Enabeling physics on SMGs in Equipped state to allow their straps to move*/
+	if (WeaponType == EWeaponType::EWT_SubmachineGun)
+	{
+		if (bEnable)	//Equipped State
+		{
+			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			WeaponMesh->SetEnableGravity(true);
+			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		}
+		else			//Dropped State
+		{
+			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block); //when dropped it can bounce off walls for ex.
+			WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore); //ignore any pawns (they could step on it)
+			WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+		}
 	}
 }
 

@@ -113,7 +113,7 @@ private:
 		EWeaponState WeaponState;
 
 	void SetWeaponMeshPhysics(bool bEnable);
-
+	void EnablePhysicsSMG(bool bEnable);
 	/*
 	*	REP_NOTIFIES
 	*/
