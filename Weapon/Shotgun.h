@@ -14,4 +14,12 @@ class BLASTER_API AShotgun : public AHitScanWeapon
 {
 	GENERATED_BODY()
 	
+public:
+
+	virtual void Fire(const FVector& HitTarget) override;
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	uint32 NumberOfShards = 10;			//No. of line traces to perform
 };
