@@ -10,6 +10,8 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
 #include "Net/UnrealNetwork.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AProjectile::AProjectile()
 {
@@ -50,13 +52,11 @@ void AProjectile::BeginPlay()
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit); //it only generates on the server, we won't get hit events on clients.
 	}
-
 }
 
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 /*
 * HIT EVENT
@@ -91,4 +91,37 @@ void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
 	}
+}
+/*
+*
+* Common Functionalities for Rokects and Grenade Launchers
+*
+*/
+void AProjectile::SpawnTrailSystem()
+{
+	if (TrailSystem)
+	{
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false);
+	}
+}
+
+void AProjectile::StartDestroyTimer()
+{
+	GetWorldTimerManager().SetTimer(
+		DestroyTimer,
+		this,
+		&AProjectile::DestroyTimerFinished,
+		DestroyTime);
+}
+
+void AProjectile::DestroyTimerFinished()
+{
+	Destroy();
 }

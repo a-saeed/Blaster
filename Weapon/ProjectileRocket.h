@@ -22,26 +22,8 @@ protected:
 
 private:
 
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* RocketMesh;
-
 	UPROPERTY(VisibleAnywhere)
 	class URocketMovementComponent* RocketMovementComponent;
-
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* TrailSystem;
-
-	UPROPERTY()
-	class UNiagaraComponent* TrailSystemComponent;
-	/*
-	* Trail System Timer
-	*/
-	FTimerHandle DestroyTimer;
-
-	UPROPERTY(EditAnywhere)
-	float DestroyTime = 3.f;
-
-	void DestroyTimerFinished();
 	/*
 	* Looping sound
 	*/

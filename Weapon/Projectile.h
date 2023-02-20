@@ -52,6 +52,23 @@ protected:
 	*/
 	UPROPERTY(VisibleAnywhere)
 		class UProjectileMovementComponent* ProjectileMovementComponent;
+	/*
+	* 
+	* Common Functionalities for Rokects and Grenade Launchers
+	* 
+	*/
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* ProjectileMesh;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* TrailSystem;
+
+	UPROPERTY()
+	class UNiagaraComponent* TrailSystemComponent;
+
+	void SpawnTrailSystem();
+	void StartDestroyTimer();
+	void DestroyTimerFinished();
 
 private:
 	/*
@@ -73,7 +90,14 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 		USoundCue* CharacterImpactSound;
-	
+	/*
+	* Trail System Timer
+	*/
+	FTimerHandle DestroyTimer;
+
+	UPROPERTY(EditAnywhere)
+	float DestroyTime = 3.f;
+
 public:	
 	
 	

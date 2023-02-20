@@ -3,7 +3,6 @@
 
 #include "ProjectileRocket.h"
 #include "Kismet/GameplayStatics.h"
-#include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystem.h"
@@ -13,9 +12,9 @@
 
 AProjectileRocket::AProjectileRocket()
 {
-	RocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("RocketMesh")));
-	RocketMesh->SetupAttachment(RootComponent);
-	RocketMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);							//the mesh is purely cosmetic.. coliosion  box is responsible for collision
+	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("RocketMesh")));
+	ProjectileMesh->SetupAttachment(RootComponent);
+	ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);							//the mesh is purely cosmetic.. coliosion  box is responsible for collision
 
 	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent"));
 	RocketMovementComponent->bRotationFollowsVelocity = true;
@@ -27,17 +26,7 @@ void AProjectileRocket::BeginPlay()
 	Super::BeginPlay();
 
 	/*Create Smoke trail*/
-	if (TrailSystem)
-	{
-		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			TrailSystem,
-			GetRootComponent(),
-			FName(),
-			GetActorLocation(),
-			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,	
-			false);
-	}
+	SpawnTrailSystem();
 	/*Play Attached rocket sound and stop OnHit .. not when the projectile is destroyed.. since destruction is delayed*/
 	if (RocketLoopingSound && RocketLoopingSoundAttenuation)
 	{
@@ -110,9 +99,9 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
 	}
 
-	if (RocketMesh)
+	if (ProjectileMesh)
 	{
-		RocketMesh->SetVisibility(false);
+		ProjectileMesh->SetVisibility(false);
 	}
 	if (CollisionBox)
 	{
@@ -129,14 +118,5 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 		RocketLoopingSoundComponent->Stop();
 	}
 	/*Destroy the projectile after a timer to let smoke trail finish*/
-	GetWorldTimerManager().SetTimer(
-		DestroyTimer,
-		this,
-		&AProjectileRocket::DestroyTimerFinished,
-		DestroyTime);
-}
-
-void AProjectileRocket::DestroyTimerFinished()
-{
-	Destroy();
+	StartDestroyTimer();
 }
