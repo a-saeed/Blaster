@@ -44,7 +44,7 @@ void AShotgun::Fire(const FVector& HitTarget)
 				}
 				PlayCharacterEffects(FireHitResult);
 			}
-			else
+			else if(FireHitResult.bBlockingHit)
 			{
 				PlaySurfaceEffects(FireHitResult);
 			}

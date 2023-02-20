@@ -49,7 +49,10 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			}
 			PlayCharacterEffects(FireHitResult);
 		}
-		PlaySurfaceEffects(FireHitResult);
+		else if (FireHitResult.bBlockingHit)
+		{
+			PlaySurfaceEffects(FireHitResult);
+		}
 	}
 }
 /*
