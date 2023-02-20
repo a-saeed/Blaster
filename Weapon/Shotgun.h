@@ -20,6 +20,6 @@ public:
 
 private:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	uint32 NumberOfShards = 10;			//No. of line traces to perform
 };
