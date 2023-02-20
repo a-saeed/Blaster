@@ -18,14 +18,23 @@ public:
 	
 	virtual void Fire(const FVector& HitTarget) override;
 
+
 protected:
 
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
 
-private:
+	void PerformLineTrace(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHitResult);
+
+	void PlayBeamTrailEffect(const FVector& BeamStart, const FVector& BeamEnd);
+
+	void PlaySurfaceEffects(FHitResult& FireHitResult);
+
+	void PlayCharacterEffects(FHitResult& FireHitResult);
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 10.f;
+
+private:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ImpactParticles;
