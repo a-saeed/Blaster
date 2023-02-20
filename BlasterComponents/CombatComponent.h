@@ -197,5 +197,15 @@ private:
 	void AutoReloadIfEmpty();
 	void PlayEquipSound();
 	void UpdateHUDWeaponType();
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* SniperZoomInSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* SniperZoomOutSound;
+
+	void DrawSniperScope(bool bDraw);
+	void PlaySniperScopeSound(bool bSniperAiming);
+
 public:	
 };

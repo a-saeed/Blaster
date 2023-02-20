@@ -54,6 +54,10 @@ public:
 	* Handle different behavior for match states
 	*/
 	void OnMatchStateSet(FName State);
+	/*
+	* Play Sniper scope animation
+	*/
+	void SetHUDSniperScope(bool bIsAiming);
 
 protected:
 

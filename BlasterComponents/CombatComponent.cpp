@@ -207,14 +207,17 @@ void UCombatComponent::FinishReloading() //called from animation bluprint
 */				
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
+	if (!Character || !EquippedWeapon) return;
+
 	bAiming = bIsAiming; //bAiming is what's being checked every frame by the ABP to see whether to play the aiming pose or not. client can set it and see his aim pose before sending rpc to server to allow for a smooth xp. once rpc reaches server it will replicate to all clients to see this client's aim pose.
 
-	if (Character)
-	{
-		//reduce character speed if we're aiming (it'll be set locally, but the movement compoenet takes care of replication..still, we can set in the server as well)
-		Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
-	}
+	//reduce character speed if we're aiming (it'll be set locally, but the movement compoenet takes care of replication..still, we can set in the server as well)
+	Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
+
 	ServerSetAiming(bIsAiming); //whether server or client, this rpc will be called from the respective machine and only executed on server, vraiable already replicates.
+
+	/*Sniper rifle scope*/
+	DrawSniperScope(bAiming);
 }
 					
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
@@ -592,5 +595,31 @@ void UCombatComponent::UpdateHUDWeaponType()
 	if (BlasterController)
 	{
 		BlasterController->SetHUDWeaponType(UEnum::GetDisplayValueAsText(EquippedWeapon->GetWeaponType()));
+	}
+}
+
+void UCombatComponent::DrawSniperScope(bool bDraw)
+{
+	if (Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	{
+		BlasterController = BlasterController == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : BlasterController;
+		if (BlasterController)
+		{
+			BlasterController->SetHUDSniperScope(bDraw);
+			PlaySniperScopeSound(bDraw);
+		}
+	}
+}
+void UCombatComponent::PlaySniperScopeSound(bool bSniperAiming)
+{
+	if (bSniperAiming)
+	{
+		if (SniperZoomInSound)
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomInSound);
+	}
+	else
+	{
+		if(SniperZoomOutSound)
+			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomOutSound);
 	}
 }

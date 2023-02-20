@@ -650,6 +650,12 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ElimSound, GetActorLocation());
 	}
+
+	//UnScope sniper rifle if eliminated while scoping
+	if (IsLocallyControlled() && Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	{
+		Combat->DrawSniperScope(false);
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()

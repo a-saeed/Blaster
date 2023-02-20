@@ -44,6 +44,7 @@ public:
 	
 	void AddCharacterOverlay(); //called by the player controller
 	void AddAnnouncement();
+	void AddSniperScope();
 
 protected:
 
@@ -73,6 +74,14 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Announcements")
 		TSubclassOf<class UUserWidget> AnnouncementClass;
+	/*
+	* Sniper Scope WIDGET
+	*/
+	UPROPERTY()
+		class USniperScope* SniperScope;
+
+	UPROPERTY(EditAnywhere, Category = "Sniper Scope")
+		TSubclassOf<class UUserWidget> SniperScopeClass;
 
 public:
 
@@ -81,4 +90,6 @@ public:
 	FORCEINLINE UCharacterOverlay* GetCharacterOverlay(){ return CharacterOverlay; }
 
 	FORCEINLINE UAnnouncement* GetAnnouncement(){ return Announcement; }
+
+	FORCEINLINE USniperScope* GetSniperScope() { return SniperScope; }
 };

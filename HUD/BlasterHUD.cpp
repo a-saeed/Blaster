@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
 #include "Announcement.h"
+#include "SniperScope.h"
 
 void ABlasterHUD::BeginPlay()
 {
@@ -98,5 +99,15 @@ void ABlasterHUD::AddAnnouncement()
 	{
 		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
 		Announcement->AddToViewport();
+	}
+}
+
+void ABlasterHUD::AddSniperScope()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && SniperScopeClass)
+	{
+		SniperScope = CreateWidget<USniperScope>(PlayerController, SniperScopeClass);
+		SniperScope->AddToViewport();
 	}
 }

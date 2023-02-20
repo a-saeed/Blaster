@@ -11,6 +11,7 @@
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/HUD/Announcement.h"
+#include "Blaster/HUD/SniperScope.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/GameState/BlasterGameState.h"
@@ -514,5 +515,32 @@ void ABlasterPlayerController::SetHUDAnnouncementInfoText(FString InfoText)
 	if (bHUDValid)
 	{
 		BlasterHUD->GetAnnouncement()->GetInfoText()->SetText(FText::FromString(InfoText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDSniperScope(bool bIsAiming)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetSniperScope() &&
+		BlasterHUD->GetSniperScope()->GetScopeAnimation();
+
+	if (!BlasterHUD->GetSniperScope())
+	{
+		BlasterHUD->AddSniperScope();			//only create the widget if it doesn't exist
+	}
+
+	if (bHUDValid)
+	{
+		if (bIsAiming)
+		{
+			BlasterHUD->GetSniperScope()->PlayAnimation(BlasterHUD->GetSniperScope()->GetScopeAnimation());
+		}
+		else
+		{
+			BlasterHUD->GetSniperScope()->PlayAnimation(BlasterHUD->GetSniperScope()->GetScopeAnimation(), 0.f, 1, EUMGSequencePlayMode::Reverse);
+		}
+		
 	}
 }
