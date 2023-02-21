@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AProjectile::AProjectile()
 {
@@ -63,14 +64,13 @@ void AProjectile::Tick(float DeltaTime)
 */
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Multicast_OnHit(OtherActor);
+	SetImpactSurfaceEffects(OtherActor);
 
 	Destroy();
 }
 
-void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
+void AProjectile::SetImpactSurfaceEffects(AActor* OtherActor)
 {
-	//which surface did we hit?
 	if (OtherActor->Implements<UInteractWithCrosshairsInterface>())
 	{
 		ParticlesToPlay = CharacterImpactParticles;
@@ -81,6 +81,10 @@ void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
 		ParticlesToPlay = ImpactParticles;
 		SoundToPlay = ImpactSound;
 	}
+}
+
+void AProjectile::Destroyed()
+{
 	//on hit, play FX
 	if (ParticlesToPlay)
 	{
@@ -91,6 +95,8 @@ void AProjectile::Multicast_OnHit_Implementation(AActor* OtherActor)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
 	}
+
+	Super::Destroyed();
 }
 /*
 *
@@ -124,4 +130,44 @@ void AProjectile::StartDestroyTimer()
 void AProjectile::DestroyTimerFinished()
 {
 	Destroy();
+}
+
+void AProjectile::ExplodeDamageWithFX()
+{
+	/*
+	* -Apply radial damage
+	* -Spawn Hit Effects
+	*/
+
+	/*Get Instigator controller from Instigator pawn in order to apply damage*/
+	APawn* FiringPawn = GetInstigator();
+	if (FiringPawn && HasAuthority())
+	{
+		AController* FiringController = FiringPawn->GetController();
+		if (FiringController)
+		{
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				GetWorld(),
+				Damage,								//BaseDamage
+				Damage / 4,							//MinDamage
+				GetActorLocation(),					//OriginOfDamage
+				200,								//DamageInnerRadius
+				500,								//DamageOuterRadius
+				1.f,								//DamageFallof (Linear)	
+				UDamageType::StaticClass(),			//DamageType
+				TArray<AActor*>(),					//IgnoredActors
+				this,								//DamageCauser (this projectile)
+				FiringController);					//InstigatorController
+		}
+	}
+
+	if (ImpactParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+	}
+
+	if (ImpactSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation());
+	}
 }

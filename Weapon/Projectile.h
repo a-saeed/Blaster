@@ -12,13 +12,12 @@ class BLASTER_API AProjectile : public AActor
 	GENERATED_BODY()
 	
 public:	
-	
+
 	AProjectile();
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_OnHit(AActor* OtherActor);
+	virtual void Destroyed() override;
 
 protected:
 	
@@ -43,10 +42,18 @@ protected:
 	* Fx
 	*/
 	UPROPERTY(EditAnywhere)
-		class UParticleSystem* ParticlesToPlay;
+	class UParticleSystem* ImpactParticles;
 
 	UPROPERTY(EditAnywhere)
-		class USoundCue* SoundToPlay;
+	class USoundCue* ImpactSound;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* CharacterImpactParticles;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* CharacterImpactSound;
+
+	void SetImpactSurfaceEffects(AActor* OtherActor);
 	/*
 	* MOVEMENT
 	*/
@@ -69,6 +76,7 @@ protected:
 	void SpawnTrailSystem();
 	void StartDestroyTimer();
 	void DestroyTimerFinished();
+	void ExplodeDamageWithFX();
 
 private:
 	/*
@@ -79,17 +87,11 @@ private:
 
 	class UParticleSystemComponent* TracerComponent;
 
-	UPROPERTY(EditAnywhere)
-		UParticleSystem* ImpactParticles;
-	
-	UPROPERTY(EditAnywhere)
-		USoundCue* ImpactSound;
+	UPROPERTY()
+		UParticleSystem* ParticlesToPlay;
 
-	UPROPERTY(EditAnywhere)
-		UParticleSystem* CharacterImpactParticles;
-	
-	UPROPERTY(EditAnywhere)
-		USoundCue* CharacterImpactSound;
+	UPROPERTY()
+		USoundCue* SoundToPlay;
 	/*
 	* Trail System Timer
 	*/

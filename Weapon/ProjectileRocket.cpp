@@ -68,36 +68,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	{
 		return;
 	}
-	/*Get Instigator controller from Instigator pawn in order to apply damage*/
-	APawn* FiringPawn = GetInstigator();
-	if (FiringPawn && HasAuthority())
-	{
-		AController* FiringController = FiringPawn->GetController();
-		if (FiringController)
-		{
-			 UGameplayStatics::ApplyRadialDamageWithFalloff(
-				GetWorld(),				
-				Damage,								//BaseDamage
-				Damage / 4,							//MinDamage
-				GetActorLocation(),					//OriginOfDamage
-				200,								//DamageInnerRadius
-				500,								//DamageOuterRadius
-				1.f,								//DamageFallof (Linear)	
-				UDamageType::StaticClass(),			//DamageType
-				TArray<AActor*>(),					//IgnoredActors
-				this,								//DamageCauser (this projectile)
-				FiringController);					//InstigatorController
-		}
-	}
-
-	if (ParticlesToPlay)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ParticlesToPlay, GetActorTransform());
-	}
-	if (SoundToPlay)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SoundToPlay, GetActorLocation());
-	}
+	ExplodeDamageWithFX();  //apply radial damage
 
 	if (ProjectileMesh)
 	{
