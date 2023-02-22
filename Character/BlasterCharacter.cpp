@@ -656,7 +656,7 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	}
 
 	//UnScope sniper rifle if eliminated while scoping
-	if (IsLocallyControlled() && Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	if (IsLocallyControlled() && Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle && Combat->bAiming)
 	{
 		Combat->DrawSniperScope(false);
 	}
