@@ -77,7 +77,16 @@ protected:
 	void StartDestroyTimer();
 	void DestroyTimerFinished();
 	void ExplodeDamageWithFX();
+	/*
+	*
+	* Radial damage parameters
+	*
+	*/
+	UPROPERTY(EditAnywhere)
+	float DamageInnerRadius;
 
+	UPROPERTY(EditAnywhere)
+	float DamageOuterRadius;
 private:
 	/*
 	* FX

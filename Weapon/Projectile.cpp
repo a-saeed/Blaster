@@ -148,16 +148,16 @@ void AProjectile::ExplodeDamageWithFX()
 		{
 			UGameplayStatics::ApplyRadialDamageWithFalloff(
 				GetWorld(),
-				Damage,								//BaseDamage
-				Damage / 4,							//MinDamage
-				GetActorLocation(),					//OriginOfDamage
-				200,								//DamageInnerRadius
-				500,								//DamageOuterRadius
-				1.f,								//DamageFallof (Linear)	
-				UDamageType::StaticClass(),			//DamageType
-				TArray<AActor*>(),					//IgnoredActors
-				this,								//DamageCauser (this projectile)
-				FiringController);					//InstigatorController
+				Damage,											 //BaseDamage
+				Damage / 4,										 //MinDamage
+				GetActorLocation(),								 //OriginOfDamage
+				DamageInnerRadius,								 //DamageInnerRadius
+				DamageOuterRadius,								 //DamageOuterRadius
+				1.f,											 //DamageFallof (Linear)	
+				UDamageType::StaticClass(),						 //DamageType
+				TArray<AActor*>(),								 //IgnoredActors
+				this,											 //DamageCauser (this projectile)
+				FiringController);								 //InstigatorController
 		}
 	}
 
