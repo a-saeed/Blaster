@@ -200,6 +200,39 @@ void UCombatComponent::FinishReloading() //called from animation bluprint
 	}
 }
 
+void UCombatComponent::ShotgunShellReload()
+{
+	if (Character && Character->HasAuthority())		//only server should change/update ammo values. and since they are replicated, clients will get notified.
+	{
+		UpdateShotgunAmmoValues();
+	}
+}
+
+void UCombatComponent::UpdateShotgunAmmoValues()
+{
+	if (!EquippedWeapon) return;
+
+	EquippedWeapon->AddAmmo(1);
+	CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+	CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	UpdateHUDCarriedAmmo();
+
+	bCanFire = true;					//Allow interrupting reload animation to fire.
+	
+	if (CarriedAmmo == 0 || EquippedWeapon->IsFull())
+	{
+		JumpToShotgunEnd();
+	}
+}
+
+void UCombatComponent::JumpToShotgunEnd()
+{
+	UAnimInstance* AnimeInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimeInstance)
+	{
+		AnimeInstance->Montage_JumpToSection(FName("ShotgunEnd"));
+	}
+}
 /*
 *
 * SetAiming , RPCs , REP_NOTIFIES
@@ -265,6 +298,14 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
+	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)   //Allow shotgun to interrupt reload animation
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;		//interupt reload montage to fire montage.. set the combat state to unoccupied.
+		return;
+	}
+
 	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
@@ -298,6 +339,15 @@ void UCombatComponent::FireTimerFinished()
 
 bool UCombatComponent::CanFire()
 {
+	bool bInterruptShotgunReload =
+		EquippedWeapon &&
+		!EquippedWeapon->IsEmpty() &&
+		bCanFire &&
+		CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
+
+	if (bInterruptShotgunReload) return true;
+
 	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 /*
@@ -536,6 +586,17 @@ void UCombatComponent::SetCarriedAmmoOnEquip()
 
 void UCombatComponent::OnRep_CarriedAmmo()
 {
+	bool bJumpToShotgunEnd =
+		CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun &&
+		CarriedAmmo == 0;
+
+	if (bJumpToShotgunEnd)
+	{
+		JumpToShotgunEnd();
+	}
+
 	UpdateHUDCarriedAmmo();
 }
 
@@ -553,6 +614,8 @@ void UCombatComponent::UpdateAmmoValues()
 	if (!EquippedWeapon) return;
 
 	int32 RequiredAmmo = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetCurrentAmmo();
+
+	if (RequiredAmmo == 0) return;				//as in the case of shotgun where we update it manually 
 
 	if (CarriedAmmo <= RequiredAmmo)
 	{

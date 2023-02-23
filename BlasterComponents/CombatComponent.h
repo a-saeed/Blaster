@@ -28,6 +28,7 @@ public:
 	*/
 	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
 
+	void JumpToShotgunEnd();
 protected:
 
 	virtual void BeginPlay() override;
@@ -67,7 +68,13 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 		void FinishReloading();
+
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
+
 	void UpdateAmmoValues();
+
+	void UpdateShotgunAmmoValues();
 	/*
 	* Corsshairs
 	*/
