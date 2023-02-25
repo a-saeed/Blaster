@@ -31,6 +31,10 @@ AWeapon::AWeapon()
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PicupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
 
+	/*Custom depth outline effect*/
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);									//all weapons start off with custom depth enabled.
 }
 
 void AWeapon::BeginPlay()
@@ -96,6 +100,8 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetWeaponMeshPhysics(false);
 		EnablePhysicsSMG(true);
+
+		EnableCustomDepth(false);
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -106,6 +112,10 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		}
 		SetWeaponMeshPhysics(true);
 		EnablePhysicsSMG(false);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	}
 }
@@ -119,12 +129,18 @@ void AWeapon::OnRep_WeaponState()
 		ShowPickupWidget(false);
 		SetWeaponMeshPhysics(false);
 		EnablePhysicsSMG(true);
+
+		EnableCustomDepth(false);
 		break;
 
 	case EWeaponState::EWS_Dropped:
 
 		SetWeaponMeshPhysics(true);
 		EnablePhysicsSMG(false);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	}
 }
@@ -251,4 +267,17 @@ void AWeapon::SetHUDAmmo()
 			BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
 		}
 	}
+}
+/*
+*
+*  Weapon Outline Effect
+*
+*/
+void AWeapon::EnableCustomDepth(bool bEnable)
+{
+	if (WeaponMesh)
+	{
+		WeaponMesh->SetRenderCustomDepth(bEnable);
+	}
+
 }

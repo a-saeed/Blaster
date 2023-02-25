@@ -64,6 +64,12 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class USoundCue* EquipSound;
+	/*
+	*
+	*  Enable/Disable Custom Depth
+	*
+	*/
+	void EnableCustomDepth(bool bEnable);
 
 protected:
 
