@@ -511,6 +511,18 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
+	if (Combat->CombatState == ECombatState::ECS_ThrowingGrenade)
+	{
+		if (AO_Yaw > 0.f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (AO_Yaw < 0.f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+	}
+
 	if (AO_Yaw > 90.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Right;
