@@ -34,6 +34,7 @@ public:
 	void PlayFireMontage(bool bAiming);
 	void PlayElimMontage();
 	void PlayReloadMontage();
+	void PlayThrowGrenadeMontage();
 	/*
 	* ELIMINATION
 	*/
@@ -66,6 +67,7 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void ReloadButtonPressed();
+	void GrenadeButtonPressed();
 	/*poll for ane relevant classes(player state) and once they're available, initialize our HUD*/
 	void PollInit();
 
@@ -122,6 +124,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 		class UAnimMontage* ReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+		class UAnimMontage* ThrowGrenadeMontage;
 
 	void PlayHitreactMontage(); //used in multicast rpc
 	/*

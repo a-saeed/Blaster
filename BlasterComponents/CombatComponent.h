@@ -81,6 +81,16 @@ protected:
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
+	/*
+	* Grenades
+	*/
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
 
 private:
 

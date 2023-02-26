@@ -81,7 +81,7 @@ void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
 	
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (!Character || !WeaponToEquip) return;
+	if (!Character || !WeaponToEquip || CombatState != ECombatState::ECS_Unoccupied) return;
 	/*if we already have an equipped weapon, drop it if we are to equip another weapon*/
 	if (EquippedWeapon)
 	{
@@ -145,7 +145,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 */
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading && !EquippedWeapon->IsFull())//already reloading
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && !EquippedWeapon->IsFull())//already reloading
 	{
 		ServerReload();
 	}
@@ -171,6 +171,13 @@ void UCombatComponent::OnRep_CombatState()
 		if (bFireButtonPressed)
 		{
 			FireButtonPressed(true);
+		}
+		break;
+	
+	case ECombatState::ECS_ThrowingGrenade:
+		if (Character && !Character->IsLocallyControlled())				//Don't play montage again if ur the client that threw the grenade
+		{
+			Character->PlayThrowGrenadeMontage();
 		}
 		break;
 	}
@@ -527,6 +534,45 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 		CrosshairsShootingFactor - 
 		CrosshairsOnTargetFactor
 		;
+}
+/*
+*
+* Throwing Grenades
+*
+*/
+void UCombatComponent::ThrowGrenade()
+{
+	if (CombatState != ECombatState::ECS_Unoccupied) return;  //don't spam the grenade montage
+
+	/*Server and Clients alike can call ThrowGrenade
+	* Don't make client wait for replication of combat state to play the throw montage
+	* Play it locally on his machine then the server rpc will let server and other clients know that this character is playing a throw grenade monatge
+	*/
+	if (Character)
+	{
+		CombatState = ECombatState::ECS_ThrowingGrenade;
+		Character->PlayThrowGrenadeMontage();
+	}
+
+	if (Character && !Character->HasAuthority())			//if this is the server, then he already played the montage and replicated the state, no need to do it again
+	{
+		ServerThrowGrenade();
+	}
+}
+
+void UCombatComponent::ServerThrowGrenade_Implementation()
+{
+	if (Character)
+	{
+		CombatState = ECombatState::ECS_ThrowingGrenade;
+		Character->PlayThrowGrenadeMontage();
+	}
+}
+
+void UCombatComponent::ThrowGrenadeFinished()
+{
+	//once the montage finishes.. return combat state back to unoccupied
+	CombatState = ECombatState::ECS_Unoccupied;
 }
 /*
 *
