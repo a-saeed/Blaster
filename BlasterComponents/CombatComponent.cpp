@@ -11,6 +11,7 @@
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/Weapon/Projectile.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -553,7 +554,7 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 */
 void UCombatComponent::ThrowGrenade()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied) return;  //don't spam the grenade montage
+	if (CombatState != ECombatState::ECS_Unoccupied || !EquippedWeapon) return;  //don't spam the grenade montage
 
 	/*Server and Clients alike can call ThrowGrenade
 	* Don't make client wait for replication of combat state to play the throw montage
@@ -597,6 +598,21 @@ void UCombatComponent::GrabGrenade()
 void UCombatComponent::LaunchGrenade()
 {
 	ShowAttachedGrenade(false);
+	if (Character && Character->HasAuthority() && GrenadeClass && Character->GetAttachedGrenade())
+	{
+		FVector StartingLocation = Character->GetAttachedGrenade()->GetComponentLocation();
+		FVector ToTarget = HitTarget - StartingLocation;
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = Character;
+		SpawnParams.Instigator = Character;
+
+		GetWorld()->SpawnActor<AProjectile>(
+			GrenadeClass,
+			StartingLocation,
+			ToTarget.Rotation(),
+			SpawnParams
+		);
+	}
 }
 
 void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)

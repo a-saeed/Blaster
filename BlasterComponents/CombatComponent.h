@@ -101,6 +101,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void LaunchGrenade();
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> GrenadeClass;
+
 	void ShowAttachedGrenade(bool bShowGrenade);
 	
 private:
