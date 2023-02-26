@@ -95,6 +95,9 @@ private:
 
 	void LimitPitchView();
 
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+
 	/***************** ON_REPs & RPCs *******************/
 
 	UFUNCTION()
