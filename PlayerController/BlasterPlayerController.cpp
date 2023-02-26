@@ -82,6 +82,12 @@ void ABlasterPlayerController::PollInit()
 				SetHUDHealth(HUDHealth, HUDMaxHealth);
 				SetHUDScore(HUDScore);
 				SetHUDDefeats(HUDDefeats);
+
+				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+				if (BlasterCharacter && BlasterCharacter->GetCombatComponent())
+				{
+					SetHUDGrenades(BlasterCharacter->GetCombatComponent()->GetGrenades());
+				}	
 			}
 		}
 	}
@@ -542,5 +548,25 @@ void ABlasterPlayerController::SetHUDSniperScope(bool bIsAiming)
 			BlasterHUD->GetSniperScope()->PlayAnimation(BlasterHUD->GetSniperScope()->GetScopeAnimation(), 0.f, 1, EUMGSequencePlayMode::Reverse);
 		}
 		
+	}
+}
+
+void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetGrenadesText();
+
+	if (bHUDValid)
+	{
+		/*set Defeats text*/
+		FString GrenadesText = FString::Printf(TEXT("%d"), Grenades);
+		BlasterHUD->GetCharacterOverlay()->GetGrenadesText()->SetText(FText::FromString(GrenadesText));
+	}
+	else	//Character overlay hasn't got initialized yet.
+	{
+		HUDGrenades = Grenades;
 	}
 }

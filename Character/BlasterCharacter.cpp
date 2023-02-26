@@ -589,6 +589,8 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 */
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCausor)
 {
+	if (bElimed) return;	//already eliminated, don't receive danage.
+
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth); // 0.f < H-D > MH .. health is repliacated, call onRep_Health
 
 	UpdateHUDHealth();

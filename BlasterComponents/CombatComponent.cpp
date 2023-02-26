@@ -27,6 +27,8 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	/*only the ownning client needs to see his own carried ammo..opposite to the ammo on the weapon as if a client dropped itand another picked it, it needs to see the how much ammo was used*/
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
+
+	DOREPLIFETIME_CONDITION(UCombatComponent, Grenades, COND_OwnerOnly);
 }
 
 void UCombatComponent::BeginPlay()
@@ -554,6 +556,7 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 */
 void UCombatComponent::ThrowGrenade()
 {
+	if (Grenades == 0) return;
 	if (CombatState != ECombatState::ECS_Unoccupied || !EquippedWeapon) return;  //don't spam the grenade montage
 
 	/*Server and Clients alike can call ThrowGrenade
@@ -571,16 +574,24 @@ void UCombatComponent::ThrowGrenade()
 	{
 		ServerThrowGrenade();
 	}
+	if (Character && Character->HasAuthority())			   //Server Won't call rpc, update HUD manually
+	{
+		Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades);
+		UpdateHUDGrenades();
+	}
 }
 
 void UCombatComponent::ServerThrowGrenade_Implementation()
 {
+	if (Grenades == 0) return;
 	if (Character)
 	{
 		CombatState = ECombatState::ECS_ThrowingGrenade;
 		Character->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
 	}
+	Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades);
+	UpdateHUDGrenades();
 }
 
 void UCombatComponent::ThrowGrenadeFinished()
@@ -601,7 +612,7 @@ void UCombatComponent::LaunchGrenade()
 	if (Character && Character->IsLocallyControlled())
 	{
 		ServerLaunchGrenade(HitTarget);
-	}	
+	}
 }
 
 void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& Target)
@@ -630,6 +641,21 @@ void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
 		Character->GetAttachedGrenade()->SetVisibility(bShowGrenade);
 	}
 }
+
+void UCombatComponent::OnRep_Grenades()
+{
+	UpdateHUDGrenades();
+}
+
+void UCombatComponent::UpdateHUDGrenades()
+{
+	BlasterController = BlasterController == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : BlasterController;
+	if (BlasterController)
+	{
+		BlasterController->SetHUDGrenades(Grenades);
+	}
+}
+
 /*
 *
 * AIMING AND FOV

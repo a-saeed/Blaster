@@ -58,6 +58,10 @@ public:
 	* Play Sniper scope animation
 	*/
 	void SetHUDSniperScope(bool bIsAiming);
+	/*
+	* Grenades
+	*/
+	void SetHUDGrenades(int32 Grenades);
 
 protected:
 
@@ -136,6 +140,7 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+	int32 HUDGrenades;
 	/*
 	* Timer Blink / Sound
 	*/

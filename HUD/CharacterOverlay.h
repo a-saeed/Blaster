@@ -51,6 +51,12 @@ private:
 	*/
 	UPROPERTY(meta = (BindWidget))
 		UTextBlock* MatchCountdownText;
+	/*
+	* Grenadees
+	*/
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GrenadesText;
+
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
@@ -66,4 +72,6 @@ public:
 	FORCEINLINE UTextBlock* GetWeaponTypeText() const { return WeaponTypeText; }
 
 	FORCEINLINE UTextBlock* GetMatchCountdownText() const { return MatchCountdownText; }
+
+	FORCEINLINE UTextBlock* GetGrenadesText() const { return GrenadesText; }
 };
