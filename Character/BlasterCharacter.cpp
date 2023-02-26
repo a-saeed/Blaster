@@ -94,6 +94,10 @@ void ABlasterCharacter::BeginPlay()
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SpawnSound, GetActorLocation());
 	}
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
+	}
 
 	LimitPitchView();
 

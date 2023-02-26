@@ -95,6 +95,14 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
 
+	UFUNCTION(BlueprintCallable)
+	void GrabGrenade();
+
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
+
+	void ShowAttachedGrenade(bool bShowGrenade);
+	
 private:
 
 	/*

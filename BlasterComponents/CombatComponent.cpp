@@ -588,6 +588,24 @@ void UCombatComponent::ThrowGrenadeFinished()
 	CombatState = ECombatState::ECS_Unoccupied;
 	AttachActorToRightHand(EquippedWeapon);
 }
+
+void UCombatComponent::GrabGrenade()
+{
+	ShowAttachedGrenade(true);
+}
+
+void UCombatComponent::LaunchGrenade()
+{
+	ShowAttachedGrenade(false);
+}
+
+void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
+{
+	if (Character && Character->GetAttachedGrenade())
+	{
+		Character->GetAttachedGrenade()->SetVisibility(bShowGrenade);
+	}
+}
 /*
 *
 * AIMING AND FOV
