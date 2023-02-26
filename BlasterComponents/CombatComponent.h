@@ -40,6 +40,7 @@ protected:
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
 	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
 
 	UFUNCTION()
 		void OnRep_EquippedWeapon();

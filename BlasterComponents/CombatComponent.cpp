@@ -116,6 +116,22 @@ void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
 	}
 }
 
+void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
+{
+	if (!Character || !ActorToAttach || !Character->GetMesh()) return;
+
+	FName PistolRifleSocket =
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SubmachineGun ||
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol ?
+		FName("PistolSocket") : FName("LeftHandSocket");
+
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(PistolRifleSocket);
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+}
+
 void UCombatComponent::OnRep_EquippedWeapon()
 {
 	/*need to make sure that the weapon state gets replicated first before we attach the weapon as we can't attach if physics is still enabeled*/
@@ -172,6 +188,7 @@ void UCombatComponent::OnRep_CombatState()
 		if (Character && !Character->IsLocallyControlled())				//Don't play montage again if ur the client that threw the grenade
 		{
 			Character->PlayThrowGrenadeMontage();
+			AttachActorToLeftHand(EquippedWeapon);
 		}
 		break;
 	}
@@ -546,6 +563,7 @@ void UCombatComponent::ThrowGrenade()
 	{
 		CombatState = ECombatState::ECS_ThrowingGrenade;
 		Character->PlayThrowGrenadeMontage();
+		AttachActorToLeftHand(EquippedWeapon);
 	}
 
 	if (Character && !Character->HasAuthority())			//if this is the server, then he already played the montage and replicated the state, no need to do it again
@@ -560,6 +578,7 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	{
 		CombatState = ECombatState::ECS_ThrowingGrenade;
 		Character->PlayThrowGrenadeMontage();
+		AttachActorToLeftHand(EquippedWeapon);
 	}
 }
 
@@ -567,6 +586,7 @@ void UCombatComponent::ThrowGrenadeFinished()
 {
 	//once the montage finishes.. return combat state back to unoccupied
 	CombatState = ECombatState::ECS_Unoccupied;
+	AttachActorToRightHand(EquippedWeapon);
 }
 /*
 *
