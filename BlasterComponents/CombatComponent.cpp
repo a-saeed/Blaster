@@ -82,39 +82,38 @@ void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip || CombatState != ECombatState::ECS_Unoccupied) return;
-	/*if we already have an equipped weapon, drop it if we are to equip another weapon*/
-	if (EquippedWeapon)
-	{
-		DropWeapon();
-	}
 
+	/*if we already have an equipped weapon, drop it if we are to equip another weapon*/
+	DropWeapon();
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
-	UpdateHUDWeaponType();
 
-	const USkeletalMeshSocket* HandSocket = Character-> GetMesh()-> GetSocketByName(FName("RightHandSocket")); //we created a socket in the character skeletal mesh and named it RightHandSocket
-
-	if (HandSocket)
-	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh()); //attach the weapon to the character mesh
-	}
-
+	AttachActorToRightHand(EquippedWeapon);
 	/*will trigger OnRep_Owner in the weapon class*/
 	EquippedWeapon->SetOwner(Character);
-
 	/*dispaly ammo amount in the weapon just equipped*/
 	EquippedWeapon->SetHUDAmmo();
 
 	/*set and display carried ammo on the server once weapon equipped, will trigger OnRep_CarriedAmmo*/
 	SetCarriedAmmoOnEquip();
-	UpdateHUDCarriedAmmo();
 
 	PlayEquipSound();
-
 	AutoReloadIfEmpty();
+	UpdateHUDWeaponType();
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+}
+
+void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
+{
+	if (!Character || !ActorToAttach || !Character->GetMesh()) return;
+
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket")); //we created a socket in the character skeletal mesh and named it RightHandSocket
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -124,13 +123,8 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	{
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
 
-		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket")); //we created a socket in the character skeletal mesh and named it RightHandSocket
+		AttachActorToRightHand(EquippedWeapon);
 
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh()); //attach the weapon to the character mesh
-		}
-		/*--------------------------------------------------------------------------------------*/
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 
@@ -620,6 +614,8 @@ void UCombatComponent::InitializeCarriedAmmo()
 
 void UCombatComponent::SetCarriedAmmoOnEquip()
 {
+	if (!EquippedWeapon) return;
+
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()]; //replicated and therfore will triiger OnRep_CarriedAmmo
@@ -628,6 +624,7 @@ void UCombatComponent::SetCarriedAmmoOnEquip()
 	{
 		CarriedAmmo = 0; //may want to add a rare weapon that no player has its type of ammo.
 	}
+	UpdateHUDCarriedAmmo();
 }
 
 void UCombatComponent::OnRep_CarriedAmmo()
@@ -683,7 +680,7 @@ void UCombatComponent::UpdateAmmoValues()
 */
 void UCombatComponent::PlayEquipSound()
 {
-	if (EquippedWeapon->EquipSound)
+	if (Character && EquippedWeapon && EquippedWeapon->EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedWeapon->EquipSound, Character->GetActorLocation());
 	}
@@ -691,7 +688,7 @@ void UCombatComponent::PlayEquipSound()
 
 void UCombatComponent::AutoReloadIfEmpty()
 {
-	if (EquippedWeapon->IsEmpty())
+	if (EquippedWeapon && EquippedWeapon->IsEmpty())
 	{
 		Reload();
 	}

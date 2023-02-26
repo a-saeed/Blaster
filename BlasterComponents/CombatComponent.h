@@ -39,6 +39,8 @@ protected:
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
+	void AttachActorToRightHand(AActor* ActorToAttach);
+
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
 	/*
