@@ -101,6 +101,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void LaunchGrenade();
 
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> GrenadeClass;
 
