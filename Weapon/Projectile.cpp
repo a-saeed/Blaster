@@ -35,18 +35,7 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//attach tracer particle system to bullet once spawned
-	if (Tracer)
-	{
-		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
-			Tracer,
-			CollisionBox,
-			FName(),
-			GetActorLocation(),
-			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition
-		);
-	}
+	SpawnBulletTracer();
 
 	//bind custom-made OnHit fn to the collisionBox HitEvent(but only on the server)
 	if (HasAuthority()) //this check isn't meaningless since projectile class is set to replicate
@@ -115,6 +104,22 @@ void AProjectile::SpawnTrailSystem()
 			GetActorRotation(),
 			EAttachLocation::KeepWorldPosition,
 			false);
+	}
+}
+
+void AProjectile::SpawnBulletTracer()
+{
+	//attach tracer particle system to bullet once spawned
+	if (Tracer)
+	{
+		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
+			Tracer,
+			CollisionBox,
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition
+		);
 	}
 }
 

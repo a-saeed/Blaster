@@ -74,6 +74,7 @@ protected:
 	class UNiagaraComponent* TrailSystemComponent;
 
 	void SpawnTrailSystem();
+	void SpawnBulletTracer();
 	void StartDestroyTimer();
 	void DestroyTimerFinished();
 	void ExplodeDamageWithFX();
