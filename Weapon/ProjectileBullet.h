@@ -25,7 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	//inherting from Projectile, no need for a ufunction macro
-	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
+	//virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
 	void ApplyPointDamage(AActor* Target);
 };
