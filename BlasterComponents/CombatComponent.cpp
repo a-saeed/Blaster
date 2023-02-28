@@ -715,6 +715,23 @@ void UCombatComponent::SetCarriedAmmoOnEquip()
 	UpdateHUDCarriedAmmo();
 }
 
+bool UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	if (CarriedAmmoMap.Contains(WeaponType))
+	{
+		if (CarriedAmmoMap[WeaponType] == MaxCarriedAmmo) return false;		//Don't add if full
+
+		CarriedAmmoMap[WeaponType] = FMath::Clamp(CarriedAmmoMap[WeaponType] + AmmoAmount, 0, MaxCarriedAmmo);
+		SetCarriedAmmoOnEquip();
+	}
+	if (EquippedWeapon && EquippedWeapon->GetWeaponType() == WeaponType)
+	{
+		AutoReloadIfEmpty();
+	}
+
+	return true;
+}
+
 void UCombatComponent::OnRep_CarriedAmmo()
 {
 	bool bJumpToShotgunEnd =

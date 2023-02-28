@@ -185,7 +185,10 @@ private:
 	*/
 	 /*Carried ammo for the currently equipped weapon*/
 	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
-		int32 CarriedAmmo;
+	int32 CarriedAmmo;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxCarriedAmmo = 70;
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
@@ -260,4 +263,10 @@ private:
 public:	
 
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
+	/*
+	* 
+	* Pickup Carried Ammo
+	* 
+	*/
+	bool PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 };
