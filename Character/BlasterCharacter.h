@@ -85,7 +85,10 @@ private:
 		class AWeapon* OverlappingWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UCombatComponent* Combat;
+	class UCombatComponent* Combat;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBuffComponent* Buff;
 
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;

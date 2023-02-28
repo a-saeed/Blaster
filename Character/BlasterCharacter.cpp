@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Animation/AnimInstance.h"
@@ -37,11 +38,14 @@ ABlasterCharacter::ABlasterCharacter()
 	bUseControllerRotationYaw = false; //lock player rotation while freely moving the camera.
 	GetCharacterMovement()->bOrientRotationToMovement = true; //rotate the character towards the direction of movement.
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 850.f, 0.f);
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //set to true to enable crouching on character movement comp.
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true); //set combat component to replicate.
 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //set to true to enable crouching on character movement comp.
+	//Buff Component
+	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	Buff->SetIsReplicated(true);
 
 	//don't make capsule and mesh block the camera
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -171,6 +175,10 @@ void ABlasterCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat-> Character = this; //combat comp private vars (charatcer) are now available to blaster character since it's a friend.
+	}
+	if (Buff)
+	{
+		Buff->Character = this;
 	}
 }
 
