@@ -51,6 +51,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* BeamParticles;
 
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* SniperGlow;
 	/*
 	* Trace end with scatter
 	*/

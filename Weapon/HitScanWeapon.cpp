@@ -53,6 +53,17 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		{
 			PlaySurfaceEffects(FireHitResult);
 		}
+
+		if (GetWeaponType() == EWeaponType::EWT_SniperRifle && SniperGlow)			//play sniper glow effect
+		{
+			UGameplayStatics::SpawnEmitterAttached(
+				SniperGlow,
+				GetRootComponent(),
+				FName(""),
+				SocketTransform.GetLocation(),
+				SocketTransform.GetRotation().Rotator(),
+				EAttachLocation::KeepWorldPosition);
+		}
 	}
 }
 /*
