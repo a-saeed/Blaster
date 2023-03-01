@@ -18,6 +18,8 @@ public:
 
 	AHealthPickup();
 
+	virtual void Destroyed() override;
+
 protected:
 
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -26,4 +28,18 @@ protected:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	float HealAmmount = 100.f;
+
+	UPROPERTY(EditAnywhere)
+	float HealingTime = 5.f;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* PickupEffectComponent;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* PickupEffect;
 };
