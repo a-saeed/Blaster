@@ -43,5 +43,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* PickupSound;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* PickupEffectComponent;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* PickupEffect;
 public:	
 };

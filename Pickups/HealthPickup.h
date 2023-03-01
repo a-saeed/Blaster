@@ -13,12 +13,6 @@ UCLASS()
 class BLASTER_API AHealthPickup : public APickup
 {
 	GENERATED_BODY()
-	
-public:
-
-	AHealthPickup();
-
-	virtual void Destroyed() override;
 
 protected:
 
@@ -36,10 +30,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float HealingTime = 5.f;
-
-	UPROPERTY(EditAnywhere)
-	class UNiagaraComponent* PickupEffectComponent;
-
-	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* PickupEffect;
 };
