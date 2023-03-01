@@ -48,6 +48,11 @@ public:
 	UPROPERTY(Replicated)
 		bool bDisableGameplay = false;
 
+	/*
+	* HUD Health
+	*/
+	void UpdateHUDHealth();
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -155,12 +160,9 @@ private:
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCausor);
 
-	//called each time damage is received
-	void UpdateHUDHealth();
-
 	//health rep notify
 	UFUNCTION()
-		void OnRep_Health();
+		void OnRep_Health(float LastHealth);
 	/*
 	* ELIMINATION
 	*/
@@ -210,6 +212,7 @@ private:
 public:	
 
 	FORCEINLINE UCombatComponent* GetCombatComponent() const { return Combat; }
+	FORCEINLINE UBuffComponent* GetBuffComponent() const { return Buff; }
 
 	//C7_4
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -233,6 +236,7 @@ public:
 
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 
 	ECombatState GetCombatState();
 

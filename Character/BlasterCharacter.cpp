@@ -617,10 +617,13 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	}
 }
 
-void ABlasterCharacter::OnRep_Health()
+void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	PlayHitreactMontage();
+	if (Health < LastHealth)
+	{
+		PlayHitreactMontage();
+	}
 }
 
 void ABlasterCharacter::UpdateHUDHealth()

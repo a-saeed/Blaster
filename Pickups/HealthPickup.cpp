@@ -9,7 +9,7 @@
 
 AHealthPickup::AHealthPickup()
 {
-	PickupEffectComponent = CreateAbstractDefaultSubobject<UNiagaraComponent>(TEXT("PickupEffectComponent"));
+	PickupEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupEffectComponent"));
 	PickupEffectComponent->SetupAttachment(RootComponent);
 }
 
@@ -17,12 +17,21 @@ void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 {
 	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
+	bool bHealedPlayer = false;
+
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter)
 	{
-		
+		UBuffComponent* Buff = BlasterCharacter->GetBuffComponent();
+		if (Buff)
+		{
+			bHealedPlayer = Buff->HealPlayer(HealAmount, HealingTime);
+		}
+		if (bHealedPlayer)
+		{
+			Destroy();
+		}
 	}
-	Destroy();
 }
 
 void AHealthPickup::Destroyed()

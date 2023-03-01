@@ -19,6 +19,8 @@ public:
 
 	friend class ABlasterCharacter;
 
+	bool HealPlayer(float HealAmount, float HealingTime);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -29,6 +31,15 @@ private:
 	*/
 	UPROPERTY()
 	class ABlasterCharacter* Character;
+	/*
+	* 
+	*	Heal Buff
+	* 
+	*/
+	bool bHealing = false;
+	float HealingRate = 0.f;
+	float AmountToHeal = 0.f;
+	void HealRampUp(float DeltaTime);
 
 public:			
 };
