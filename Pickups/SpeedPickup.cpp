@@ -14,7 +14,7 @@ void ASpeedPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 		UBuffComponent* Buff = BlasterCharacter->GetBuffComponent();
 		if (Buff)
 		{
-			
+			Buff->SpeedPlayer(BaseSpeedBuff, CrouchSpeedBuff, SpeedBuffTime);
 		}
 		Destroy();
 	}

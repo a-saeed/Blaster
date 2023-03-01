@@ -22,4 +22,15 @@ protected:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	float BaseSpeedBuff = 1600.f;
+
+	UPROPERTY(EditAnywhere)
+	float CrouchSpeedBuff = 850.f;
+
+	UPROPERTY(EditAnywhere)
+	float SpeedBuffTime = 30.f;
 };
