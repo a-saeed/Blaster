@@ -18,8 +18,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	friend class ABlasterCharacter;
-
+	
 	bool HealPlayer(float HealAmount, float HealingTime);
+	void SpeedPlayer(float BaseBuffedSpeed, float CrouchBuffedSpeed, float BuffTime);
 
 protected:
 
@@ -40,6 +41,27 @@ private:
 	float HealingRate = 0.f;
 	float AmountToHeal = 0.f;
 	void HealRampUp(float DeltaTime);
+	/*
+	*
+	*	Speed Buff
+	*
+	*/
+	float InitialBaseSpeed;
+	float InitialCrouchSpeed;
+	FTimerHandle SpeedTimerHandle;
+	void ResetSpeeds();
 
-public:			
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* SpeedEffect;
+
+	class UParticleSystemComponent* SpeedComponent;
+
+	void PlaySpeedEffects();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+
+public:		
+
+	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
 };

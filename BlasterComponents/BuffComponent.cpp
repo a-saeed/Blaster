@@ -3,6 +3,11 @@
 
 #include "BuffComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "TimerManager.h"
+#include "GameFrameWork/CharacterMovementComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 UBuffComponent::UBuffComponent()
 {
@@ -52,4 +57,63 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 		AmountToHeal = 0.f;				//if it's not already!
 	}
 }
+/*
+*
+*	Speed Buff
+*
+*/
+void UBuffComponent::SetInitialSpeeds(float BaseSpeed, float CrouchSpeed)
+{
+	InitialBaseSpeed = BaseSpeed;
+	InitialCrouchSpeed = CrouchSpeed;
+}
 
+void UBuffComponent::SpeedPlayer(float BaseBuffedSpeed, float CrouchBuffedSpeed, float BuffTime)
+{
+	if (!Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(SpeedTimerHandle, this, &UBuffComponent::ResetSpeeds, BuffTime);
+
+	MulticastSpeedBuff(BaseBuffedSpeed, CrouchBuffedSpeed);
+}
+
+void UBuffComponent::ResetSpeeds()
+{
+	MulticastSpeedBuff(InitialBaseSpeed, InitialCrouchSpeed);
+}
+
+void UBuffComponent::MulticastSpeedBuff_Implementation(float BaseSpeed, float CrouchSpeed)
+{
+	if (!Character || !Character->GetCharacterMovement()) return;
+
+	Character->GetCharacterMovement()->MaxWalkSpeed = BaseSpeed;
+	Character->GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
+
+	if (BaseSpeed > InitialBaseSpeed)
+	{
+		PlaySpeedEffects();
+	}
+	else
+	{
+		if (SpeedComponent)
+		{
+			SpeedComponent->DeactivateSystem();
+		}
+	}
+}
+
+void UBuffComponent::PlaySpeedEffects()
+{
+	if (SpeedEffect)
+	{
+		SpeedComponent = UGameplayStatics::SpawnEmitterAttached(
+			SpeedEffect,
+			Character->GetRootComponent(),
+			FName(""),
+			FVector(Character->GetActorLocation().X, Character->GetActorLocation().Y, Character->GetActorLocation().Z - 100),
+			Character->GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+}
