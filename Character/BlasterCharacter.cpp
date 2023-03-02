@@ -381,11 +381,6 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
-bool ABlasterCharacter::isWeaponEquipped() const
-{
-	return (Combat && Combat->EquippedWeapon); //we didn't do the check on "OverlappedWeapon" because overlapping with the weapon doesn't mean we equipped it. we check that in cmbat comp.
-}
-
 bool ABlasterCharacter::isAiming() const
 {
 	return (Combat && Combat->bAiming);
@@ -396,9 +391,11 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 	if(!Combat){ return nullptr; }
 	return Combat->EquippedWeapon;
 }
+
 /*
 * ANIMATION MONTAGE
 */
+
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
 {
 	if (!Combat || !Combat->EquippedWeapon) return;
@@ -488,7 +485,9 @@ void ABlasterCharacter::PlayReloadMontage()
 	}
 }
 
-/***************** AIM OFFSET & TURNING IN PLACE ************************/
+/*
+* AIM OFFSET & TURNING IN PLACE
+*/
 
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
@@ -576,6 +575,7 @@ FVector ABlasterCharacter::GetHitTarget()
 /*
 * CAMERA
 */
+
 void ABlasterCharacter::HideCameraIfCharatcterClose()
 {
 	if (!IsLocallyControlled()) return; //we only need to hide for our character
@@ -597,9 +597,11 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 		}
 	}
 }
+
 /*
-* PLAYER STATS
+* HEALTH / SHIELD
 */
+
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCausor)
 {
 	if (bElimed) return;	//already eliminated, don't receive danage.
@@ -643,9 +645,11 @@ void ABlasterCharacter::UpdateHUDHealth()
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
 }
+
 /*
 * ELIMINATION
 */
+
 void ABlasterCharacter::Eliminate()//only called on server
 {
 	if (Combat)
@@ -751,9 +755,11 @@ void ABlasterCharacter::Destroyed()
 		Combat->EquippedWeapon->Destroy();										//Don't leave the weapon hanging once cooldown state is over.
 	}
 }
+
 /*
 * DISSOLVE EFFECTS
 */
+
 void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
 {
 	if (DynamicDissolveMaterialInstance)
@@ -777,9 +783,16 @@ void ABlasterCharacter::StartDissolve()
 		DissolveTimeline->Play();
 	}
 }
+
 /*
 * Public Setters/Getters
 */
+
+bool ABlasterCharacter::isWeaponEquipped() const
+{
+	return (Combat && Combat->EquippedWeapon); //we didn't do the check on "OverlappedWeapon" because overlapping with the weapon doesn't mean we equipped it. we check that in cmbat comp.
+}
+
 ECombatState ABlasterCharacter::GetCombatState()
 {
 	if (!Combat) return ECombatState::ECS_MAX;

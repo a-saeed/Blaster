@@ -28,29 +28,34 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void PostInitializeComponents() override; //an inherited function to access the component once it's initialized.
+
 	/*
 	* ANIMATION MONTAGES
 	*/
+
 	void PlayFireMontage(bool bAiming);
 	void PlayElimMontage();
 	void PlayReloadMontage();
 	void PlayThrowGrenadeMontage();
+
 	/*
 	* ELIMINATION
 	*/
+
 	void Eliminate(); //only on the server
 
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastEliminate();
+	void MulticastEliminate();
 
 	virtual void Destroyed() override;
 
 	UPROPERTY(Replicated)
-		bool bDisableGameplay = false;
+	bool bDisableGameplay = false;
 
 	/*
 	* HUD Health
 	*/
+
 	void UpdateHUDHealth();
 
 protected:
@@ -77,17 +82,16 @@ protected:
 	void PollInit();
 
 private:
+
 	/*
 	* BODY
 	*/
-	UPROPERTY(VisibleAnywhere, Category = "Camera")
-		class USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
-		class UCameraComponent* FollowCamera;
+	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) //C7_1: used to designate this variable to be a replicated variable. linked to C7_8
-		class AWeapon* OverlappingWeapon;
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	class UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
@@ -106,109 +110,128 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
 
-	/***************** ON_REPs & RPCs *******************/
+	/*
+	* OVERLAPPING WEAPON
+	*/
+
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AWeapon* OverlappingWeapon;
 
 	UFUNCTION()
-		void OnRep_OverlappingWeapon(AWeapon* LastWeapon); //C7_8: on replicating this variable (overlappingWeapon), execute this function. it can only take a param of the type of variable it replicates
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);	//only take a param of the type of variable it replicates
 
 	UFUNCTION(Server, Reliable)
-		void ServerEquipButtonPressed();
+	void ServerEquipButtonPressed();
 
-	/***************** AIM OFFSET & TURNING IN PLACE ************************/
+	/*
+	* AIM OFFSET & TURNING IN PLACE
+	*/
+
 	float AO_Yaw;
 	float AO_Pitch;
 	float InterpAO_Yaw;
 	FRotator LastAimRotation;
 
 	ETurningInPlace TurningInPlace;
+
 	/*
 	* ANIMATION MONTAGE
 	*/
-	UPROPERTY(EditAnywhere, Category = "Combat")
-		class UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-		class UAnimMontage* HitReactMontage;
+	class UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-		class UAnimMontage* ElimMontage;
+	class UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-		class UAnimMontage* ReloadMontage;
+	class UAnimMontage* ElimMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-		class UAnimMontage* ThrowGrenadeMontage;
+	class UAnimMontage* ReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UAnimMontage* ThrowGrenadeMontage;
 
 	void PlayHitreactMontage(); //used in multicast rpc
+
 	/*
 	* CAMERA
 	*/
+
 	UPROPERTY(EditAnywhere)
-		float CameraThreshold = 200.f; //how close to other objects until our character dissapear
+	float CameraThreshold = 200.f; //how close to other objects until our character dissapear
 
 	void HideCameraIfCharatcterClose();
+
 	/*
-	* PLAYER STATS
+	* HEALTH / SHIELD
 	*/
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float MaxHealth = 100.f;
+	float MaxHealth = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
-		float Health = 100.f;
+	float Health = 100.f;
 
-	//Callback to Unreal's OnTakeAnyDamage() Delegate
 	UFUNCTION()
-		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCausor);
+	void OnRep_Health(float LastHealth);
 
-	//health rep notify
 	UFUNCTION()
-		void OnRep_Health(float LastHealth);
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCausor);
+
 	/*
 	* ELIMINATION
 	*/
+
 	bool bElimed = false; //used in anime instance
 
 	FTimerHandle ElimTimerHandle;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Elimination")
-		float ElimDelay = 3.f;
+	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
+
 	/*
 	* DISSOLVE EFFECTS
 	*/
+
 	UPROPERTY(VisibleAnywhere)
-		UTimelineComponent* DissolveTimeline;
+	UTimelineComponent* DissolveTimeline;
 
 	FOnTimelineFloat DissolveTrack;
 
 	UPROPERTY(EditAnywhere, Category = "Elimination")
-		UCurveFloat* DissolveCurve;
+	UCurveFloat* DissolveCurve;
 
 	UPROPERTY(VisibleAnywhere, Category = "Elimination") //dynamic instance we can change at runtime
-		UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
 	UPROPERTY(EditAnywhere, Category = "Elimination") //material instance set on the blueprint, used with the dyncamic material instance
-		UMaterialInstance* DissolveMaterialInstance;
+	UMaterialInstance* DissolveMaterialInstance;
 
 	UFUNCTION()
-		void UpdateDissolveMaterial(float DissolveValue);
+	void UpdateDissolveMaterial(float DissolveValue);
 
 	void StartDissolve();
+
 	/*
 	* ELIM BOT
 	*/
-	UPROPERTY(EditAnywhere, Category = "ElimBot")
-		class UParticleSystem* ElimBotEffect;
 
 	UPROPERTY(EditAnywhere, Category = "ElimBot")
-		class UParticleSystemComponent* ElimBotComponent; //to store the bot and destroy it
+	class UParticleSystem* ElimBotEffect;
 
 	UPROPERTY(EditAnywhere, Category = "ElimBot")
-		class USoundCue* ElimSound;
+	class UParticleSystemComponent* ElimBotComponent; //to store the bot and destroy it
+
+	UPROPERTY(EditAnywhere, Category = "ElimBot")
+	class USoundCue* ElimSound;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		class USoundCue* SpawnSound;
+	class USoundCue* SpawnSound;
+
 public:	
 
 	FORCEINLINE UCombatComponent* GetCombatComponent() const { return Combat; }
