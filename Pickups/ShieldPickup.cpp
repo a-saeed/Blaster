@@ -17,7 +17,7 @@ void AShieldPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		UBuffComponent* Buff = BlasterCharacter->GetBuffComponent();
 		if (Buff)
 		{
-			
+			bReplenishedShield = Buff->BuffShield(ShieldReplenishAmount, ShieldReplenishTime);
 		}
 		if (bReplenishedShield)
 		{

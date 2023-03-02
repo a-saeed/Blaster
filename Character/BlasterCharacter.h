@@ -271,6 +271,10 @@ public:
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 
+	FORCEINLINE float GetShield() const { return Shield; }
+	FORCEINLINE float GetMaxShield() const { return MaxShield; }
+	FORCEINLINE void SetShield(float Amount) { Shield = Amount; }
+
 	ECombatState GetCombatState();
 
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }

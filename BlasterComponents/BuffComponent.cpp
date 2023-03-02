@@ -24,12 +24,15 @@ void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	HealRampUp(DeltaTime);
+	ReplenishRampUp(DeltaTime);
 }
+
 /*
 *
 *	Heal Buff
 *
 */
+
 bool UBuffComponent::HealPlayer(float HealAmount, float HealingTime)
 {
 	if (!Character || Character->GetHealth() == Character->GetMaxHealth()) return false;
@@ -40,6 +43,7 @@ bool UBuffComponent::HealPlayer(float HealAmount, float HealingTime)
 
 	return true;
 }
+
 
 void UBuffComponent::HealRampUp(float DeltaTime)
 {
@@ -57,11 +61,48 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 		AmountToHeal = 0.f;				//if it's not already!
 	}
 }
+
+
+/*
+*
+*	Shield Buff
+*
+*/
+
+bool UBuffComponent::BuffShield(float ReplenishAmount, float ReplenishTime)
+{
+	if (!Character || Character->GetShield() == Character->GetMaxShield()) return false;
+
+	bReplenishing = true;
+	ReplenishRate = ReplenishAmount / ReplenishTime;
+	AmountToReplenish = ReplenishAmount;
+
+	return true;
+}
+
+void UBuffComponent::ReplenishRampUp(float DeltaTime)
+{
+	if (!bReplenishing || !Character || Character->IsElimmed()) return;
+
+	const float ReplenishThisFrame = ReplenishRate * DeltaTime;
+
+	Character->SetShield(FMath::Clamp(Character->GetShield() + ReplenishThisFrame, 0.f, Character->GetMaxShield()));
+	Character->UpdateHUDShield();		//Update Health for the server
+
+	AmountToReplenish -= ReplenishThisFrame;
+	if (AmountToReplenish <= 0.f || Character->GetShield() >= Character->GetMaxShield())
+	{
+		bReplenishing = false;
+		AmountToReplenish = 0.f;				//if it's not already!
+	}
+}
+
 /*
 *
 *	Speed Buff
 *
 */
+
 void UBuffComponent::SetInitialSpeeds(float BaseSpeed, float CrouchSpeed)
 {
 	InitialBaseSpeed = BaseSpeed;
@@ -97,7 +138,7 @@ void UBuffComponent::MulticastSpeedBuff_Implementation(float BaseSpeed, float Cr
 	{
 		if (SpeedComponent)
 		{
-			SpeedComponent->DeactivateSystem();
+			SpeedComponent->DestroyComponent();
 		}
 	}
 }
@@ -117,6 +158,7 @@ void UBuffComponent::PlaySpeedEffects()
 		);
 	}
 }
+
 /*
 *
 *	Jump Buff
@@ -156,7 +198,7 @@ void UBuffComponent::MulticastJumpBuff_Implementation(float JumpVelocity)
 	{
 		if (SpeedComponent)
 		{
-			SpeedComponent->DeactivateSystem();
+			SpeedComponent->DestroyComponent();
 		}
 	}
 }
