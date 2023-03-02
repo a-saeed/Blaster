@@ -21,6 +21,7 @@ public:
 	
 	bool HealPlayer(float HealAmount, float HealingTime);
 	void SpeedPlayer(float BaseBuffedSpeed, float CrouchBuffedSpeed, float BuffTime);
+	void BuffJump(float JumpZVelocity, float BuffTime);
 
 protected:
 
@@ -60,8 +61,27 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+	/*
+	*
+	*	Jump Buff
+	*
+	*/
+	float InitialZVelocity;
+	FTimerHandle JumpTimerHandle;
+	void ResetJump();
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* JumpEffect;
+
+	class UParticleSystemComponent* JumpComponent;
+
+	void PlayJumpEffects();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJumpBuff(float JumpVelocity);
 
 public:		
 
 	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
+	void SetInitialJumpVelocity(float Velocity);
 };

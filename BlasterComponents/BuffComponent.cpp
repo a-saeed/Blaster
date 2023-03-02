@@ -117,3 +117,62 @@ void UBuffComponent::PlaySpeedEffects()
 		);
 	}
 }
+/*
+*
+*	Jump Buff
+*
+*/
+
+void UBuffComponent::SetInitialJumpVelocity(float Velocity)
+{
+	InitialZVelocity = Velocity;
+}
+
+void UBuffComponent::BuffJump(float JumpZVelocity, float BuffTime)
+{
+	if (!Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(SpeedTimerHandle, this, &UBuffComponent::ResetJump, BuffTime);
+
+	MulticastJumpBuff(JumpZVelocity);
+}
+
+void UBuffComponent::ResetJump()
+{
+	MulticastJumpBuff(InitialZVelocity);
+}
+
+void UBuffComponent::MulticastJumpBuff_Implementation(float JumpVelocity)
+{
+	if (!Character || !Character->GetCharacterMovement()) return;
+
+	Character->GetCharacterMovement()->JumpZVelocity = JumpVelocity;
+
+	if (JumpVelocity > InitialZVelocity)
+	{
+		PlayJumpEffects();
+	}
+	else
+	{
+		if (SpeedComponent)
+		{
+			SpeedComponent->DeactivateSystem();
+		}
+	}
+}
+
+void UBuffComponent::PlayJumpEffects()
+{
+	if (JumpEffect)
+	{
+		SpeedComponent = UGameplayStatics::SpawnEmitterAttached(
+			JumpEffect,
+			Character->GetRootComponent(),
+			FName(""),
+			FVector(Character->GetActorLocation().X, Character->GetActorLocation().Y, Character->GetActorLocation().Z - 100),
+			Character->GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+}

@@ -13,7 +13,7 @@ void AJumpPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		UBuffComponent* Buff = BlasterCharacter->GetBuffComponent();
 		if (Buff)
 		{
-			
+			Buff->BuffJump(JumpZVelocityBuff, JumpBuffTime);
 		}
 		Destroy();
 	}
