@@ -53,10 +53,11 @@ public:
 	bool bDisableGameplay = false;
 
 	/*
-	* HUD Health
+	* HUD Health / Shield
 	*/
 
 	void UpdateHUDHealth();
+	void UpdateHUDShield();
 
 protected:
 
@@ -176,6 +177,15 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health(float LastHealth);
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxShield = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Shield, VisibleAnywhere, Category = "Player Stats")
+	float Shield = 100.f;
+
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCausor);

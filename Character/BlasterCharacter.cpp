@@ -87,6 +87,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	//C7_3: we rgister the variables we want to replicate here in this function, with a condition to replicate it to only the client that owns the character.
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, Health);
+	DOREPLIFETIME(ABlasterCharacter, Shield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
@@ -105,8 +106,8 @@ void ABlasterCharacter::BeginPlay()
 
 	LimitPitchView();
 
-	Health = MaxHealth;
 	UpdateHUDHealth(); //set to max health
+	UpdateHUDShield();
 
 	//bind ReceiveDamage to OnTakeAnyDamage delgate, only take damage on the server
 	if (HasAuthority())
@@ -606,9 +607,23 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 {
 	if (bElimed) return;	//already eliminated, don't receive danage.
 
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth); // 0.f < H-D > MH .. health is repliacated, call onRep_Health
+	if (Shield > Damage)
+	{
+		Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+		UpdateHUDShield();
+	}
+	else
+	{
+		Health = FMath::Clamp(Health - Damage + Shield, 0.f, MaxHealth);
+		UpdateHUDHealth();
 
-	UpdateHUDHealth();
+		if (Shield != 0.f)
+		{
+			Shield = 0.f;
+			UpdateHUDShield();
+		}
+	}
+
 	PlayHitreactMontage();
 
 	if (Health == 0.f)
@@ -633,6 +648,15 @@ void ABlasterCharacter::OnRep_Health(float LastHealth)
 	}
 }
 
+void ABlasterCharacter::OnRep_Shield(float LastShield)
+{
+	UpdateHUDShield();
+	if (Shield < LastShield)
+	{
+		PlayHitreactMontage();
+	}
+}
+
 void ABlasterCharacter::UpdateHUDHealth()
 {
 	if (Controller && !BlasterPlayerController)
@@ -643,6 +667,18 @@ void ABlasterCharacter::UpdateHUDHealth()
 	{
 		//set hud health values
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::UpdateHUDShield()
+{
+	if (Controller && !BlasterPlayerController)
+	{
+		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
+	}
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDShield(Shield, MaxShield);
 	}
 }
 
