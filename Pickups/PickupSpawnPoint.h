@@ -23,5 +23,26 @@ protected:
 
 private:
 
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<class APickup>> PickupClasses;
+
+	UPROPERTY()
+	APickup* SpawnedPickup;
+
+	void SpawnPickup();
+
+	FTimerHandle SpawnTimerHandle;
+
+	UFUNCTION()
+	void StartSpawnTimer(AActor* DestroyedActor);
+
+	void SpawnTimerFinished();
+
+	UPROPERTY(EditAnywhere)
+	float MinSpawnTime;
+
+	UPROPERTY(EditAnywhere)
+	float MaxSpawnTime;
+
 public:
 };
