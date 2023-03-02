@@ -80,6 +80,7 @@ void ABlasterPlayerController::PollInit()
 			if (CharacterOverlay)
 			{
 				SetHUDHealth(HUDHealth, HUDMaxHealth);
+				SetHUDShield(HUDShield, HUDMaxShield);
 				SetHUDScore(HUDScore);
 				SetHUDDefeats(HUDDefeats);
 
@@ -330,6 +331,30 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		bInitializeCharacterOverlay = true;
 		HUDHealth = Health;
 		HUDMaxHealth = MaxHealth;
+	}
+}
+
+void ABlasterPlayerController::SetHUDShield(float Shield, float MaxShield)
+{
+	if (!BlasterHUD)
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	}
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetShieldBar();
+
+	if (bHUDValid)
+	{
+		const float ShieldPercentage = Shield / MaxShield;
+		BlasterHUD->GetCharacterOverlay()->GetShieldBar()->SetPercent(ShieldPercentage);
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDShield = Shield;
+		HUDMaxShield = MaxShield;
 	}
 }
 

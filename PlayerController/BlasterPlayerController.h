@@ -21,6 +21,7 @@ public:
 	* Blaster Character HUD
 	*/
 	void SetHUDHealth(float Health, float MaxHealth); //called in blaster character
+	void SetHUDShield(float Shield, float MaxShield);
 	/*
 	* Player state HUD
 	*/
@@ -138,6 +139,8 @@ private:
 
 	float HUDHealth;
 	float HUDMaxHealth;
+	float HUDShield;
+	float HUDMaxShield;
 	float HUDScore;
 	int32 HUDDefeats;
 	int32 HUDGrenades;
