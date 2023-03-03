@@ -147,14 +147,15 @@ void UBuffComponent::PlaySpeedEffects()
 {
 	if (SpeedEffect)
 	{
+		if (SpeedComponent) SpeedComponent->Deactivate();
+
 		SpeedComponent = UGameplayStatics::SpawnEmitterAttached(
 			SpeedEffect,
 			Character->GetRootComponent(),
 			FName(""),
 			FVector(Character->GetActorLocation().X, Character->GetActorLocation().Y, Character->GetActorLocation().Z - 100),
 			Character->GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,
-			false
+			EAttachLocation::KeepWorldPosition
 		);
 	}
 }
@@ -174,7 +175,7 @@ void UBuffComponent::BuffJump(float JumpZVelocity, float BuffTime)
 {
 	if (!Character) return;
 
-	Character->GetWorldTimerManager().SetTimer(SpeedTimerHandle, this, &UBuffComponent::ResetJump, BuffTime);
+	Character->GetWorldTimerManager().SetTimer(JumpTimerHandle, this, &UBuffComponent::ResetJump, BuffTime);
 
 	MulticastJumpBuff(JumpZVelocity);
 }
@@ -196,9 +197,9 @@ void UBuffComponent::MulticastJumpBuff_Implementation(float JumpVelocity)
 	}
 	else
 	{
-		if (SpeedComponent)
+		if (JumpComponent)
 		{
-			SpeedComponent->DestroyComponent();
+			JumpComponent->DestroyComponent();
 		}
 	}
 }
@@ -207,14 +208,15 @@ void UBuffComponent::PlayJumpEffects()
 {
 	if (JumpEffect)
 	{
-		SpeedComponent = UGameplayStatics::SpawnEmitterAttached(
+		if (JumpComponent) JumpComponent->Deactivate();
+	
+		JumpComponent = UGameplayStatics::SpawnEmitterAttached(
 			JumpEffect,
 			Character->GetRootComponent(),
 			FName(""),
-			FVector(Character->GetActorLocation().X, Character->GetActorLocation().Y, Character->GetActorLocation().Z - 100),
+			FVector(Character->GetActorLocation().X, Character->GetActorLocation().Y, Character->GetActorLocation().Z - 90),
 			Character->GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,
-			false
+			EAttachLocation::KeepWorldPosition
 		);
 	}
 }

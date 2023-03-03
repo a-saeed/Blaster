@@ -72,6 +72,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* SpeedEffect;
 
+	UPROPERTY()
 	class UParticleSystemComponent* SpeedComponent;
 
 	void PlaySpeedEffects();
@@ -92,6 +93,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* JumpEffect;
 
+	UPROPERTY()
 	class UParticleSystemComponent* JumpComponent;
 
 	void PlayJumpEffects();
