@@ -10,6 +10,7 @@ enum class EWeaponState : uint8 //create an enum constant for weapon state (init
 {
 	EWS_Initial UMETA(DisplayName = "Initial State"),
 	EWS_Equipped UMETA(DisplayName = "Equipped"),
+	EWS_EquippedSeconadry UMETA(DisplayName = "Equipped Secondary"),
 	EWS_Dropped UMETA(DisplayName = "Dropped"),
 
 	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
@@ -116,9 +117,11 @@ private:
 
 	void OnWeaponStateSet();
 
-	void HandleWeaponDropped();
+	void HandlePrimaryWeaponEquipped();
 
-	void HandleWeaponEquipped();
+	void HandleSecondaryWeaponEquipped();
+
+	void HandleWeaponDropped();
 
 	/*
 	*	MESH PHYSICS

@@ -66,7 +66,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 /*
 *
-* EquipWeapon / DopWeapon
+* EquipWeapon / DopWeapon / Swap Weapons
 *
 */		
 
@@ -123,8 +123,6 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
-
-	EquippedWeapon->EnableCustomDepth(false);
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -139,10 +137,9 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 
+		EquippedWeapon->SetHUDAmmo();
 		EquippedWeapon->PlayEquipSound();
 		UpdateHUDWeaponType();
-
-		EquippedWeapon->EnableCustomDepth(false);
 	}
 }
 
@@ -152,34 +149,47 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 	SecondaryWeapon = WeaponToEquip;
 
-	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSeconadry);
 	SecondaryWeapon->SetOwner(Character);
 	AttachActorToBackpack(SecondaryWeapon);
 
-	SecondaryWeapon->PlayEquipSound();
-
-	if (SecondaryWeapon->GetWeaponMesh())
-	{
-		SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
-		SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
-	}
+	//SecondaryWeapon->PlayEquipSound();
 }
 
 void UCombatComponent::OnRep_SecondaryWeapon()
 {
 	if (SecondaryWeapon && Character) 
 	{
-		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSeconadry);
 		AttachActorToBackpack(SecondaryWeapon);
 
-		SecondaryWeapon->PlayEquipSound();
-
-		if (SecondaryWeapon->GetWeaponMesh())
-		{
-			SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
-			SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
-		}
+		//SecondaryWeapon->PlayEquipSound();
 	}
+}
+
+void UCombatComponent::SwapWeapons()
+{
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+
+	AWeapon* TempWeapon = EquippedWeapon;
+	EquippedWeapon = SecondaryWeapon;
+	SecondaryWeapon = TempWeapon;
+
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	EquippedWeapon->SetHUDAmmo();
+	SetCarriedAmmoOnEquip();
+	AutoReloadIfEmpty();
+	UpdateHUDWeaponType();
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSeconadry);
+	SecondaryWeapon->PlayEquipSound();
+	AttachActorToBackpack(SecondaryWeapon);
+}
+
+bool UCombatComponent::ShouldSwapWeapons()
+{
+	return (EquippedWeapon && SecondaryWeapon);
 }
 
 void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)

@@ -143,7 +143,12 @@ void AWeapon::OnWeaponStateSet()
 	{
 	case EWeaponState::EWS_Equipped:
 
-		HandleWeaponEquipped();
+		HandlePrimaryWeaponEquipped();
+		break;
+
+	case EWeaponState::EWS_EquippedSeconadry:
+		
+		HandleSecondaryWeaponEquipped();
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -153,12 +158,26 @@ void AWeapon::OnWeaponStateSet()
 	}
 }
 
-void AWeapon::HandleWeaponEquipped()
+void AWeapon::HandlePrimaryWeaponEquipped()
 {
 	ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetWeaponMeshPhysics(false);
 	EnablePhysicsSMG(true);
+
+	EnableCustomDepth(false);
+}
+
+void AWeapon::HandleSecondaryWeaponEquipped()
+{
+	HandlePrimaryWeaponEquipped();
+
+	EnableCustomDepth(true);
+	if (WeaponMesh)
+	{
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
+		WeaponMesh->MarkRenderStateDirty();
+	}
 }
 
 void AWeapon::HandleWeaponDropped()

@@ -308,7 +308,14 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation() //this is an R
 	//this function will be called from the client and only the server will excecute it..
 	if (Combat)
 	{
-		Combat->EquipWeapon(OverlappingWeapon);
+		if (OverlappingWeapon)
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else if (Combat->ShouldSwapWeapons())
+		{
+			Combat->SwapWeapons();
+		}
 	}
 }
 
