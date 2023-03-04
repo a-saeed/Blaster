@@ -101,7 +101,6 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		SetWeaponMeshPhysics(false);
 		EnablePhysicsSMG(true);
 
-		EnableCustomDepth(false);
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -130,7 +129,6 @@ void AWeapon::OnRep_WeaponState()
 		SetWeaponMeshPhysics(false);
 		EnablePhysicsSMG(true);
 
-		EnableCustomDepth(false);
 		break;
 
 	case EWeaponState::EWS_Dropped:
@@ -247,7 +245,12 @@ void AWeapon::OnRep_Owner()
 	Super::OnRep_Owner();
 	if (Owner)
 	{
-		SetHUDAmmo(); 
+		//don't let picking a secondary weapon change the HUD ammo for the equipped weapon<
+		BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+		if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon() && BlasterOwnerCharacter->GetEquippedWeapon() == this)
+		{
+			SetHUDAmmo();
+		}
 	}
 	else //owner just got set to nullptr on the server ( drop() )
 	{

@@ -158,7 +158,7 @@ private:
 	float AimWalkSpeed = 300;
 
 	/*
-	*	Equipped Weapon
+	*	Equipped Weapon	/ Secondary Weapon
 	*/
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
@@ -167,8 +167,18 @@ private:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
+	class AWeapon* SecondaryWeapon;
+
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void AttachActorToBackpack(AActor* ActorToAttach);
 
 	/*
 	*	CROSSHAIRS AND HUD
@@ -293,7 +303,7 @@ private:
 	*/
 
 	void AutoReloadIfEmpty();
-	void PlayEquipSound();
+	void PlayEquipSound(AWeapon* Weapon);
 	void UpdateHUDWeaponType();
 
 	UPROPERTY(EditAnywhere)

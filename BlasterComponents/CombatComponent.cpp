@@ -23,6 +23,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon); //equipped weapon only gets set by the server, replicate it so that every charatcer see the new animation pose for the character that equipped the weapon..
+	DOREPLIFETIME(UCombatComponent, SecondaryWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	/*only the ownning client needs to see his own carried ammo..opposite to the ammo on the weapon as if a client dropped itand another picked it, it needs to see the how much ammo was used*/
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
@@ -88,6 +89,20 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip || CombatState != ECombatState::ECS_Unoccupied) return;
 
+	if (EquippedWeapon && !SecondaryWeapon)
+	{
+		EquipSecondaryWeapon(WeaponToEquip);
+	}
+	else
+	{
+		EquipPrimaryWeapon(WeaponToEquip);
+	}
+}
+
+void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
+{
+	if (!WeaponToEquip) return;
+
 	/*if we already have an equipped weapon, drop it if we are to equip another weapon*/
 	DropWeapon();
 	EquippedWeapon = WeaponToEquip;
@@ -102,12 +117,14 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	/*set and display carried ammo on the server once weapon equipped, will trigger OnRep_CarriedAmmo*/
 	SetCarriedAmmoOnEquip();
 
-	PlayEquipSound();
+	PlayEquipSound(EquippedWeapon);
 	AutoReloadIfEmpty();
 	UpdateHUDWeaponType();
 	//once we equip the weapon, adjust these settings to allow strafing pose
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+
+	EquippedWeapon->EnableCustomDepth(false);
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -122,8 +139,46 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 
-		PlayEquipSound();
+		PlayEquipSound(EquippedWeapon);
 		UpdateHUDWeaponType();
+
+		EquippedWeapon->EnableCustomDepth(false);
+	}
+}
+
+void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
+{
+	if (!WeaponToEquip) return;
+
+	SecondaryWeapon = WeaponToEquip;
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	SecondaryWeapon->SetOwner(Character);
+	AttachActorToBackpack(SecondaryWeapon);
+
+	PlayEquipSound(SecondaryWeapon);
+
+	if (SecondaryWeapon->GetWeaponMesh())
+	{
+		SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
+		SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
+	}
+}
+
+void UCombatComponent::OnRep_SecondaryWeapon()
+{
+	if (SecondaryWeapon && Character) 
+	{
+		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		AttachActorToBackpack(SecondaryWeapon);
+
+		PlayEquipSound(SecondaryWeapon);
+
+		if (SecondaryWeapon->GetWeaponMesh())
+		{
+			SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
+			SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
+		}
 	}
 }
 
@@ -151,6 +206,17 @@ void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+}
+
+void UCombatComponent::AttachActorToBackpack(AActor* ActorToAttach)
+{
+	if (!Character || !ActorToAttach || !Character->GetMesh()) return;
+
+	const USkeletalMeshSocket* BackpackSocket = Character->GetMesh()->GetSocketByName(FName("BackpackSocket"));
+	if (BackpackSocket)
+	{
+		BackpackSocket->AttachActor(ActorToAttach, Character->GetMesh());
 	}
 }
 
@@ -790,11 +856,11 @@ void UCombatComponent::UpdateAmmoValues()
 *
 */
 
-void UCombatComponent::PlayEquipSound()
+void UCombatComponent::PlayEquipSound(AWeapon* Weapon)
 {
-	if (Character && EquippedWeapon && EquippedWeapon->EquipSound)
+	if (Character && Weapon && Weapon->EquipSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedWeapon->EquipSound, Character->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), Weapon->EquipSound, Character->GetActorLocation());
 	}
 }
 
