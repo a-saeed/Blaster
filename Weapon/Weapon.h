@@ -26,50 +26,41 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; //we need to replicate the weapon state enum variable.
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void ShowPickupWidget(bool bPickupWidget); //C7_6
+	void ShowPickupWidget(bool bPickupWidget);
 
 	virtual void Fire(const FVector& HitTarget);
-	/*
-	*
-	*  AMMO
-	*
-	*/
-	virtual void OnRep_Owner() override;
+ 
+	virtual void OnRep_Owner() override;	//update HUD ammo once a weapon has a new owner
 
-	void SetHUDAmmo();
+	void SetWeaponState(EWeaponState State);
+
 	/**
 	*	TEXTURES FOR THE WEAPON CROSSHAIRS
 	*/
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		class UTexture2D* CrosshairsCenter;
+	class UTexture2D* CrosshairsCenter;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		UTexture2D* CrosshairsTop;
+	UTexture2D* CrosshairsTop;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		UTexture2D* CrosshairsRight;
+	UTexture2D* CrosshairsRight;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		UTexture2D* CrosshairsLeft;
+	UTexture2D* CrosshairsLeft;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		UTexture2D* CrosshairsBottom;
+	UTexture2D* CrosshairsBottom;
+
 	/*
-	*
-	*  Equip Sound. Each weapon has a unique equip sound
-	*
+	*  Cosmetics
 	*/
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	class USoundCue* EquipSound;
-	/*
-	*
-	*  Enable/Disable Custom Depth
-	*
-	*/
+
 	void EnableCustomDepth(bool bEnable);
+	void PlayEquipSound();
 
 protected:
 
@@ -89,94 +80,110 @@ protected:
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);
 
-	/*
-	* ZOOMED FOV WHILE AIMING.
-	*/
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		float ZoomedFOV = 30.f; //amount to zoom depending on each weapon.
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		float ZoomInterpSpeed = 20.f;
-
 private:
 
 	/*
 	*	BODY
 	*/
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		class USphereComponent* AreaSphere; //to detect overlap events with the weapon, just like a capsule comp.
-
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		class UWidgetComponent* PickupWidget;
-
-	/*
-	*	WEAPON PROPERTIES
-	*/
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
-		EWeaponState WeaponState;
-
-	void SetWeaponMeshPhysics(bool bEnable);
-	void EnablePhysicsSMG(bool bEnable);
-	/*
-	*	REP_NOTIFIES
-	*/
-	UFUNCTION()
-		void OnRep_WeaponState(); //what should we do once the new value of weapon state replicates to clients
-
-	/*
-	*	ANIMATION ASSETS
-	*/
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		class UAnimationAsset* FireAnimation;
-
-	/*
-	*	BULLET SHELL
-	*/
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		TSubclassOf<class ACasing> CasingClass;
-	/*
-	*   AUTOMATIC FIRE
-	*/
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		float FireDelay = 0.15f; //fire rate
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		bool bAutomatic = true;
-	/*
-	* 
-	*  AMMO
-	*  
-	*/
 	UPROPERTY()
 	class ABlasterCharacter* BlasterOwnerCharacter;
 
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon Properties")
-		int32 Ammo = 0;
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	class USphereComponent* AreaSphere; //to detect overlap events with the weapon, just like a capsule comp.
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	class UWidgetComponent* PickupWidget;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		int32 MagCapacity = 50;
+	class USoundCue* EquipSound;
+
+	/*
+	*	WEAPON STATE
+	*/
+
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
+	EWeaponState WeaponState;
 
 	UFUNCTION()
-		void OnRep_Ammo();
+	void OnRep_WeaponState();
+
+	void OnWeaponStateSet();
+
+	void HandleWeaponDropped();
+
+	void HandleWeaponEquipped();
+
+	/*
+	*	MESH PHYSICS
+	*/
+
+	void SetWeaponMeshPhysics(bool bEnable);
+	void EnablePhysicsSMG(bool bEnable);
+
+	/*
+	*	ANIMATION ASSETS
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
+
+	/*
+	*	BULLET SHELL
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	TSubclassOf<class ACasing> CasingClass;
+
+	/*
+	*   AUTOMATIC FIRE
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float FireDelay = 0.15f; //fire rate
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	bool bAutomatic = true;
+
+	/*
+	*  AMMO
+	*/
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon Properties")
+	int32 Ammo = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	int32 MagCapacity = 50;
+
+	UFUNCTION()
+	void OnRep_Ammo();
 
 	void SpendRound();
+
 	/*
-	*
 	*  WEAPON TYPESS
-	*
 	*/
+
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		EWeaponType WeaponType;
+	EWeaponType WeaponType;
+
+	/*
+	* ZOOMED FOV WHILE AIMING.
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float ZoomedFOV = 30.f; //amount to zoom depending on each weapon.
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float ZoomInterpSpeed = 20.f;
 
 public:
-
-	void SetWeaponState(EWeaponState State);
 
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() { return WeaponMesh; }
 
@@ -194,6 +201,7 @@ public:
 	FORCEINLINE int32 GetCurrentAmmo() { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() { return MagCapacity; }
 	void AddAmmo(int32 AmmoAmount);
+	void SetHUDAmmo();
 
 	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
 };

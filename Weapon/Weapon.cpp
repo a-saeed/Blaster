@@ -9,6 +9,7 @@
 #include "Casing.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AWeapon::AWeapon()
 {
@@ -88,60 +89,95 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
+void AWeapon::ShowPickupWidget(bool bPickupWidget) //C7_7
+{
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(bPickupWidget);
+	}
+}
+
+void AWeapon::Fire(const FVector& HitTarget)
+{
+	if (FireAnimation)
+	{
+		WeaponMesh->PlayAnimation(FireAnimation, false); //play the fire animation on the weapon skeletal mesh.
+	}
+	if (CasingClass)
+	{
+		//we need a location to spawn our Casing from. use the Shell socket on the weapon mesh.
+		const USkeletalMeshSocket* AmmoEject = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+		if (AmmoEject)
+		{
+			FTransform SocketTransform = AmmoEject->GetSocketTransform(WeaponMesh);
+			//add random rotation to the bullet shell when ejected.
+			FRotator SocketRotation = SocketTransform.GetRotation().Rotator();
+			SocketRotation.Pitch += FMath::RandRange(0.f, 45.f);
+			SocketRotation.Yaw += FMath::RandRange(0.f, 30.f);
+			GetWorld()->SpawnActor<ACasing>(CasingClass, SocketTransform.GetLocation(), SocketRotation);
+		}
+	}
+
+	SpendRound();
+}
+
+/*
+*  Weapon State
+*/
+
 void AWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State; //this will be only be set by the server, but will replicate.
 
-	switch (WeaponState)
-	{
-	case EWeaponState::EWS_Equipped:
-
-		ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SetWeaponMeshPhysics(false);
-		EnablePhysicsSMG(true);
-
-		break;
-
-	case EWeaponState::EWS_Dropped:
-
-		if (HasAuthority())
-		{
-			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		}
-		SetWeaponMeshPhysics(true);
-		EnablePhysicsSMG(false);
-
-		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
-		WeaponMesh->MarkRenderStateDirty();
-		EnableCustomDepth(true);
-		break;
-	}
+	OnWeaponStateSet();
 }
 
 void AWeapon::OnRep_WeaponState()
+{
+	OnWeaponStateSet();
+}
+
+void AWeapon::OnWeaponStateSet()
 {
 	switch (WeaponState)
 	{
 	case EWeaponState::EWS_Equipped:
 
-		ShowPickupWidget(false);
-		SetWeaponMeshPhysics(false);
-		EnablePhysicsSMG(true);
-
+		HandleWeaponEquipped();
 		break;
 
 	case EWeaponState::EWS_Dropped:
 
-		SetWeaponMeshPhysics(true);
-		EnablePhysicsSMG(false);
-
-		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
-		WeaponMesh->MarkRenderStateDirty();
-		EnableCustomDepth(true);
+		HandleWeaponDropped();
 		break;
 	}
 }
+
+void AWeapon::HandleWeaponEquipped()
+{
+	ShowPickupWidget(false); //once the character eqip the weapon, we should hide the pickup widget.(the widget doesn't get hidden, need to replicate weapon state)
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetWeaponMeshPhysics(false);
+	EnablePhysicsSMG(true);
+}
+
+void AWeapon::HandleWeaponDropped()
+{
+	if (HasAuthority())
+	{
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+	SetWeaponMeshPhysics(true);
+	EnablePhysicsSMG(false);
+
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
+}
+
+/*
+*  Mesh Physics
+*/
 
 void AWeapon::SetWeaponMeshPhysics(bool bEnable)
 {
@@ -177,48 +213,9 @@ void AWeapon::EnablePhysicsSMG(bool bEnable)
 	}
 }
 
-void AWeapon::ShowPickupWidget(bool bPickupWidget) //C7_7
-{
-	if (PickupWidget)
-	{
-		PickupWidget->SetVisibility(bPickupWidget);
-	}
-}
-
-void AWeapon::Fire(const FVector& HitTarget)
-{
-	if (FireAnimation)
-	{
-		WeaponMesh->PlayAnimation(FireAnimation, false); //play the fire animation on the weapon skeletal mesh.
-	}
-	if (CasingClass)
-	{
-		//we need a location to spawn our Casing from. use the Shell socket on the weapon mesh.
-		const USkeletalMeshSocket* AmmoEject = WeaponMesh->GetSocketByName(FName("AmmoEject"));
-		if (AmmoEject)
-		{
-			FTransform SocketTransform = AmmoEject->GetSocketTransform(WeaponMesh);
-			//add random rotation to the bullet shell when ejected.
-			FRotator SocketRotation = SocketTransform.GetRotation().Rotator();
-			SocketRotation.Pitch += FMath::RandRange(0.f, 45.f);
-			SocketRotation.Yaw += FMath::RandRange(0.f, 30.f);
-			GetWorld()->SpawnActor<ACasing>(CasingClass, SocketTransform.GetLocation(), SocketRotation);
-		}
-	}
-
-	SpendRound();
-}
 /*
-*
 *  AMMO
-*
 */
-void AWeapon::SpendRound()
-{
-	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity); //if ammo - 1 is in range, set.
-
-	SetHUDAmmo();
-}
 
 void AWeapon::AddAmmo(int32 AmmoAmount)
 {
@@ -234,6 +231,13 @@ void AWeapon::OnRep_Ammo()
 	{
 		BlasterOwnerCharacter->GetCombatComponent()->JumpToShotgunEnd();
 	}
+	SetHUDAmmo();
+}
+
+void AWeapon::SpendRound()
+{
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity); //if ammo - 1 is in range, set.
+
 	SetHUDAmmo();
 }
 
@@ -271,11 +275,11 @@ void AWeapon::SetHUDAmmo()
 		}
 	}
 }
+
 /*
-*
-*  Weapon Outline Effect
-*
+*  Cosmetics
 */
+
 void AWeapon::EnableCustomDepth(bool bEnable)
 {
 	if (WeaponMesh)
@@ -283,4 +287,12 @@ void AWeapon::EnableCustomDepth(bool bEnable)
 		WeaponMesh->SetRenderCustomDepth(bEnable);
 	}
 
+}
+
+void AWeapon::PlayEquipSound()
+{
+	if (EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquipSound, GetActorLocation());
+	}
 }

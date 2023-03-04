@@ -117,7 +117,7 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	/*set and display carried ammo on the server once weapon equipped, will trigger OnRep_CarriedAmmo*/
 	SetCarriedAmmoOnEquip();
 
-	PlayEquipSound(EquippedWeapon);
+	EquippedWeapon->PlayEquipSound();
 	AutoReloadIfEmpty();
 	UpdateHUDWeaponType();
 	//once we equip the weapon, adjust these settings to allow strafing pose
@@ -139,7 +139,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 
-		PlayEquipSound(EquippedWeapon);
+		EquippedWeapon->PlayEquipSound();
 		UpdateHUDWeaponType();
 
 		EquippedWeapon->EnableCustomDepth(false);
@@ -156,7 +156,7 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	SecondaryWeapon->SetOwner(Character);
 	AttachActorToBackpack(SecondaryWeapon);
 
-	PlayEquipSound(SecondaryWeapon);
+	SecondaryWeapon->PlayEquipSound();
 
 	if (SecondaryWeapon->GetWeaponMesh())
 	{
@@ -172,7 +172,7 @@ void UCombatComponent::OnRep_SecondaryWeapon()
 		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 		AttachActorToBackpack(SecondaryWeapon);
 
-		PlayEquipSound(SecondaryWeapon);
+		SecondaryWeapon->PlayEquipSound();
 
 		if (SecondaryWeapon->GetWeaponMesh())
 		{
@@ -855,14 +855,6 @@ void UCombatComponent::UpdateAmmoValues()
 * COSMETICS
 *
 */
-
-void UCombatComponent::PlayEquipSound(AWeapon* Weapon)
-{
-	if (Character && Weapon && Weapon->EquipSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), Weapon->EquipSound, Character->GetActorLocation());
-	}
-}
 
 void UCombatComponent::AutoReloadIfEmpty()
 {

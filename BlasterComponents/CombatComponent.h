@@ -303,7 +303,6 @@ private:
 	*/
 
 	void AutoReloadIfEmpty();
-	void PlayEquipSound(AWeapon* Weapon);
 	void UpdateHUDWeaponType();
 
 	UPROPERTY(EditAnywhere)
