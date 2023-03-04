@@ -135,6 +135,7 @@ private:
 	UPROPERTY()
 		class UCharacterOverlay* CharacterOverlay;
 
+	/*We cache variabled that need to be set in BeginPlay() of other classes.. Character overlay isn't valid yet*/
 	float HUDHealth;
 	float HUDMaxHealth;
 	bool bInitializeHealth = false;
@@ -147,6 +148,10 @@ private:
 	bool bInitializeDefeats = false;
 	int32 HUDGrenades;
 	bool bInitializeGrenades = false;
+	int32 HUDWeaponAmmo;
+	bool bInitializeWeaponAmmo = false;
+	int32 HUDCarriedAmmo;
+	bool bInitializeCarriedAmmo = false;
 	/*
 	* Timer Blink / Sound
 	*/

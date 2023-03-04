@@ -17,6 +17,7 @@
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/Weapon/Weapon.h"
 
 /*
 *  Overriden functions
@@ -55,6 +56,14 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	if (BlasterCharacter)
 	{
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
+		SetHUDShield(BlasterCharacter->GetShield(), BlasterCharacter->GetMaxShield());
+		
+		if (BlasterCharacter->GetCombatComponent() && BlasterCharacter->GetCombatComponent()->GetEquippedWeapon())
+		{
+			SetHUDCarriedAmmo(BlasterCharacter->GetCombatComponent()->GetCarriedAmmo());
+			SetHUDWeaponAmmo(BlasterCharacter->GetCombatComponent()->GetEquippedWeapon()->GetCurrentAmmo());
+		}
+		
 	}
 }
 
@@ -83,6 +92,8 @@ void ABlasterPlayerController::PollInit()
 				if(bInitializeShield) SetHUDShield(HUDShield, HUDMaxShield);
 				if(bInitializeScore) SetHUDScore(HUDScore);
 				if(bInitializeDefeats) SetHUDDefeats(HUDDefeats);
+				if(bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
+				if(bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
 
 				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
 				if (BlasterCharacter && BlasterCharacter->GetCombatComponent())
@@ -414,6 +425,11 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 WeaponAmmoAmount)
 		FString AmmoText = FString::Printf(TEXT("%d"), WeaponAmmoAmount);
 		BlasterHUD->GetCharacterOverlay()->GetAmmoText()->SetText(FText::FromString(AmmoText));
 	}
+	else
+	{
+		bInitializeWeaponAmmo = true;
+		HUDWeaponAmmo = WeaponAmmoAmount;
+	}
 }
 
 void ABlasterPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmoAmount)
@@ -429,6 +445,11 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 CarriedAmmoAmount)
 		/*set Carried Ammo text*/
 		FString CarriedAmmoText = FString::Printf(TEXT("%d"), CarriedAmmoAmount);
 		BlasterHUD->GetCharacterOverlay()->GetCarriedAmmoText()->SetText(FText::FromString(CarriedAmmoText));
+	}
+	else
+	{
+		bInitializeCarriedAmmo = true;
+		HUDCarriedAmmo = CarriedAmmoAmount;
 	}
 }
 

@@ -95,6 +95,8 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpawnDefaultWeapon();
+
 	if (SpawnSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SpawnSound, GetActorLocation());
@@ -391,6 +393,25 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
 	if(!Combat){ return nullptr; }
 	return Combat->EquippedWeapon;
+}
+
+/*
+* Default Weapon
+*/
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	/*only spawn a default weapon in a map that is controlled by blaster game mode*/
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	if (BlasterGameMode && !bElimed && DefaultWeaponClass)	//GmaeMode is only valid on the server.. so we spawn on server only
+	{
+		StartingWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+		if (Combat)
+		{
+			Combat->EquipWeapon(StartingWeapon);
+		}
+	}
 }
 
 /*
@@ -704,6 +725,7 @@ void ABlasterCharacter::Eliminate()//only called on server
 
 void ABlasterCharacter::MulticastEliminate_Implementation()
 {
+	bElimed = true;
 	/*if character is elimmed, set the ammo HUD to zero*/
 	if (BlasterPlayerController)
 	{
@@ -712,7 +734,8 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 		BlasterPlayerController->SetHUDWeaponType(FText::FromString(" "));
 	}
 
-	bElimed = true;
+	if (StartingWeapon && StartingWeapon->GetOwner() == nullptr) StartingWeapon->Destroy();
+
 	PlayElimMontage();
 	//we want all machines to see the dissolve effect
 	if (DissolveMaterialInstance)

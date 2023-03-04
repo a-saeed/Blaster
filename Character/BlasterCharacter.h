@@ -112,11 +112,23 @@ private:
 	UStaticMeshComponent* AttachedGrenade;
 
 	/*
+	* Default Weapon
+	*/
+
+	UPROPERTY()
+	class AWeapon* StartingWeapon;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	void SpawnDefaultWeapon();
+
+	/*
 	* OVERLAPPING WEAPON
 	*/
 
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	class AWeapon* OverlappingWeapon;
+	AWeapon* OverlappingWeapon;
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);	//only take a param of the type of variable it replicates
