@@ -62,11 +62,13 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		InterpFOV(DeltaTime);
 	}
 }
+
 /*
 *
-* DopWeapon, EquipWeapon , RPCs , REP_NOTIFIES
+* EquipWeapon / DopWeapon
 *
 */		
+
 void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
 {
 	if (!EquippedWeapon) return;
@@ -108,6 +110,23 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 }
 
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	/*need to make sure that the weapon state gets replicated first before we attach the weapon as we can't attach if physics is still enabeled*/
+	if (EquippedWeapon && Character) //on replicating equipped weapon to clients
+	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
+
+		AttachActorToRightHand(EquippedWeapon);
+
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+
+		PlayEquipSound();
+		UpdateHUDWeaponType();
+	}
+}
+
 void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
 {
 	if (!Character || !ActorToAttach || !Character->GetMesh()) return;
@@ -135,27 +154,97 @@ void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
 	}
 }
 
-void UCombatComponent::OnRep_EquippedWeapon()
+/*
+*
+* Fire
+*
+*/
+
+void UCombatComponent::FireButtonPressed(bool bPressed)
 {
-	/*need to make sure that the weapon state gets replicated first before we attach the weapon as we can't attach if physics is still enabeled*/
-	if (EquippedWeapon && Character) //on replicating equipped weapon to clients
+	/*
+	* the default scenario before making any rpcs is that ONLY the client(or server) would see the fire weapon animation when shooting
+	* creating a server rpc only made it play on the server, since bFireButtonPressed is not replicated.
+	* we don't replicate bFireButtonPressed since we intend to implement automatic weapons, and replication only works when a variable changes value(replication would work for semi-auto).
+	* the fix is to keep the server rpc and within it call a multicast(server) rpc that will play the effect on all clients and server.
+	* the way to know it's a multicast server rpc: -a client/server press fire button -call serverFire(a server rpc.. not client) -call multicast rpc.
+	*/
+	bFireButtonPressed = bPressed;
+
+	if (bFireButtonPressed && CanFire())
 	{
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
-
-		AttachActorToRightHand(EquippedWeapon);
-
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-		Character->bUseControllerRotationYaw = true;
-
-		PlayEquipSound();
-		UpdateHUDWeaponType();
+		bCanFire = false;
+		ServerFire(HitTarget);
+		StartFireTimer();
+	}
+	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && CarriedAmmo == 0 && EmptySound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
 	}
 }
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget);
+}
+
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)   //Allow shotgun to interrupt reload animation
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;		//interupt reload montage to fire montage.. set the combat state to unoccupied.
+		return;
+	}
+
+	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Unoccupied)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->GetFireDelay());
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (!EquippedWeapon) return;
+
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->IsAutomatic())
+	{
+		FireButtonPressed(true);
+	}
+
+	AutoReloadIfEmpty();
+}
+
+bool UCombatComponent::CanFire()
+{
+	bool bInterruptShotgunReload =
+		EquippedWeapon &&
+		!EquippedWeapon->IsEmpty() &&
+		bCanFire &&
+		CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
+
+	if (bInterruptShotgunReload) return true;
+
+	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
+}
+
 /*
 *
 * Reload
 *
 */
+
 void UCombatComponent::Reload()
 {
 	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && !EquippedWeapon->IsFull())//already reloading
@@ -254,11 +343,13 @@ void UCombatComponent::JumpToShotgunEnd()
 		AnimeInstance->Montage_JumpToSection(FName("ShotgunEnd"));
 	}
 }
+
 /*
 *
-* SetAiming , RPCs , REP_NOTIFIES
+* Aiming
 *
-*/				
+*/			
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	if (!Character || !EquippedWeapon) return;
@@ -284,98 +375,37 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 		Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
 }
-/*
-*	
-* FireButtonPressed , RPCs , REP_NOTIFIES
-* 
-*/					
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{
-	/*
-	* the default scenario before making any rpcs is that ONLY the client(or server) would see the fire weapon animation when shooting
-	* creating a server rpc only made it play on the server, since bFireButtonPressed is not replicated.
-	* we don't replicate bFireButtonPressed since we intend to implement automatic weapons, and replication only works when a variable changes value(replication would work for semi-auto).
-	* the fix is to keep the server rpc and within it call a multicast(server) rpc that will play the effect on all clients and server.
-	* the way to know it's a multicast server rpc: -a client/server press fire button -call serverFire(a server rpc.. not client) -call multicast rpc.
-	*/
-	bFireButtonPressed = bPressed;
-	
-	if (bFireButtonPressed && CanFire())
-	{
-		bCanFire = false;
-		ServerFire(HitTarget);
-		StartFireTimer();
-	}
-	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && CarriedAmmo == 0 && EmptySound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
-	}
-}
-					
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MulticastFire(TraceHitTarget);
-}
 
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)   //Allow shotgun to interrupt reload animation
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-		CombatState = ECombatState::ECS_Unoccupied;		//interupt reload montage to fire montage.. set the combat state to unoccupied.
-		return;
-	}
-
-	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Unoccupied)
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-	}
-}
-/*
-*
-* AUTOMATIC FIRE
-*
-*/
-void UCombatComponent::StartFireTimer()
-{
-	if (!EquippedWeapon || !Character) return;
-
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->GetFireDelay());
-}
-
-void UCombatComponent::FireTimerFinished()
+void UCombatComponent::InterpFOV(float DeltaTime)
 {
 	if (!EquippedWeapon) return;
 
-	bCanFire = true;
-	if (bFireButtonPressed && EquippedWeapon->IsAutomatic())
+	if (Character && Character->GetDisableGameplay())
 	{
-		FireButtonPressed(true);
+		bAiming = false;
 	}
 
-	AutoReloadIfEmpty();
+	if (bAiming)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed); //unzoom to defaultFOV at the same rate.
+	}
+
+	if (Character && Character->GetFollowCamera())
+	{
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+	}
 }
 
-bool UCombatComponent::CanFire()
-{
-	bool bInterruptShotgunReload =
-		EquippedWeapon &&
-		!EquippedWeapon->IsEmpty() &&
-		bCanFire &&
-		CombatState == ECombatState::ECS_Reloading &&
-		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
-
-	if (bInterruptShotgunReload) return true;
-
-	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
-}
 /*
 *
 * Crosshairs and HUD
 *
 */
+
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	if (!EquippedWeapon) return;
@@ -549,11 +579,13 @@ void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 		CrosshairsOnTargetFactor
 		;
 }
+
 /*
 *
 * Throwing Grenades
 *
 */
+
 void UCombatComponent::ThrowGrenade()
 {
 	if (Grenades == 0) return;
@@ -657,38 +689,11 @@ void UCombatComponent::UpdateHUDGrenades()
 }
 
 /*
-*
-* AIMING AND FOV
-*
-*/
-void UCombatComponent::InterpFOV(float DeltaTime)
-{
-	if (!EquippedWeapon) return;
-
-	if (Character && Character->GetDisableGameplay())
-	{
-		bAiming = false;
-	}
-
-	if (bAiming)
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
-	}
-	else
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed); //unzoom to defaultFOV at the same rate.
-	}
-
-	if (Character && Character->GetFollowCamera())
-	{
-		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
-	}
-}
-/*
 * 
 * CARRIED AMMO
 * 
 */
+
 void UCombatComponent::InitializeCarriedAmmo()
 {
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
@@ -778,11 +783,13 @@ void UCombatComponent::UpdateAmmoValues()
 
 	CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 }
+
 /*
 *
 * COSMETICS
 *
 */
+
 void UCombatComponent::PlayEquipSound()
 {
 	if (Character && EquippedWeapon && EquippedWeapon->EquipSound)
@@ -822,6 +829,7 @@ void UCombatComponent::DrawSniperScope(bool bDraw)
 		}
 	}
 }
+
 void UCombatComponent::PlaySniperScopeSound(bool bSniperAiming)
 {
 	if (bSniperAiming)

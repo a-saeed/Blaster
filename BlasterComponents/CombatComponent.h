@@ -23,71 +23,98 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	/*
 	* Fire
 	*/
+
 	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
 
-	void JumpToShotgunEnd();
-protected:
-
-	virtual void BeginPlay() override;
 	/*
-	* Drop/Equip weapon
+	* Equip / Drop Weapon
 	*/
-	void DropWeapon();
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
-	void AttachActorToRightHand(AActor* ActorToAttach);
-	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void DropWeapon();
 
-	UFUNCTION()
-		void OnRep_EquippedWeapon();
 	/*
 	* Aiming
 	*/
+
 	void SetAiming(bool bIsAiming);
 
-	UFUNCTION(Server, Reliable) //aiming from a client machine doesn't replicate on other clients & server. create an RPC
-		void ServerSetAiming(bool bIsAiming);
-	/*
-	* Fire
-	*/
-	UFUNCTION(Server, Reliable)
-		void ServerFire(const FVector_NetQuantize& TraceHitTarget);
-
-	UFUNCTION(NetMulticast, Reliable)
-		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 	/*
 	* Reload
 	*/
+
 	void Reload();
 
+	void JumpToShotgunEnd();	//needed in weapon class
+
+	/*
+	* Grenades
+	*/
+
+	void ThrowGrenade();
+
+	/*
+	* Pickup Carried Ammo From Spawn Points
+	*/
+
+	bool PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+
+protected:
+
+	virtual void BeginPlay() override;
+
+	/*
+	* Fire
+	*/
+
 	UFUNCTION(Server, Reliable)
-		void ServerReload();
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	/*
+	* Aiming
+	*/
+
+	UFUNCTION(Server, Reliable) //aiming from a client machine doesn't replicate on other clients & server. create an RPC
+	void ServerSetAiming(bool bIsAiming);
+
+	/*
+	* Reload
+	*/
+
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
 
 	void HandleReload();
 
 	UFUNCTION(BlueprintCallable)
-		void FinishReloading();
+	void FinishReloading();
+
+	void UpdateAmmoValues();
 
 	UFUNCTION(BlueprintCallable)
 	void ShotgunShellReload();
 
-	void UpdateAmmoValues();
-
 	void UpdateShotgunAmmoValues();
+
 	/*
 	* Corsshairs
 	*/
+
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
+
 	/*
 	* Grenades
 	*/
-	void ThrowGrenade();
 
 	UFUNCTION(Server, Reliable)
 	void ServerThrowGrenade();
@@ -114,33 +141,39 @@ private:
 	/*
 	*	BODY
 	*/
+
 	UPROPERTY()
 	class ABlasterCharacter* Character;
+
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterController;
+
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
-	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
-		class AWeapon* EquippedWeapon;
+	UPROPERTY(EditAnywhere)
+	float BaseWalkSpeed = 750;
 
-	UPROPERTY(Replicated)
-		bool bAiming;
-
-	bool bFireButtonPressed;
+	UPROPERTY(EditAnywhere)
+	float AimWalkSpeed = 300;
 
 	/*
-	*	CHARACTER CONTROLS
+	*	Equipped Weapon
 	*/
-	UPROPERTY(EditAnywhere)
-		float BaseWalkSpeed = 750;
 
-	UPROPERTY(EditAnywhere)
-		float AimWalkSpeed = 300;
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
+	class AWeapon* EquippedWeapon;
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
 
 	/*
 	*	CROSSHAIRS AND HUD
 	*/
+
 	float CrosshairsVelocityFactor;
 	float CrosshairsInAirFactor;
 	float CrosshairsAimFactor;
@@ -150,26 +183,33 @@ private:
 	void SetCrosshairsColor(FHitResult& TraceHitResult);
 	void SetCrosshairsSpread(float DeltaTime);
 
-	FVector HitTarget; //need in the anime instance to fix the weapon rotation
+	FVector HitTarget;				//need in the anime instance to fix the weapon rotation
 
 	/*
 	* AIMING AND FOV
 	*/
-	//field of view when not aiming; Set to the camera's base FOV in BeginPlay
-	float DefaultFOV;
+	
+	UPROPERTY(Replicated)
+	bool bAiming;
+
+	float DefaultFOV;				//field of view when not aiming; Set to the camera's base FOV in BeginPlay
 
 	float CurrentFOV;
 
 	UPROPERTY(EditAnywhere , Category = "Combat")
-		float ZoomedFOV = 30.f; //not used till now
+	float ZoomedFOV = 30.f;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-		float ZoomInterpSpeed = 20.f; //used to make all weapons unzoom at the same rate.
+	float ZoomInterpSpeed = 20.f; //used to make all weapons unzoom at the same rate.
 
 	void InterpFOV(float DeltaTime);
+
 	/*
 	* AUTOMATIC FIRE
 	*/
+
+	bool bFireButtonPressed;
+
 	FTimerHandle FireTimer;
 	bool bCanFire = true;
 
@@ -179,13 +219,17 @@ private:
 	bool CanFire();
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-		class USoundCue* EmptySound;
+	class USoundCue* EmptySound;
+
 	/*
 	* Carried Ammo
 	*/
-	 /*Carried ammo for the currently equipped weapon*/
+
 	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
 	int32 CarriedAmmo;
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxCarriedAmmo = 70;
@@ -199,39 +243,40 @@ private:
 	void UpdateHUDCarriedAmmo();
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingRocketAmmo = 2;
+	int32 StartingRocketAmmo = 2;
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingARAmmo = 30;
+	int32 StartingARAmmo = 30;
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingPistolAmmo = 12;
+	int32 StartingPistolAmmo = 12;
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingSMGAmmo = 20;
+	int32 StartingSMGAmmo = 20;
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingShotgunAmmo = 5;
+	int32 StartingShotgunAmmo = 5;
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingSniperAmmo = 15;
+	int32 StartingSniperAmmo = 15;
 
 	UPROPERTY(EditAnywhere)
-		int32 StartingGrenadeLauncherAmmo = 8;
+	int32 StartingGrenadeLauncherAmmo = 8;
 
-	UFUNCTION()
-		void OnRep_CarriedAmmo();
 	/*
 	* Combat State
 	*/
+
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-		ECombatState CombatState = ECombatState::ECS_Unoccupied; //start of as unoccpied
+	ECombatState CombatState = ECombatState::ECS_Unoccupied; //start of as unoccpied
 
 	UFUNCTION()
-		void OnRep_CombatState();
+	void OnRep_CombatState();
+
 	/*
 	* Grenades
 	*/
+
 	UPROPERTY(ReplicatedUsing = OnREp_Grenades)
 	int32 Grenades = 4;
 
@@ -242,11 +287,11 @@ private:
 	int32 MaxGrenades = 4;
 
 	void UpdateHUDGrenades();
+
 	/*
-	*
 	* COSMETICS
-	*
 	*/
+
 	void AutoReloadIfEmpty();
 	void PlayEquipSound();
 	void UpdateHUDWeaponType();
@@ -265,11 +310,4 @@ public:
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
 	FORCEINLINE int32 GetCarriedAmmo() const { return CarriedAmmo; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
-
-	/*
-	* 
-	* Pickup Carried Ammo
-	* 
-	*/
-	bool PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 };

@@ -298,14 +298,7 @@ void ABlasterCharacter::EquipButtonPressed()
 
 	if (Combat) //only equip weapon through the server.
 	{
-		if (HasAuthority()) //if ur the server, equip weapon
-		{
-			Combat->EquipWeapon(OverlappingWeapon);
-		}
-		else
-		{
-			ServerEquipButtonPressed(); //ur a client whos's trying to equip a weapon, call the RPC
-		}	
+		ServerEquipButtonPressed();
 	}
 }
 
