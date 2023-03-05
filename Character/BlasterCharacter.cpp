@@ -711,7 +711,16 @@ void ABlasterCharacter::Eliminate()//only called on server
 {
 	if (Combat)
 	{
-		Combat->DropWeapon();
+		if (Combat->EquippedWeapon)
+		{
+			Combat->EquippedWeapon->Dropped();
+		}
+		if (Combat->SecondaryWeapon)
+		{
+			Combat->SecondaryWeapon->Dropped();
+		}
+
+		if (StartingWeapon && StartingWeapon->GetOwner() == nullptr) StartingWeapon->Destroy();
 	}
 
 	MulticastEliminate();
@@ -733,8 +742,6 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 		BlasterPlayerController->SetHUDCarriedAmmo(0);
 		BlasterPlayerController->SetHUDWeaponType(FText::FromString(" "));
 	}
-
-	if (StartingWeapon && StartingWeapon->GetOwner() == nullptr) StartingWeapon->Destroy();
 
 	PlayElimMontage();
 	//we want all machines to see the dissolve effect
