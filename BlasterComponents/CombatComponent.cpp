@@ -12,6 +12,7 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/Weapon/Projectile.h"
+#include "Blaster/Weapon//Shotgun.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -276,6 +277,12 @@ void UCombatComponent::FireHitscanWeapon()
 
 void UCombatComponent::FireShotgun()
 {
+	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
+	if (Shotgun)
+	{
+		TArray<FVector> OutEndLocations;
+		Shotgun->ShotgunTraceEndWithScatter(HitTarget, OutEndLocations);
+	}
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)

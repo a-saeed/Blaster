@@ -58,6 +58,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	bool bUseScatter = false;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;
+
 	/**
 	*	TEXTURES FOR THE WEAPON CROSSHAIRS
 	*/
@@ -156,16 +162,6 @@ private:
 
 	void SetWeaponMeshPhysics(bool bEnable);
 	void EnablePhysicsSMG(bool bEnable);
-
-	/*
-	* Trace end with scatter
-	*/
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float DistanceToSphere = 800.f;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float SphereRadius = 75.f;
 
 	/*
 	*	ANIMATION ASSETS
