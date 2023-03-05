@@ -60,6 +60,15 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* GrenadesText;
 
+	/*
+	* Wifi Image
+	*/
+	UPROPERTY(meta = (BindWidget))
+	class UImage* HighPingImage;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* HIghPingAnimation;
+
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
@@ -78,4 +87,7 @@ public:
 	FORCEINLINE UTextBlock* GetMatchCountdownText() const { return MatchCountdownText; }
 
 	FORCEINLINE UTextBlock* GetGrenadesText() const { return GrenadesText; }
+
+	FORCEINLINE UImage* GetWifiImage() const { return HighPingImage; }
+	FORCEINLINE UWidgetAnimation* GetWifiAnimation() const { return HIghPingAnimation; }
 };

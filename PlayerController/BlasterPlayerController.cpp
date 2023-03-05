@@ -18,6 +18,7 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Components/Image.h"
 
 /*
 *  Overriden functions
@@ -46,6 +47,43 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	CheckTimeSync(DeltaTime);
 
 	PollInit();
+
+	CheckPing(DeltaTime);
+}
+
+void ABlasterPlayerController::CheckPing(float DeltaTime)
+{
+	HighPingRunningTime += DeltaTime;
+	if (HighPingRunningTime > CheckPingFrequency)
+	{
+		HighPingRunningTime = 0.f;	
+
+		PlayerState = PlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : PlayerState;
+		if (PlayerState)
+		{
+			if (PlayerState->GetPing() * 4 > HighPingThreshold)		//Ping is compressed; it's actually / 4
+			{
+				HighPingWarning();
+				PingAnimationRunningTime = 0.f;
+			}
+		}
+
+		bool bHighPingAnimationPlaying =
+			BlasterHUD &&
+			BlasterHUD->GetCharacterOverlay() &&
+			BlasterHUD->GetCharacterOverlay()->GetWifiAnimation() &&
+			BlasterHUD->GetCharacterOverlay()->IsAnimationPlaying(BlasterHUD->GetCharacterOverlay()->GetWifiAnimation());
+
+		if (bHighPingAnimationPlaying)
+		{
+			PingAnimationRunningTime += DeltaTime;
+
+			if (PingAnimationRunningTime > HighPingDuration)
+			{
+				StopHighPingWarning();
+			}
+		}
+	}
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -615,5 +653,40 @@ void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
 	{
 		bInitializeGrenades = true;
 		HUDGrenades = Grenades;
+	}
+}
+
+void ABlasterPlayerController::HighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetWifiImage() &&
+		BlasterHUD->GetCharacterOverlay()->GetWifiAnimation();
+
+	if (bHUDValid)
+	{
+		BlasterHUD->GetCharacterOverlay()->GetWifiImage()->SetRenderOpacity(1.f);
+		BlasterHUD->GetCharacterOverlay()->PlayAnimation(BlasterHUD->GetCharacterOverlay()->GetWifiAnimation(), 0.f, 5);
+	}
+}
+
+void ABlasterPlayerController::StopHighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetWifiImage() &&
+		BlasterHUD->GetCharacterOverlay()->GetWifiAnimation();
+
+	if (bHUDValid)
+	{
+		BlasterHUD->GetCharacterOverlay()->GetWifiImage()->SetRenderOpacity(0.f);
+		if (BlasterHUD->GetCharacterOverlay()->IsAnimationPlaying(BlasterHUD->GetCharacterOverlay()->GetWifiAnimation()))
+		{
+			BlasterHUD->GetCharacterOverlay()->StopAnimation(BlasterHUD->GetCharacterOverlay()->GetWifiAnimation());
+		}
 	}
 }

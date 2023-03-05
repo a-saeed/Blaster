@@ -165,6 +165,26 @@ private:
 
 	void TimeRunningOut();
 
-public:
+	/*
+	* High Ping
+	*/
+	void CheckPing(float DeltaTime);
 
+	void HighPingWarning();
+	void StopHighPingWarning();
+
+	float HighPingRunningTime = 0.f;
+
+	float PingAnimationRunningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;
+
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshold = 50.f;
+
+public:
 };
