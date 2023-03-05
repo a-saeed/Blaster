@@ -66,25 +66,10 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 /*
 *
-* EquipWeapon / DopWeapon / Swap Weapons
+* EquipWeapon / Swap Weapons
 *
 */		
-
-void UCombatComponent::DropWeapon() //called in Blaster Character's Eliminate()
-{
-	if (!EquippedWeapon) return;
-
-	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Dropped); //replicated
-
-	EquippedWeapon->GetWeaponMesh()->DetachFromComponent(DetachRules);
-	EquippedWeapon->SetOwner(nullptr);
-	/*a weapon shouldn't store info about a player that dropped it*/
-	EquippedWeapon->SetOwnerCharacter(nullptr);
-	EquippedWeapon->SetOwnerController(nullptr);
-}	
-	
+		
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (!Character || !WeaponToEquip || CombatState != ECombatState::ECS_Unoccupied) return;
@@ -104,7 +89,8 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	if (!WeaponToEquip) return;
 
 	/*if we already have an equipped weapon, drop it if we are to equip another weapon*/
-	DropWeapon();
+	if(EquippedWeapon) EquippedWeapon->Dropped();
+
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped); //this is the enum we created in weapon class. (we need to replicate it to all clients)
 

@@ -37,6 +37,8 @@ public:
 
 	void SetWeaponState(EWeaponState State);
 
+	void Dropped();
+
 	/**
 	*	TEXTURES FOR THE WEAPON CROSSHAIRS
 	*/

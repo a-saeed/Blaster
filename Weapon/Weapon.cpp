@@ -121,6 +121,17 @@ void AWeapon::Fire(const FVector& HitTarget)
 	SpendRound();
 }
 
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped); //replicated
+
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
+	/*a weapon shouldn't store info about a player that dropped it*/
+	BlasterOwnerCharacter = nullptr;
+	BlasterOwnerController = nullptr;
+}
 /*
 *  Weapon State
 */

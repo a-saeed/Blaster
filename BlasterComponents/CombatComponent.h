@@ -31,12 +31,10 @@ public:
 	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
 
 	/*
-	* Equip / Drop Weapon
+	* Equip Weapon
 	*/
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
-
-	void DropWeapon();
 
 	/*
 	* Aiming
