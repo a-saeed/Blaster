@@ -250,7 +250,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 			break;
 
 		case EFireType::EFT_Shotgun:
-			FireShotgun();
+			FireShotgunWeapon();
 			break;
 		}
 
@@ -275,13 +275,16 @@ void UCombatComponent::FireHitscanWeapon()
 	ServerFire(HitTarget);
 }
 
-void UCombatComponent::FireShotgun()
+void UCombatComponent::FireShotgunWeapon()
 {
 	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
 	if (Shotgun)
 	{
-		TArray<FVector> OutEndLocations;
+		TArray<FVector_NetQuantize> OutEndLocations;
 		Shotgun->ShotgunTraceEndWithScatter(HitTarget, OutEndLocations);
+
+		ShotgunLocalFire(OutEndLocations);
+		ServerShotgunFire(OutEndLocations);
 	}
 }
 
@@ -297,20 +300,38 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	LocalFire(TraceHitTarget);
 }
 
+void UCombatComponent::ServerShotgunFire_Implementation(const  TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	MulticastShotgunFire(TraceHitTargets);
+}
+
+void UCombatComponent::MulticastShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	if (Character && Character->IsLocallyControlled()) return;
+	ShotgunLocalFire(TraceHitTargets);
+}
+
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
-	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)   //Allow shotgun to interrupt reload animation
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-		CombatState = ECombatState::ECS_Unoccupied;		//interupt reload montage to fire montage.. set the combat state to unoccupied.
-		return;
-	}
+	if (!Character || !EquippedWeapon) return;
 
-	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Unoccupied)
+	if (CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
+	if (!Character || !Shotgun) return;
+
+	if (CombatState == ECombatState::ECS_Reloading || CombatState == ECombatState::ECS_Unoccupied)   //Allow shotgun to interrupt reload animation
+	{
+		Character->PlayFireMontage(bAiming);
+		Shotgun->FireShotgun(TraceHitTargets);
+		CombatState = ECombatState::ECS_Unoccupied;		//interupt reload montage to fire montage.. set the combat state to unoccupied.
 	}
 }
 

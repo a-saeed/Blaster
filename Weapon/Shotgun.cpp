@@ -10,9 +10,9 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-void AShotgun::Fire(const FVector& HitTarget)
+void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 {
-	AWeapon::Fire(HitTarget);
+	AWeapon::Fire(FVector());
 
 	APawn* OwnerPawn = Cast<APawn>(GetOwner());			//Using ACharacter should also work
 	if (!OwnerPawn) return;
@@ -22,12 +22,12 @@ void AShotgun::Fire(const FVector& HitTarget)
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
 	if (MuzzleFlashSocket)
 	{
-		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
-		FVector Start = SocketTransform.GetLocation();
-
+	const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	const FVector Start = SocketTransform.GetLocation();
+ 
 		TMap<ABlasterCharacter*, uint32> HitMap;
 
-		for (uint32 i = 0; i < NumberOfShards; i++)
+		for (FVector_NetQuantize HitTarget : HitTargets)
 		{
 			FHitResult FireHitResult;
 			PerformLineTrace(Start, HitTarget, FireHitResult);
@@ -45,29 +45,32 @@ void AShotgun::Fire(const FVector& HitTarget)
 				}
 				PlayCharacterEffects(FireHitResult);
 			}
-			else if(FireHitResult.bBlockingHit)
+			else if (FireHitResult.bBlockingHit)
 			{
 				PlaySurfaceEffects(FireHitResult);
 			}
 		}
 
-		for (TPair<ABlasterCharacter*, uint32> HitPair : HitMap)
+		if (HasAuthority())
 		{
-			if (HitPair.Key && HasAuthority() && InstigatorController)
+			for (TPair<ABlasterCharacter*, uint32> HitPair : HitMap)
 			{
-				UGameplayStatics::ApplyDamage(
-					HitPair.Key,
-					Damage * HitPair.Value,					//damage * how many times this character got hit
-					InstigatorController,
-					this,
-					UDamageType::StaticClass());
-
+				if (HitPair.Key && InstigatorController)
+				{
+					UGameplayStatics::ApplyDamage(
+						HitPair.Key,							//Character that was hit
+						Damage * HitPair.Value,					//damage * how many times this character got hit
+						InstigatorController,
+						this,
+						UDamageType::StaticClass());
+				}
 			}
 		}
+		
 	}
 }
 
-void AShotgun::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector>& OutHitTargets)
+void AShotgun::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& OutHitTargets)
 {
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
 	if (!MuzzleFlashSocket) return;

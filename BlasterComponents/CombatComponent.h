@@ -29,10 +29,6 @@ public:
 	*/
 
 	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
-	void FireProjectileWeapon();
-	void FireHitscanWeapon();
-	void FireShotgun();
-	void LocalFire(const FVector_NetQuantize& TraceHitTarget);  // play fire effects on clients -Lag
 
 	/*
 	* Equip Weapon
@@ -86,6 +82,19 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
+	void LocalFire(const FVector_NetQuantize& TraceHitTarget);			// play fire effects on clients -Lag
+
+	UFUNCTION(Server, Reliable)
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);	// Take HitTargets from client's local simulation of scatter.
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+
+	void ShotgunLocalFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+
+	void FireProjectileWeapon();
+	void FireHitscanWeapon();
+	void FireShotgunWeapon();
 	/*
 	* Aiming
 	*/
