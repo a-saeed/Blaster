@@ -232,11 +232,13 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	* the way to know it's a multicast server rpc: -a client/server press fire button -call serverFire(a server rpc.. not client) -call multicast rpc.
 	*/
 	bFireButtonPressed = bPressed;
+	AutoReloadIfEmpty();
 
 	if (bFireButtonPressed && CanFire())
 	{
 		bCanFire = false;
 		ServerFire(HitTarget);
+		LocalFire(HitTarget);
 		StartFireTimer();
 	}
 	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && CarriedAmmo == 0 && EmptySound)
@@ -251,6 +253,13 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 }
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (Character && Character->IsLocallyControlled()) return;	//we already done this in local fire
+	
+	LocalFire(TraceHitTarget);
+}
+
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character && EquippedWeapon && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)   //Allow shotgun to interrupt reload animation
 	{
@@ -283,7 +292,6 @@ void UCombatComponent::FireTimerFinished()
 	{
 		FireButtonPressed(true);
 	}
-
 	AutoReloadIfEmpty();
 }
 

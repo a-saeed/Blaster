@@ -118,7 +118,10 @@ void AWeapon::Fire(const FVector& HitTarget)
 		}
 	}
 
-	SpendRound();
+	if (HasAuthority())		//may want to call this function from a client to compensate lag; we want to update ammo on the server.
+	{
+		SpendRound();
+	}
 }
 
 void AWeapon::Dropped()

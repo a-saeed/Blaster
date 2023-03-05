@@ -29,6 +29,7 @@ public:
 	*/
 
 	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
+	void LocalFire(const FVector_NetQuantize& TraceHitTarget);  // play fire effects on clients -Lag
 
 	/*
 	* Equip Weapon
