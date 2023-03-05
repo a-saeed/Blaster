@@ -16,6 +16,16 @@ enum class EWeaponState : uint8 //create an enum constant for weapon state (init
 	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_Hitscan UMETA (DisplayName = "Hitscan"),
+	EFT_Projectile UMETA (DisplayName = "Projectile"),
+	EFT_Shotgun UMETA (DisplayName = "Shotgun"),
+
+	EFT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
@@ -38,6 +48,15 @@ public:
 	void SetWeaponState(EWeaponState State);
 
 	void Dropped();
+
+	/**
+	*   SCATTER
+	*/
+
+	FVector TraceEndWithScatter(const FVector& HitTarget);
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
 
 	/**
 	*	TEXTURES FOR THE WEAPON CROSSHAIRS
@@ -101,6 +120,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class USphereComponent* AreaSphere; //to detect overlap events with the weapon, just like a capsule comp.
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	EWeaponType WeaponType;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	EFireType FireType;
+
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 
@@ -131,6 +156,16 @@ private:
 
 	void SetWeaponMeshPhysics(bool bEnable);
 	void EnablePhysicsSMG(bool bEnable);
+
+	/*
+	* Trace end with scatter
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;
 
 	/*
 	*	ANIMATION ASSETS
@@ -172,13 +207,6 @@ private:
 	void SpendRound();
 
 	/*
-	*  WEAPON TYPESS
-	*/
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	EWeaponType WeaponType;
-
-	/*
 	* ZOOMED FOV WHILE AIMING.
 	*/
 
@@ -209,4 +237,5 @@ public:
 	void SetHUDAmmo();
 
 	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
+	FORCEINLINE EFireType GetFireType() { return FireType; }
 };

@@ -29,6 +29,9 @@ public:
 	*/
 
 	void FireButtonPressed(bool bPressed);						//to be used in player controller to disable firing in cooldown state.
+	void FireProjectileWeapon();
+	void FireHitscanWeapon();
+	void FireShotgun();
 	void LocalFire(const FVector_NetQuantize& TraceHitTarget);  // play fire effects on clients -Lag
 
 	/*
@@ -309,6 +312,8 @@ private:
 
 	void AutoReloadIfEmpty();
 	void UpdateHUDWeaponType();
+
+	void PlaySoundIfEmpty();
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* SniperZoomInSound;

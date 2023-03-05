@@ -237,14 +237,45 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	if (bFireButtonPressed && CanFire())
 	{
 		bCanFire = false;
-		ServerFire(HitTarget);
-		LocalFire(HitTarget);
+
+		switch (EquippedWeapon->GetFireType())		//CanFire() checks if weapon is valid
+		{
+		case EFireType::EFT_Projectile:
+			FireProjectileWeapon();
+			break;
+
+		case EFireType::EFT_Hitscan:
+			FireHitscanWeapon();
+			break;
+
+		case EFireType::EFT_Shotgun:
+			FireShotgun();
+			break;
+		}
+
 		StartFireTimer();
 	}
-	else if (bFireButtonPressed && EquippedWeapon->IsEmpty() && CarriedAmmo == 0 && EmptySound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
-	}
+
+	PlaySoundIfEmpty();
+}
+
+void UCombatComponent::FireProjectileWeapon()
+{
+	LocalFire(HitTarget);
+	ServerFire(HitTarget);
+}
+
+void UCombatComponent::FireHitscanWeapon()
+{
+	/*let locally controlled character determine the scatter.. then send it to server*/
+	HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;	
+
+	LocalFire(HitTarget);
+	ServerFire(HitTarget);
+}
+
+void UCombatComponent::FireShotgun()
+{
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -903,5 +934,13 @@ void UCombatComponent::PlaySniperScopeSound(bool bSniperAiming)
 	{
 		if(SniperZoomOutSound)
 			UGameplayStatics::PlaySound2D(GetWorld(), SniperZoomOutSound);
+	}
+}
+
+void UCombatComponent::PlaySoundIfEmpty()
+{
+	if (bFireButtonPressed && EquippedWeapon->IsEmpty() && CarriedAmmo == 0 && EmptySound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EmptySound, EquippedWeapon->GetActorLocation());
 	}
 }

@@ -10,6 +10,7 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AWeapon::AWeapon()
 {
@@ -132,6 +133,29 @@ void AWeapon::Dropped()
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
 }
+
+/**
+*   SCATTER
+*/
+
+FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
+{
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
+	if (!MuzzleFlashSocket) return FVector();
+
+	FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	FVector TraceStart = SocketTransform.GetLocation();
+
+	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+
+	FVector RandomPointInSphere = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0, SphereRadius);
+	FVector EndLocation = SphereCenter + RandomPointInSphere;
+	FVector ToEnd = EndLocation - TraceStart;
+	
+	return FVector(TraceStart + ToEnd);
+}
+
 /*
 *  Weapon State
 */

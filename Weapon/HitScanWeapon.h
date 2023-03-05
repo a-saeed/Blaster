@@ -21,8 +21,6 @@ public:
 
 protected:
 
-	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
-
 	void PerformLineTrace(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHitResult);
 
 	void PlayBeamTrailEffect(const FVector& BeamStart, const FVector& BeamEnd);
@@ -53,16 +51,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* SniperGlow;
-	/*
-	* Trace end with scatter
-	*/
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float DistanceToSphere = 800.f;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float SphereRadius = 75.f;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	bool bUseScatter = false;
 };
