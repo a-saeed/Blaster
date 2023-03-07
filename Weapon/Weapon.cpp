@@ -64,7 +64,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState); //repilcate the weapon state enum
-	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -116,10 +115,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 		}
 	}
 
-	if (HasAuthority())		//may want to call this function from a client to compensate lag; we want to update ammo on the server.
-	{
-		SpendRound();
-	}
+	SpendRound(); //Client-side predicting ammo
 }
 
 void AWeapon::Dropped()
@@ -271,15 +267,46 @@ void AWeapon::EnablePhysicsSMG(bool bEnable)
 *  AMMO
 */
 
-void AWeapon::AddAmmo(int32 AmmoAmount)
+void AWeapon::SpendRound()
 {
-	Ammo = FMath::Clamp(Ammo + AmmoAmount, 0, GetMagCapacity());
+	//called on server and client;
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
 
+	//apply client side prediction / Server Reconciliation
+	if (HasAuthority())
+	{
+		ClientUpdateAmmo(Ammo);
+	}
+	else if(BlasterOwnerCharacter && BlasterOwnerCharacter->IsLocallyControlled())
+	{
+		++Sequence;
+	}
 	SetHUDAmmo();
 }
 
-void AWeapon::OnRep_Ammo()
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
 {
+	if (HasAuthority()) return;
+	//Server Reconciliation Algorithm
+	--Sequence;
+	Ammo = ServerAmmo - Sequence;
+}
+
+void AWeapon::AddAmmo(int32 AmmoAmount)
+{
+	Ammo = FMath::Clamp(Ammo + AmmoAmount, 0, GetMagCapacity());
+	SetHUDAmmo();
+
+	//only called on the server.. send to client to update the ammo
+	ClientAddAmmo(Ammo);
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 ServerAmmo)
+{
+	if (HasAuthority()) return;
+
+	Ammo = ServerAmmo;
+
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
 	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatComponent() && IsFull())
 	{
@@ -288,12 +315,6 @@ void AWeapon::OnRep_Ammo()
 	SetHUDAmmo();
 }
 
-void AWeapon::SpendRound()
-{
-	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity); //if ammo - 1 is in range, set.
-
-	SetHUDAmmo();
-}
 
 void AWeapon::OnRep_Owner()
 {

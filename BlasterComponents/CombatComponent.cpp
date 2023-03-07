@@ -233,7 +233,6 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	* the way to know it's a multicast server rpc: -a client/server press fire button -call serverFire(a server rpc.. not client) -call multicast rpc.
 	*/
 	bFireButtonPressed = bPressed;
-	AutoReloadIfEmpty();
 
 	if (bFireButtonPressed && CanFire())
 	{

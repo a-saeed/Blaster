@@ -191,17 +191,21 @@ private:
 	*  AMMO
 	*/
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere)
 	int32 Ammo = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	int32 MagCapacity = 50;
 
-	UFUNCTION()
-	void OnRep_Ammo();
-
 	void SpendRound();
 
+	UFUNCTION(Client, Reliable)					//Server Reconciliation
+	void ClientUpdateAmmo(int32 ServerAmmo);
+
+	UFUNCTION(Client, Reliable)					//Delayed ammo addition
+	void ClientAddAmmo(int32 ServerAmmo);
+
+	int32 Sequence = 0;							// The number of unprocessed server requests for ammo; Incremented in SpendRound, decremented in ClientUpdateAmmo
 	/*
 	* ZOOMED FOV WHILE AIMING.
 	*/
