@@ -140,7 +140,7 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	SecondaryWeapon->SetOwner(Character);
 	AttachActorToBackpack(SecondaryWeapon);
 
-	//SecondaryWeapon->PlayEquipSound();
+	SecondaryWeapon->PlayEquipSound();
 }
 
 void UCombatComponent::OnRep_SecondaryWeapon()
@@ -150,7 +150,7 @@ void UCombatComponent::OnRep_SecondaryWeapon()
 		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSeconadry);
 		AttachActorToBackpack(SecondaryWeapon);
 
-		//SecondaryWeapon->PlayEquipSound();
+		SecondaryWeapon->PlayEquipSound();
 	}
 }
 
@@ -170,7 +170,7 @@ void UCombatComponent::SwapWeapons()
 	UpdateHUDWeaponType();
 
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSeconadry);
-	SecondaryWeapon->PlayEquipSound();
+	EquippedWeapon->PlayEquipSound();
 	AttachActorToBackpack(SecondaryWeapon);
 }
 
