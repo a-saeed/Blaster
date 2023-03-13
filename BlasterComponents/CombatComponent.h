@@ -122,6 +122,8 @@ protected:
 
 	void UpdateShotgunAmmoValues();
 
+	bool bLocalClientSideReloading = false;
+
 	/*
 	* Corsshairs
 	*/

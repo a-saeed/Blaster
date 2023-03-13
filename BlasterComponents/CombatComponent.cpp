@@ -12,7 +12,7 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/Weapon/Projectile.h"
-#include "Blaster/Weapon//Shotgun.h"
+#include "Blaster/Weapon/Shotgun.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -38,13 +38,13 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	//set defaultFOV
-	if (Character->GetFollowCamera())
+	if (Character && Character->GetFollowCamera())
 	{
 		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 		CurrentFOV = DefaultFOV;
 	}
 	/*initialize carried ammo only on the server*/
-	if (Character->HasAuthority())
+	if (Character && Character->HasAuthority())
 	{
 		InitializeCarriedAmmo();
 	}
@@ -355,6 +355,8 @@ void UCombatComponent::FireTimerFinished()
 
 bool UCombatComponent::CanFire()
 {
+	if (bLocalClientSideReloading) return false;
+
 	bool bInterruptShotgunReload =
 		EquippedWeapon &&
 		!EquippedWeapon->IsEmpty() &&
@@ -375,9 +377,11 @@ bool UCombatComponent::CanFire()
 
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && !EquippedWeapon->IsFull())//already reloading
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && !EquippedWeapon->IsFull() && !bLocalClientSideReloading)//already reloading
 	{
 		ServerReload();
+		HandleReload();
+		bLocalClientSideReloading = true;			//if we're lcally reloading; we shouldn't be using FABRIK
 	}
 }
 
@@ -386,7 +390,10 @@ void UCombatComponent::ServerReload_Implementation()
 	if (!Character) return;
 	
 	CombatState = ECombatState::ECS_Reloading; //trigger OnRep_CombatState.
-	HandleReload();
+	if (!Character->IsLocallyControlled())
+	{
+		HandleReload();
+	}
 }
 
 void UCombatComponent::OnRep_CombatState()
@@ -394,7 +401,10 @@ void UCombatComponent::OnRep_CombatState()
 	switch (CombatState)
 	{
 	case ECombatState::ECS_Reloading:
-		HandleReload();
+		if (Character && !Character->IsLocallyControlled())
+		{
+			HandleReload();
+		}
 		break;
 	
 	case ECombatState::ECS_Unoccupied:
@@ -416,7 +426,10 @@ void UCombatComponent::OnRep_CombatState()
 
 void UCombatComponent::HandleReload()
 {
-	Character->PlayReloadMontage();
+	if (Character)
+	{
+		Character->PlayReloadMontage();
+	}
 }
 
 void UCombatComponent::FinishReloading() //called from animation bluprint
@@ -436,6 +449,8 @@ void UCombatComponent::FinishReloading() //called from animation bluprint
 	{
 		FireButtonPressed(true);
 	}
+	//reenable FABRIK in the anime instance
+	bLocalClientSideReloading = false;
 }
 
 void UCombatComponent::ShotgunShellReload()

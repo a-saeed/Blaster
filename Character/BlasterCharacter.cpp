@@ -865,3 +865,8 @@ ECombatState ABlasterCharacter::GetCombatState()
 
 	return Combat->CombatState;
 }
+
+bool ABlasterCharacter::bIsLocallyReloading()
+{
+	return Combat && Combat->bLocalClientSideReloading;
+}

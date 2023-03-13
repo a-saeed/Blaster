@@ -292,4 +292,6 @@ public:
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+
+	bool bIsLocallyReloading();
 };
