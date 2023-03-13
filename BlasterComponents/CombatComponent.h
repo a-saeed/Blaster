@@ -95,6 +95,7 @@ protected:
 	void FireProjectileWeapon();
 	void FireHitscanWeapon();
 	void FireShotgunWeapon();
+
 	/*
 	* Aiming
 	*/
@@ -216,8 +217,13 @@ private:
 	* AIMING AND FOV
 	*/
 	
-	UPROPERTY(Replicated)
-	bool bAiming;
+	UPROPERTY(ReplicatedUsing = OnRep_Aiming)
+	bool bAiming = false;
+
+	bool bLocalClientSideAiming = false;
+
+	UFUNCTION()
+	void OnRep_Aiming();
 
 	float DefaultFOV;				//field of view when not aiming; Set to the camera's base FOV in BeginPlay
 

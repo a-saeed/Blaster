@@ -484,13 +484,22 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 
 	bAiming = bIsAiming; //bAiming is what's being checked every frame by the ABP to see whether to play the aiming pose or not. client can set it and see his aim pose before sending rpc to server to allow for a smooth xp. once rpc reaches server it will replicate to all clients to see this client's aim pose.
 
+	if (Character->IsLocallyControlled())
+	{
+		bLocalClientSideAiming = bAiming;
+	}
+
 	//reduce character speed if we're aiming (it'll be set locally, but the movement compoenet takes care of replication..still, we can set in the server as well)
 	Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 
-	ServerSetAiming(bIsAiming); //whether server or client, this rpc will be called from the respective machine and only executed on server, vraiable already replicates.
-
 	/*Sniper rifle scope*/
 	DrawSniperScope(bAiming);
+
+
+	if (!Character->HasAuthority())
+	{
+		ServerSetAiming(bIsAiming);
+	}
 }
 					
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
@@ -501,6 +510,14 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 	{
 		//reduce character speed if we're aiming
 		Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+
+void UCombatComponent::OnRep_Aiming()
+{
+	if (Character && Character->IsLocallyControlled())
+	{
+		bAiming = bLocalClientSideAiming;
 	}
 }
 
