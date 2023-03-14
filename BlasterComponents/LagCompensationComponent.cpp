@@ -2,6 +2,9 @@
 
 
 #include "LagCompensationComponent.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Components/BoxComponent.h"
+#include "DrawDebugHelpers.h"
 
 ULagCompensationComponent::ULagCompensationComponent()
 {
@@ -11,6 +14,10 @@ ULagCompensationComponent::ULagCompensationComponent()
 void ULagCompensationComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FFramePackage FramePackage;
+	SaveFramePackage(FramePackage);
+	DrawFramePackage(FramePackage);
 }
 
 void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -18,3 +25,34 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void ULagCompensationComponent::SaveFramePackage(FFramePackage& OutPackage)
+{
+	OutPackage.Time = GetWorld()->GetTimeSeconds();	//the server time.. since we're only using lag compensation on the server
+
+	BlasterCharacter = BlasterCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterCharacter;
+	if (BlasterCharacter)
+	{
+		for (auto& BoxPair : BlasterCharacter->HitCollisionBoxes)
+		{
+			FBoxInformation BoxInformation;
+			BoxInformation.Location = BoxPair.Value->GetComponentLocation();
+			BoxInformation.Rotation = BoxPair.Value->GetComponentRotation();
+			BoxInformation.BoxExtent = BoxPair.Value->GetScaledBoxExtent();
+
+			OutPackage.HitBoxMap.Add(BoxPair.Key, BoxInformation);
+		}
+	}
+}
+
+void ULagCompensationComponent::DrawFramePackage(const FFramePackage& Package)
+{
+	for (auto& BoxInfo : Package.HitBoxMap)
+	{
+		DrawDebugBox(
+			GetWorld(),
+			BoxInfo.Value.Location,
+			BoxInfo.Value.BoxExtent,
+			FQuat(BoxInfo.Value.Rotation),
+			FColor::Orange, true);
+	}
+}

@@ -51,13 +51,16 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	void SaveFramePackage(FFramePackage& OutPackage);
+	void DrawFramePackage(const FFramePackage& Package);
+
 private:
 
 	UPROPERTY()
-	ABlasterCharacter* BlasterCharacter;
+	class ABlasterCharacter* BlasterCharacter;
 
 	UPROPERTY()
-	ABlasterPlayerController* BlasterController;
+	class ABlasterPlayerController* BlasterController;
 
 public:	
 };
