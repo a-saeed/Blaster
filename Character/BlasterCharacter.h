@@ -60,7 +60,7 @@ public:
 	void UpdateHUDShield();
 
 	/*
-	* Hit boxes used for server side rewind
+	* Hit boxes used for server side rewind (can be private)
 	*/
 
 	UPROPERTY(EditAnywhere)
@@ -116,6 +116,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* foot_r;
+
+	UPROPERTY()
+	TMap<FName, UBoxComponent*> HitCollisionBoxes;
 
 protected:
 
