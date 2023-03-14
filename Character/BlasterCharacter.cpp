@@ -22,6 +22,7 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Components/BoxComponent.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -42,11 +43,12 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //set to true to enable crouching on character movement comp.
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	Combat->SetIsReplicated(true); //set combat component to replicate.
+	Combat->SetIsReplicated(true);
 
-	//Buff Component
 	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
 	Buff->SetIsReplicated(true);
+	
+	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("LagCompensationComponent"));	//-- we only intend to use lag compenstion on the server; no nned to replicate it --.
 
 	//don't make capsule and mesh block the camera
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -264,6 +266,14 @@ void ABlasterCharacter::PostInitializeComponents()
 			GetCharacterMovement()->MaxWalkSpeedCrouched);
 
 		Buff->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
+	}
+	if (LagCompensation)
+	{
+		LagCompensation->BlasterCharacter = this;
+		if (Controller)
+		{
+			LagCompensation->BlasterController = Cast<ABlasterPlayerController>(Controller);
+		}
 	}
 }
 

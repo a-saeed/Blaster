@@ -152,12 +152,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCombatComponent* Combat;
-
-	UPROPERTY(VisibleAnywhere)
-	class UBuffComponent* Buff;
-
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
@@ -168,6 +162,19 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
+
+	/*
+	* Blaster Components
+	*/
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCombatComponent* Combat;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBuffComponent* Buff;
+
+	UPROPERTY(VisibleAnywhere)
+	class ULagCompensationComponent* LagCompensation;
 
 	/*
 	* Default Weapon
