@@ -23,6 +23,34 @@ void ULagCompensationComponent::BeginPlay()
 void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (FrameHistory.Num() <= 1)
+	{
+		FFramePackage ThisFrame;
+		SaveFramePackage(ThisFrame);
+		FrameHistory.AddHead(ThisFrame);
+	}
+	else
+	{
+		float NewestFrameTime = FrameHistory.GetHead()->GetValue().Time;
+		float OldestFrameTime = FrameHistory.GetTail()->GetValue().Time;
+		float HistoryTime = NewestFrameTime - OldestFrameTime;
+
+		while (HistoryTime > MaxRecordTime)
+		{
+			FrameHistory.RemoveNode(FrameHistory.GetTail());
+
+			NewestFrameTime = FrameHistory.GetHead()->GetValue().Time;
+			OldestFrameTime = FrameHistory.GetTail()->GetValue().Time;
+			HistoryTime = NewestFrameTime - OldestFrameTime;
+		}
+
+		FFramePackage ThisFrame;
+		SaveFramePackage(ThisFrame);
+		FrameHistory.AddHead(ThisFrame);
+
+		DrawFramePackage(ThisFrame);
+	}
 }
 
 void ULagCompensationComponent::SaveFramePackage(FFramePackage& OutPackage)
@@ -53,6 +81,8 @@ void ULagCompensationComponent::DrawFramePackage(const FFramePackage& Package)
 			BoxInfo.Value.Location,
 			BoxInfo.Value.BoxExtent,
 			FQuat(BoxInfo.Value.Rotation),
-			FColor::Orange, true);
+			FColor::Orange,
+			false,
+			2.5f);
 	}
 }
