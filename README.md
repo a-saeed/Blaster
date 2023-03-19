@@ -84,6 +84,8 @@ and **HitScan weapons** that use line trace ( Shotgun, Sniper, SMG, pistol ).
 
 - Selecting match type.
 
+- Add a packaged build and play test with some friends.
+
 #### Weapons
 
 - Add swap animation between primary and secondary weapon.
