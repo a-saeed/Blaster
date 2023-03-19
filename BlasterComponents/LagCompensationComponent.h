@@ -53,6 +53,7 @@ protected:
 
 	void SaveFramePackage(FFramePackage& OutPackage);
 	void DrawFramePackage(const FFramePackage& Package);
+	void ServerSideRewind(class ABlasterCharacter* HitCharacter, FVector_NetQuantize& TraceStart, FVector_NetQuantize& HitLocation, float HitTime);
 
 private:
 

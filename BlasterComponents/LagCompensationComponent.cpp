@@ -86,3 +86,64 @@ void ULagCompensationComponent::DrawFramePackage(const FFramePackage& Package)
 			2.5f);
 	}
 }
+
+void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, FVector_NetQuantize& TraceStart, FVector_NetQuantize& HitLocation, float HitTime)
+{
+	bool bReturn =
+		!HitCharacter ||
+		!HitCharacter->GetLagCompensation() ||
+		!HitCharacter->GetLagCompensation()->FrameHistory.GetHead() ||
+		!HitCharacter->GetLagCompensation()->FrameHistory.GetTail();
+
+	if (bReturn) return;
+
+	//Frame Pcakage that we check to verify a hit.
+	FFramePackage FrametoCheck;
+	bool bShouldInterpolate = true;
+	//Frame History for the character that got hit
+	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensation()->FrameHistory;
+
+	float OldestHistoryTime = History.GetTail()->GetValue().Time;
+	float NewestHistoryTime = History.GetHead()->GetValue().Time;
+
+	//Too far back.. Too laggy to do SSR
+	if (HitTime < OldestHistoryTime)
+	{
+		return;
+	}
+	//Oldest History time is at the tail
+	if (HitTime == OldestHistoryTime)
+	{
+		FrametoCheck = History.GetTail()->GetValue();
+		bShouldInterpolate = false;
+	}
+	//Oldest History time is at the head
+	if (HitTime >= NewestHistoryTime)
+	{
+		FrametoCheck = History.GetHead()->GetValue();
+		bShouldInterpolate = false;
+	}
+
+	//March back until OlderTime < HitTime < YoungerTime
+	TDoubleLinkedList<FFramePackage>::TDoubleLinkedListNode* YoungerIterator;
+	TDoubleLinkedList<FFramePackage>::TDoubleLinkedListNode* OlderIterator = FrameHistory.GetHead();
+
+	while (OlderIterator->GetValue().Time > HitTime)
+	{
+		if (!OlderIterator->GetNextNode()) break;
+
+		OlderIterator = OlderIterator->GetNextNode();
+	} //exit loop with OlderIterator just one frame behind the frame that contains HitTime
+
+	if (OlderIterator->GetValue().Time == HitTime)	//highly unlikely, but we found our frame to check.
+	{
+		FrametoCheck = OlderIterator->GetValue();
+		bShouldInterpolate = false;
+	}
+	YoungerIterator = OlderIterator->GetPrevNode();
+
+	if (bShouldInterpolate)
+	{
+		//Interpolate between younger and older
+	}
+}

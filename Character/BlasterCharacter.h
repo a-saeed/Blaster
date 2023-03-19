@@ -326,6 +326,7 @@ public:
 
 	FORCEINLINE UCombatComponent* GetCombatComponent() const { return Combat; }
 	FORCEINLINE UBuffComponent* GetBuffComponent() const { return Buff; }
+	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation; }
 
 	//C7_4
 	void SetOverlappingWeapon(AWeapon* Weapon);
