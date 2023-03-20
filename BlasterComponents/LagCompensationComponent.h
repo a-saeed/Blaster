@@ -34,6 +34,18 @@ struct FFramePackage
 	TMap<FName, FBoxInformation> HitBoxMap;
 };
 
+USTRUCT(BlueprintType)
+struct FServerSideRewindResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	bool bHitConfirmed;
+
+	UPROPERTY()
+	bool bHeadShot;
+};
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTER_API ULagCompensationComponent : public UActorComponent
@@ -53,8 +65,13 @@ protected:
 
 	void SaveFramePackage(FFramePackage& OutPackage);
 	void DrawFramePackage(const FFramePackage& Package);
-	void ServerSideRewind(class ABlasterCharacter* HitCharacter, FVector_NetQuantize& TraceStart, FVector_NetQuantize& HitLocation, float HitTime);
+	FServerSideRewindResult ServerSideRewind(class ABlasterCharacter* HitCharacter, FVector_NetQuantize& TraceStart, FVector_NetQuantize& HitLocation, float HitTime);
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
+	FServerSideRewindResult ConfirmHit(const FFramePackage& HitFramePackage, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation);
+	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
+	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& DestinationFramePackage);
+	void ResetBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& DestinationFramePackage);
+	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 
 private:
 
