@@ -5,6 +5,8 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Components/BoxComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Blaster/Weapon/Weapon.h"
 
 ULagCompensationComponent::ULagCompensationComponent()
 {
@@ -14,15 +16,18 @@ ULagCompensationComponent::ULagCompensationComponent()
 void ULagCompensationComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	FFramePackage FramePackage;
-	SaveFramePackage(FramePackage);
-	DrawFramePackage(FramePackage);
 }
 
 void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	PopulateFrameHistory();
+}
+
+void ULagCompensationComponent::PopulateFrameHistory()
+{
+	if (!BlasterCharacter || !BlasterCharacter->HasAuthority()) return;		//only savce frame packages on the server
 
 	if (FrameHistory.Num() <= 1)
 	{
@@ -49,7 +54,7 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		SaveFramePackage(ThisFrame);
 		FrameHistory.AddHead(ThisFrame);
 
-		DrawFramePackage(ThisFrame);
+		//DrawFramePackage(ThisFrame);
 	}
 }
 
@@ -90,7 +95,7 @@ void ULagCompensationComponent::DrawFramePackage(const FFramePackage& Package)
 	}
 }
 
-FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, FVector_NetQuantize& TraceStart, FVector_NetQuantize& HitLocation, float HitTime)
+FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
 	bool bReturn =
 		!HitCharacter ||
@@ -101,7 +106,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 	if (bReturn) return FServerSideRewindResult();
 
 	//Frame Pcakage that we check to verify a hit.
-	FFramePackage FrametoCheck;
+	FFramePackage FrameToCheck;
 	bool bShouldInterpolate = true;
 	//Frame History for the character that got hit
 	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensation()->FrameHistory;
@@ -117,13 +122,13 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 	//Oldest History time is at the tail
 	if (HitTime == OldestHistoryTime)
 	{
-		FrametoCheck = History.GetTail()->GetValue();
+		FrameToCheck = History.GetTail()->GetValue();
 		bShouldInterpolate = false;
 	}
 	//Oldest History time is at the head
 	if (HitTime >= NewestHistoryTime)
 	{
-		FrametoCheck = History.GetHead()->GetValue();
+		FrameToCheck = History.GetHead()->GetValue();
 		bShouldInterpolate = false;
 	}
 
@@ -140,17 +145,17 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 
 	if (OlderIterator->GetValue().Time == HitTime)	//highly unlikely, but we found our frame to check.
 	{
-		FrametoCheck = OlderIterator->GetValue();
+		FrameToCheck = OlderIterator->GetValue();
 		bShouldInterpolate = false;
 	}
 	YoungerIterator = OlderIterator->GetPrevNode();
 
 	if (bShouldInterpolate)
 	{
-		InterpBetweenFrames(OlderIterator->GetValue(), YoungerIterator->GetValue(), HitTime);
+		FrameToCheck = InterpBetweenFrames(OlderIterator->GetValue(), YoungerIterator->GetValue(), HitTime);
 	}
 
-	return ConfirmHit(FrametoCheck, HitCharacter, TraceStart, HitLocation);
+	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
 }
 
 FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime)
@@ -302,5 +307,23 @@ void ULagCompensationComponent::EnableCharacterMeshCollision(ABlasterCharacter* 
 	if (HitCharacter && HitCharacter->GetMesh())
 	{
 		HitCharacter->GetMesh()->SetCollisionEnabled(CollisionEnabled);
+	}
+}
+
+/*
+* The RPC that will be used by other classes to request server side rewind
+*/
+void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
+{
+	FServerSideRewindResult RewindResult = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
+
+	if (BlasterCharacter && HitCharacter && DamageCauser && RewindResult.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(HitCharacter,
+			DamageCauser->GetDamage(),
+			BlasterCharacter->GetController(),		//the controller of the shooter charcter
+			DamageCauser,
+			UDamageType::StaticClass()
+		);
 	}
 }

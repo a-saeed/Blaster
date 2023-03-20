@@ -108,17 +108,23 @@ protected:
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);
 
-private:
+	UPROPERTY(EditAnywhere)
+	float Damage = 10.f;
 
-	/*
-	*	BODY
-	*/
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideRewind = false;
 
 	UPROPERTY()
 	class ABlasterCharacter* BlasterOwnerCharacter;
 
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
+
+private:
+
+	/*
+	*	BODY
+	*/
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -238,4 +244,6 @@ public:
 
 	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
 	FORCEINLINE EFireType GetFireType() { return FireType; }
+
+	FORCEINLINE float GetDamage() const { return Damage; }
 };

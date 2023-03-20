@@ -29,9 +29,6 @@ protected:
 
 	void PlayCharacterEffects(FHitResult& FireHitResult);
 
-	UPROPERTY(EditAnywhere)
-	float Damage = 10.f;
-
 private:
 
 	UPROPERTY(EditAnywhere)

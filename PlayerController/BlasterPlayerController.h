@@ -63,6 +63,11 @@ public:
 	* Grenades
 	*/
 	void SetHUDGrenades(int32 Grenades);
+	/*
+	* Server Time & Single trip time used to for SSR
+	*/
+	virtual float GetServerTime();						//synced with server world clock; NOT OVERRIDEN
+	float SingleTripTime = 0.f;
 
 protected:
 
@@ -77,17 +82,15 @@ protected:
 	void SetHUDTime();									//show amount of match time left 
 
 	UFUNCTION(Server, Reliable)							//Request the current server time, passing in the client's time when the request was sent.
-		void ServerRequestServerTime(float TimeOfClientRequest);
+	void ServerRequestServerTime(float TimeOfClientRequest);
 
 	UFUNCTION(Client, Reliable)							//Reports the current server time to the client in response to ServerRequestServerTime..
-		void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
 
 	float ClientServerDelta = 0.f;						//difference between client and server time.
 
-	virtual float GetServerTime();						//synced with server world clock; NOT OVERRIDEN
-
 	UPROPERTY(EditAnywhere, Category = "Time")
-		float TimeSyncFrequency = 5.f;
+	float TimeSyncFrequency = 5.f;
 
 	float TimeSyncRunningTime = 0.f;
 
@@ -103,10 +106,10 @@ protected:
 	void HandleCooldown();
 
 	UFUNCTION(Server, Reliable)							//needed for players who want to join midgame. Change HUD based on match state.
-		void ServerCheckMatchState();
+	void ServerCheckMatchState();
 
 	UFUNCTION(Client, Reliable)							//send match state and timers information from server to all clients once when they join. 														
-		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartTime);
+	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartTime);
 
 private:
 
@@ -128,12 +131,12 @@ private:
 	FName MatchState;
 
 	UFUNCTION()
-		void OnRep_MatchState();
+	void OnRep_MatchState();
 	/*
 	* Character overlay and "cached" variables
 	*/
 	UPROPERTY()
-		class UCharacterOverlay* CharacterOverlay;
+	class UCharacterOverlay* CharacterOverlay;
 
 	/*We cache variabled that need to be set in BeginPlay() of other classes.. Character overlay isn't valid yet*/
 	float HUDHealth;
@@ -161,7 +164,7 @@ private:
 	bool bAlarmplayed = false;
 
 	UPROPERTY(EditAnywhere, Category = "Timer")
-		class USoundCue* TickSound;
+	class USoundCue* TickSound;
 
 	void TimeRunningOut();
 

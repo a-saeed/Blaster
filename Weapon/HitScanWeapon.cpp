@@ -9,6 +9,8 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -29,15 +31,15 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 	if (MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
-		FVector Start = SocketTransform.GetLocation();
+		FVector_NetQuantize Start = SocketTransform.GetLocation();
 
 		FHitResult FireHitResult;
 		PerformLineTrace(Start, HitTarget, FireHitResult);
 
 		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHitResult.GetActor());
-		if (BlasterCharacter)
+		if (BlasterCharacter && InstigatorController)
 		{
-			if (HasAuthority() && InstigatorController)
+			if (HasAuthority() && !bUseServerSideRewind)
 			{
 				UGameplayStatics::ApplyDamage(
 					BlasterCharacter,
@@ -46,8 +48,25 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					this,
 					UDamageType::StaticClass());
 			}
+			if (!HasAuthority() && bUseServerSideRewind)
+			{
+				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
+				BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+
+				if (InstigatorController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation())
+				{
+					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
+						BlasterCharacter,
+						Start,
+						FireHitResult.ImpactPoint,
+						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,
+						this);
+				}
+			}
+
 			PlayCharacterEffects(FireHitResult);
 		}
+
 		else if (FireHitResult.bBlockingHit)
 		{
 			PlaySurfaceEffects(FireHitResult);
@@ -88,7 +107,7 @@ void AHitScanWeapon::PerformLineTrace(const FVector& TraceStart, const FVector& 
 	PlayBeamTrailEffect(TraceStart, BeamEnd);
 
 	//DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
-	DrawDebugSphere(GetWorld(), BeamEnd, 4.f, 12, FColor::Orange, true);
+	DrawDebugSphere(GetWorld(), BeamEnd, 10.f, 12, FColor::Orange, false, 5.f);
 	//DrawDebugLine(GetWorld(), TraceStart, TraceStart + ToEnd, FColor::Blue, true);
 }
 
