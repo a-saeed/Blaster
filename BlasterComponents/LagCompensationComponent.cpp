@@ -147,3 +147,31 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 		//Interpolate between younger and older
 	}
 }
+
+FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime)
+{
+	const float Distance = YoungerFrame.Time - OlderFrame.Time;
+	const float InterpFraction = FMath::Clamp((HitTime - OlderFrame.Time) / Distance, 0.f, 1.f);
+
+	FFramePackage InterpFramePackage;	//the frame corrseponding to HitTime that we want to fill and return
+	InterpFramePackage.Time = HitTime;
+
+	for (auto& YoungerPair : YoungerFrame.HitBoxMap)
+	{
+		const FName& BoxInfoName = YoungerPair.Key;
+
+		//we need to access the Boxinfo for the older frame as well to interp.. we can do so since we have the box name(that's why we made a map with a name as a key in the first place)
+		const FBoxInformation& OlderBoxInfo = OlderFrame.HitBoxMap[BoxInfoName];
+		const FBoxInformation& YoungerBoxInfo = YoungerFrame.HitBoxMap[BoxInfoName];
+
+		FBoxInformation InterpBoxInfo;		//the box info that is used to fill the InterpFramePackage we want to return
+
+		InterpBoxInfo.Location = FMath::VInterpTo(OlderBoxInfo.Location, YoungerBoxInfo.Location, 1.f, InterpFraction);
+		InterpBoxInfo.Rotation = FMath::RInterpTo(OlderBoxInfo.Rotation, YoungerBoxInfo.Rotation, 1.f, InterpFraction);
+		InterpBoxInfo.BoxExtent = YoungerBoxInfo.BoxExtent;		//can use olderBoxInfo since box exten doesn't change anyway.
+
+		InterpFramePackage.HitBoxMap.Add(BoxInfoName, InterpBoxInfo);
+	}
+
+	return InterpFramePackage;
+}
