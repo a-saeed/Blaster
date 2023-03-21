@@ -445,11 +445,46 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 
 	if (BlasterCharacter && HitCharacter && DamageCauser && RewindResult.bHitConfirmed)
 	{
-		UGameplayStatics::ApplyDamage(HitCharacter,
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
 			DamageCauser->GetDamage(),
 			BlasterCharacter->GetController(),		//the controller of the shooter charcter
 			DamageCauser,
 			UDamageType::StaticClass()
 		);
 	}
+}
+
+void ULagCompensationComponent::ServerShotgunScoreRequest_Implementation(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)
+{
+	FShotgunServerSideRewindResult ShotgunResult = ShotgunServerSideRewind(HitCharacters, TraceStart, HitLocations, HitTime);
+
+	for (auto& HitCharacter : HitCharacters)
+	{
+		if (!HitCharacter || !BlasterCharacter || !BlasterCharacter->GetEquippedWeapon()) continue;		//notice the diff between HitCharacter and BlasterCharacter
+
+		float TotalDamage = 0.f;
+
+		if (ShotgunResult.HeadShotsMap.Contains(HitCharacter))
+		{
+			float HeadShotDamage = ShotgunResult.HeadShotsMap[HitCharacter] * BlasterCharacter->GetEquippedWeapon()->GetDamage();
+			TotalDamage += HeadShotDamage;
+		}
+
+		if (ShotgunResult.BodyShotsMap.Contains(HitCharacter))
+		{
+			float BodyShotDamage = ShotgunResult.BodyShotsMap[HitCharacter] * BlasterCharacter->GetEquippedWeapon()->GetDamage();
+			TotalDamage += BodyShotDamage;
+		}
+
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			TotalDamage,
+			BlasterCharacter->GetController(),		//the controller of the shooter charcter
+			BlasterCharacter->GetEquippedWeapon(),
+			UDamageType::StaticClass()
+		);
+	}
+
+	
 }
