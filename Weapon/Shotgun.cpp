@@ -9,6 +9,8 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 {
@@ -51,11 +53,14 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			}
 		}
 
-		if (HasAuthority())
+		
+		TArray<ABlasterCharacter*> HitCharacters;
+	
+		for (TPair<ABlasterCharacter*, uint32> HitPair : HitMap)
 		{
-			for (TPair<ABlasterCharacter*, uint32> HitPair : HitMap)
+			if (HitPair.Key && InstigatorController)
 			{
-				if (HitPair.Key && InstigatorController)
+				if (HasAuthority() && !bUseServerSideRewind)
 				{
 					UGameplayStatics::ApplyDamage(
 						HitPair.Key,							//Character that was hit
@@ -64,9 +69,30 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 						this,
 						UDamageType::StaticClass());
 				}
+				
+				HitCharacters.Add(HitPair.Key);
 			}
 		}
-		
+		/*this is a client machine..Call server-side rewind */
+		if (!HasAuthority() && bUseServerSideRewind)
+		{
+			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
+			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+
+			if (BlasterOwnerController &&
+				BlasterOwnerCharacter &&
+				BlasterOwnerCharacter->GetLagCompensation() &&
+				BlasterOwnerCharacter->IsLocallyControlled()	//since Fire() is called on all machines.. we only need the locally controlled character to send a server score request
+				)	
+			{
+				BlasterOwnerCharacter->GetLagCompensation()->ServerShotgunScoreRequest(
+					HitCharacters,
+					Start,
+					HitTargets,
+					BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime  //the time corresponding to when the victim character was where we thought it was when we fired..
+				);
+			}
+		}
 	}
 }
 
