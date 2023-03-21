@@ -174,6 +174,7 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 		FrameToCheck = InterpBetweenFrames(OlderIterator->GetValue(), YoungerIterator->GetValue(), HitTime);
 	}
 
+	FrameToCheck.Character = HitCharacter;	//we must set the character for the Hitframe otherwise we won't have any character to apply damage to to apply damage
 	return FrameToCheck;
 }
 
@@ -307,7 +308,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 		{
 			if (ShotgunResult.HeadShotsMap.Contains(Character))
 			{
-				ShotgunResult.HeadShotsMap[BlasterCharacter]++;
+				ShotgunResult.HeadShotsMap[Character]++;
 			}
 			else
 			{
@@ -344,7 +345,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 		{
 			if (ShotgunResult.BodyShotsMap.Contains(Character))
 			{
-				ShotgunResult.BodyShotsMap[BlasterCharacter]++;
+				ShotgunResult.BodyShotsMap[Character]++;
 			}
 			else
 			{
@@ -485,6 +486,4 @@ void ULagCompensationComponent::ServerShotgunScoreRequest_Implementation(const T
 			UDamageType::StaticClass()
 		);
 	}
-
-	
 }
