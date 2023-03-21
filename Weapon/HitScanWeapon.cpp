@@ -48,18 +48,23 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					this,
 					UDamageType::StaticClass());
 			}
+			/*this is a client machine..Call server-side rewind */
 			if (!HasAuthority() && bUseServerSideRewind)
 			{
 				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 				BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
 
-				if (InstigatorController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation())
+				if (BlasterOwnerController &&
+					BlasterOwnerCharacter &&
+					BlasterOwnerCharacter->GetLagCompensation() &&
+					BlasterOwnerCharacter->IsLocallyControlled()	//since Fire() is called on all machines.. we only need the locally controlled character to send a server score request
+					)
 				{
 					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
 						BlasterCharacter,
 						Start,
 						FireHitResult.ImpactPoint,
-						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,
+						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,  //the time corresponding to when the victim character was where we thought it was when we fired..
 						this);
 				}
 			}
