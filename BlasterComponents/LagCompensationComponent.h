@@ -32,6 +32,9 @@ struct FFramePackage
 
 	UPROPERTY()
 	TMap<FName, FBoxInformation> HitBoxMap;
+
+	UPROPERTY()
+	ABlasterCharacter* Character;	//the character in this frame.. needed only for shotgun SSR
 };
 
 USTRUCT(BlueprintType)
@@ -44,6 +47,18 @@ struct FServerSideRewindResult
 
 	UPROPERTY()
 	bool bHeadShot;
+};
+
+USTRUCT(BlueprintType)
+struct FShotgunServerSideRewindResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TMap<ABlasterCharacter*, uint32> HeadShotsMap;
+
+	UPROPERTY()
+	TMap<ABlasterCharacter*, uint32> BodyShotsMap;
 };
 
 
@@ -70,12 +85,20 @@ protected:
 	void PopulateFrameHistory();
 	void DrawFramePackage(const FFramePackage& Package);
 	FServerSideRewindResult ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime);
+	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
 	FServerSideRewindResult ConfirmHit(const FFramePackage& HitFramePackage, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation);
 	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
 	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& DestinationFramePackage);
 	void ResetBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& DestinationFramePackage);
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
+
+	/*
+	* Shotgun
+	*/
+
+	FShotgunServerSideRewindResult ShotgunServerSideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, const float HitTime);
+	FShotgunServerSideRewindResult ShotgunConfirmHit(const TArray<FFramePackage>& HitFramePackages, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations);
 
 private:
 

@@ -60,11 +60,12 @@ void ULagCompensationComponent::PopulateFrameHistory()
 
 void ULagCompensationComponent::SaveFramePackage(FFramePackage& OutPackage)
 {
-	OutPackage.Time = GetWorld()->GetTimeSeconds();	//the server time.. since we're only using lag compensation on the server
-
 	BlasterCharacter = BlasterCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterCharacter;
 	if (BlasterCharacter)
 	{
+		OutPackage.Time = GetWorld()->GetTimeSeconds();	//the server time.. since we're only using lag compensation on the server
+		OutPackage.Character = BlasterCharacter;
+
 		for (auto& BoxPair : BlasterCharacter->HitCollisionBoxes)
 		{
 			FBoxInformation BoxInformation;
@@ -97,13 +98,29 @@ void ULagCompensationComponent::DrawFramePackage(const FFramePackage& Package)
 
 FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
+	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
+
+	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+}
+
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, const float HitTime)
+{
+	TArray<FFramePackage> FramesToCheck;
+	for (ABlasterCharacter* HitCharacter : HitCharacters)
+	{
+		FramesToCheck.Add(GetFrameToCheck(HitCharacter, HitTime));
+	}
+}
+
+FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime)
+{
 	bool bReturn =
 		!HitCharacter ||
 		!HitCharacter->GetLagCompensation() ||
 		!HitCharacter->GetLagCompensation()->FrameHistory.GetHead() ||
 		!HitCharacter->GetLagCompensation()->FrameHistory.GetTail();
 
-	if (bReturn) return FServerSideRewindResult();
+	if (bReturn) return FFramePackage();
 
 	//Frame Pcakage that we check to verify a hit.
 	FFramePackage FrameToCheck;
@@ -117,7 +134,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 	//Too far back.. Too laggy to do SSR
 	if (HitTime < OldestHistoryTime)
 	{
-		return FServerSideRewindResult();
+		return FFramePackage();
 	}
 	//Oldest History time is at the tail
 	if (HitTime == OldestHistoryTime)
@@ -155,7 +172,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 		FrameToCheck = InterpBetweenFrames(OlderIterator->GetValue(), YoungerIterator->GetValue(), HitTime);
 	}
 
-	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+	return FrameToCheck;
 }
 
 FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime)
@@ -238,6 +255,11 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 	return FServerSideRewindResult{ false, false };
 }
 
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(const TArray<FFramePackage>& HitFramePackages, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations)
+{
+	return FShotgunServerSideRewindResult();
+}
+
 void ULagCompensationComponent::CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage)
 {
 	if (!HitCharacter) return;
@@ -313,6 +335,7 @@ void ULagCompensationComponent::EnableCharacterMeshCollision(ABlasterCharacter* 
 /*
 * The RPC that will be used by other classes to request server side rewind
 */
+
 void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
 {
 	FServerSideRewindResult RewindResult = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
