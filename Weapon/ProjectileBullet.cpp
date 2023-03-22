@@ -45,6 +45,23 @@ void AProjectileBullet::BeginPlay()
 	UGameplayStatics::PredictProjectilePath(GetWorld(), PathParams, PathResult);
 }
 
+#if WITH_EDITOR
+void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+
+	FName PropertyName = Event.Property != nullptr ? Event.Property->GetFName() : NAME_None;
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileBullet, InitialSpeed))
+	{
+		if (ProjectileMovementComponent)
+		{
+			ProjectileMovementComponent->InitialSpeed = InitialSpeed;
+			ProjectileMovementComponent->MaxSpeed = InitialSpeed;
+		}
+	}
+}
+#endif
+
 void AProjectileBullet::OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
 	SetImpactSurfaceEffects(ImpactResult.GetActor());

@@ -20,6 +20,10 @@ public:
 	UFUNCTION()																			//must be a ufunction to be bound to a dynamic delegate
 	void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
+#endif
+
 protected:
 
 	virtual void BeginPlay() override;
