@@ -12,6 +12,9 @@ AProjectileBullet::AProjectileBullet()
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->SetIsReplicated(true);
 	ProjectileMovementComponent->bShouldBounce = true;
+
+	ProjectileMovementComponent->InitialSpeed = InitialSpeed;
+	ProjectileMovementComponent->MaxSpeed = InitialSpeed;
 }
 
 void AProjectileBullet::BeginPlay()
@@ -23,6 +26,23 @@ void AProjectileBullet::BeginPlay()
 	StartDestroyTimer();
 
 	ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &AProjectileBullet::OnBounce);
+
+	/*Predict projectile path fo server side rewind*/
+	FPredictProjectilePathParams PathParams;
+	PathParams.bTraceWithChannel = true;
+	PathParams.bTraceWithCollision = true;
+	PathParams.DrawDebugTime = 5.f;
+	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+	PathParams.LaunchVelocity = GetActorForwardVector() * InitialSpeed;
+	PathParams.MaxSimTime = 4.f;
+	PathParams.ProjectileRadius = 5.f;
+	PathParams.SimFrequency = 30.f;
+	PathParams.StartLocation = GetActorLocation();
+	PathParams.TraceChannel = ECollisionChannel::ECC_Visibility;
+	PathParams.ActorsToIgnore.Add(this);
+
+	FPredictProjectilePathResult PathResult;
+	UGameplayStatics::PredictProjectilePath(GetWorld(), PathParams, PathResult);
 }
 
 void AProjectileBullet::OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
