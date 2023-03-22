@@ -24,6 +24,16 @@ protected:
 	virtual void BeginPlay() override;
 
 	/*
+	* Used with sevrer side rewind
+	*/
+	bool bUseServerSideRewind = false;
+	FVector_NetQuantize TraceStart;
+	FVector_NetQuantize100 InitialVelocity;
+
+	UPROPERTY(EditAnywhere)
+	float InitialSpeed = 15000;
+
+	/*
 	* HIT EVENT
 	*/
 	UFUNCTION() //it has to be a ufunction to work
