@@ -19,14 +19,10 @@ public:
 
 	virtual void Destroyed() override;
 
-protected:
-	
-	virtual void BeginPlay() override;
-
 	/*
-	* Used with sevrer side rewind
+	* Used with sevrer side rewind, accessed by projectile weapon class.. 
 	*/
-	bool bUseServerSideRewind = false;
+	bool bUseServerSideRewind = false;		// if true projectile will send a server score request once it hits a target
 	FVector_NetQuantize TraceStart;
 	FVector_NetQuantize100 InitialVelocity;
 
@@ -34,23 +30,33 @@ protected:
 	float InitialSpeed = 15000;
 
 	/*
-	* HIT EVENT
-	*/
-	UFUNCTION() //it has to be a ufunction to work
-		virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-	/*
 	* DAMAGE
 	*/
-	UPROPERTY(EditAnywhere)
-		float Damage = 20.f;
+
+	float Damage = 20.f;		//projectiles will get their damage amount from their respective spawning weapon
+
+protected:
+	
+	virtual void BeginPlay() override;
+
+	/*
+	* HIT EVENT
+	*/
+
+	UFUNCTION() //it has to be a ufunction to work
+	virtual void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 	/*
 	* BODY
 	*/
+
 	UPROPERTY(EditAnywhere)
-		class UBoxComponent* CollisionBox;
+	class UBoxComponent* CollisionBox;
+
 	/*
 	* Fx
 	*/
+
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ImpactParticles;
 
@@ -64,16 +70,20 @@ protected:
 	USoundCue* CharacterImpactSound;
 
 	void SetImpactSurfaceEffects(AActor* OtherActor);
+
 	/*
 	* MOVEMENT
 	*/
+
 	UPROPERTY(VisibleAnywhere)
-		class UProjectileMovementComponent* ProjectileMovementComponent;
+	class UProjectileMovementComponent* ProjectileMovementComponent;
+
 	/*
 	* 
 	* Common Functionalities for Rokects and Grenade Launchers
 	* 
 	*/
+
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* ProjectileMesh;
 
@@ -88,33 +98,40 @@ protected:
 	void StartDestroyTimer();
 	void DestroyTimerFinished();
 	void ExplodeDamageWithFX();
+
 	/*
 	*
 	* Radial damage parameters
 	*
 	*/
+
 	UPROPERTY(EditAnywhere)
 	float DamageInnerRadius;
 
 	UPROPERTY(EditAnywhere)
 	float DamageOuterRadius;
+
 private:
+
 	/*
 	* FX
 	*/
+
 	UPROPERTY(EditAnywhere)
-		 UParticleSystem* Tracer;
+	UParticleSystem* Tracer;
 
 	class UParticleSystemComponent* TracerComponent;
 
 	UPROPERTY()
-		UParticleSystem* ParticlesToPlay;
+	UParticleSystem* ParticlesToPlay;
 
 	UPROPERTY()
-		USoundCue* SoundToPlay;
+	USoundCue* SoundToPlay;
+
 	/*
 	* Trail System Timer
 	*/
+
 	FTimerHandle DestroyTimer;
 
 	UPROPERTY(EditAnywhere)

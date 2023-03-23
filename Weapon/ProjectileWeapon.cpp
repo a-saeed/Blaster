@@ -34,10 +34,53 @@ void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impac
 		SpawnParams.Owner = GetOwner(); //the owner of this weapon class(i.e. the character).
 		SpawnParams.Instigator = InstigatorPawn; //will be used to grant credit fro elemination.
 
-		GetWorld()->SpawnActor<AProjectile>(
-			ProjectileClass,
-			SocketTransform.GetLocation(),
-			TargetRotation,
-			SpawnParams);
+		/*
+		* Handle cases of when and when not to use Server side rewind
+		*/
+
+		AProjectile* SpawnedProjectile = nullptr;
+
+		if (bUseServerSideRewind)	//weapon uses SSR
+		{
+			if (InstigatorPawn->HasAuthority())	// server character
+			{
+				if (InstigatorPawn->IsLocallyControlled())	// server, locally controlled - spawn replicated projectile / No SSR
+				{
+					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnedProjectile->bUseServerSideRewind = false;		// projectile won't send a server score request
+					SpawnedProjectile->Damage = Damage;						// set projectile damage to the damage of its weapon
+				}
+				else										// server, client controlled - spawn non-replicated projectile / No SSR
+				{
+					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnedProjectile->bUseServerSideRewind = false;
+				}
+			}
+			else	// client character, using SSR
+			{
+				if (InstigatorPawn->IsLocallyControlled())	// client, locally controlled - spawn non-replicated projectile / use SSR
+				{
+					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnedProjectile->bUseServerSideRewind = true;			//projectile will send a server score request
+					SpawnedProjectile->TraceStart = SocketTransform.GetLocation();
+					SpawnedProjectile->InitialVelocity = SpawnedProjectile->GetActorForwardVector() * SpawnedProjectile->InitialSpeed;
+					SpawnedProjectile->Damage = Damage;						// need to set projectile damage whenever SSR is enabled for it
+				}
+				else										// client, client controlled - spawn non-replicated projectile / No SSR
+				{
+					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnedProjectile->bUseServerSideRewind = false;
+				}
+			}
+		}
+		else    // weapon doesn't use SSR
+		{
+			if (InstigatorPawn->HasAuthority())	// server character, all server characters will spawn replicated projectiles that clients must wait for it to reach them.. the original case before using SSR
+			{
+				SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+				SpawnedProjectile->bUseServerSideRewind = false;		
+				SpawnedProjectile->Damage = Damage;
+			}
+		}
 	}
 }
