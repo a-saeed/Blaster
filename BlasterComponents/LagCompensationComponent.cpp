@@ -115,6 +115,12 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewin
 	return ShotgunConfirmHit(FramesToCheck, TraceStart, HitLocations);
 }
 
+FServerSideRewindResult ULagCompensationComponent::ProjectileServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100 InitialVelocity, const float HitTime)
+{
+	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
+	return ProjectileConfirmHit(FrameToCheck, HitCharacter, TraceStart, InitialVelocity, HitTime);
+}
+
 FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime)
 {
 	bool bReturn =
@@ -363,6 +369,72 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 	}
 
 	return ShotgunResult;
+}
+
+FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FFramePackage& HitFramePackage, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100 InitialVelocity, const float HitTime)
+{
+	if (!HitCharacter) return FServerSideRewindResult();
+
+	//disable collision for the Hitchracter's mesh
+	EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::NoCollision);
+
+	FFramePackage CurrentFrame;
+	CacheBoxPositions(HitCharacter, CurrentFrame);
+	MoveBoxes(HitCharacter, HitFramePackage);
+
+	//Enable collision for the head first
+	UBoxComponent* HeadBox = HitCharacter->HitCollisionBoxes[FName("head")];
+	HeadBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	HeadBox->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
+
+	//instead of a line trace..we predict projectile path
+	FPredictProjectilePathParams PathParams;
+
+	PathParams.bTraceWithChannel = true;
+	PathParams.MaxSimTime = MaxRecordTime;		//we never need to predict a path beyond the sever max record time
+	PathParams.LaunchVelocity = InitialVelocity;
+	PathParams.StartLocation = TraceStart;
+	PathParams.SimFrequency = 15.f;
+	PathParams.ProjectileRadius = 5.f;			//bullet won't be larger than a sphere of radius 5.f
+	PathParams.TraceChannel = ECC_HitBox;
+	PathParams.ActorsToIgnore.Add(GetOwner());
+	PathParams.DrawDebugTime = 5.f;
+	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+
+	FPredictProjectilePathResult PathResult;
+
+	UGameplayStatics::PredictProjectilePath(GetWorld(), PathParams, PathResult);	// predict path.. the equivalent fo a line trace in hitscan weapons
+
+	if (PathResult.HitResult.bBlockingHit)	//we hit the head; return early
+	{
+		ResetBoxes(HitCharacter, CurrentFrame);
+		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryOnly);
+		return FServerSideRewindResult{ true, true };
+	}
+	else         //didn't hit the head, check the rest of the boxes
+	{
+		for (auto& BoxPair : HitCharacter->HitCollisionBoxes)
+		{
+			if (BoxPair.Value)
+			{
+				BoxPair.Value->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+				BoxPair.Value->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
+			}
+		}
+
+		UGameplayStatics::PredictProjectilePath(GetWorld(), PathParams, PathResult);	//predict path..
+		if (PathResult.HitResult.bBlockingHit)
+		{
+			ResetBoxes(HitCharacter, CurrentFrame);
+			EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryOnly);
+			return FServerSideRewindResult{ true, false };
+		}
+
+	}
+
+	ResetBoxes(HitCharacter, CurrentFrame);
+	EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryOnly);
+	return FServerSideRewindResult{ false, false };
 }
 
 void ULagCompensationComponent::CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage)

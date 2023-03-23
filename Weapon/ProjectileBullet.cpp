@@ -27,7 +27,8 @@ void AProjectileBullet::BeginPlay()
 
 	ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &AProjectileBullet::OnBounce);
 
-	/*Predict projectile path fo server side rewind*/
+	/*
+	//Predict projectile path fo server side rewind
 	FPredictProjectilePathParams PathParams;
 	PathParams.bTraceWithChannel = true;
 	PathParams.bTraceWithCollision = true;
@@ -42,7 +43,7 @@ void AProjectileBullet::BeginPlay()
 	PathParams.ActorsToIgnore.Add(this);
 
 	FPredictProjectilePathResult PathResult;
-	UGameplayStatics::PredictProjectilePath(GetWorld(), PathParams, PathResult);
+	UGameplayStatics::PredictProjectilePath(GetWorld(), PathParams, PathResult);*/
 }
 
 #if WITH_EDITOR
