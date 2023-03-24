@@ -3,8 +3,10 @@
 
 #include "ProjectileBullet.h"
 #include "Kismet/GameplayStatics.h"
-#include"GameFramework/Character.h"
+#include "Blaster/Character/BlasterCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 AProjectileBullet::AProjectileBullet()
 {
@@ -54,3 +56,38 @@ void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
 	}
 }
 #endif
+
+void AProjectileBullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	SetImpactSurfaceEffects(OtherActor);
+
+	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
+		if (OwnerController)
+		{
+			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind)	//the original case ..we're not using SSR; server apply damage.
+			{
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+				Super::OnHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
+				return;
+			}
+
+			ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor);
+
+			if (bUseServerSideRewind && OwnerCharacter->GetLagCompensation() && OwnerCharacter->IsLocallyControlled())		// bUseServerSideRewind is only true if we're on a client machine and the character is locally controlled.
+			{
+				OwnerCharacter->GetLagCompensation()->ServerProjectileScoreRequest(
+					HitCharacter,
+					TraceStart,
+					InitialVelocity,
+					OwnerController->GetServerTime() - OwnerController->SingleTripTime
+				);
+			}
+		}
+	}
+
+	//the Super version has a call to Destroy. keep super version last.
+	Super::OnHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
+}

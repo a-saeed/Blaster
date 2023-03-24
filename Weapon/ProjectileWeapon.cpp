@@ -50,10 +50,10 @@ void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impac
 					SpawnedProjectile->bUseServerSideRewind = false;		// projectile won't send a server score request
 					SpawnedProjectile->Damage = Damage;						// set projectile damage to the damage of its weapon
 				}
-				else										// server, client controlled - spawn non-replicated projectile / No SSR
+				else										// server, client controlled - spawn non-replicated projectile / use SSR
 				{
 					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnedProjectile->bUseServerSideRewind = false;
+					SpawnedProjectile->bUseServerSideRewind = true;			// SSR bullets shoulddn't cause damage on the server
 				}
 			}
 			else	// client character, using SSR
@@ -64,7 +64,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impac
 					SpawnedProjectile->bUseServerSideRewind = true;			//projectile will send a server score request
 					SpawnedProjectile->TraceStart = SocketTransform.GetLocation();
 					SpawnedProjectile->InitialVelocity = SpawnedProjectile->GetActorForwardVector() * SpawnedProjectile->InitialSpeed;
-					SpawnedProjectile->Damage = Damage;						// need to set projectile damage whenever SSR is enabled for it
+					SpawnedProjectile->Damage = Damage;						// Seeting Damage here is unnecssary as this is a client controlled character.. the server checks for weapon damage in SSR function. but anyways
 				}
 				else										// client, client controlled - spawn non-replicated projectile / No SSR
 				{

@@ -427,6 +427,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	FPredictProjectilePathParams PathParams;
 
 	PathParams.bTraceWithChannel = true;
+	PathParams.bTraceWithCollision = true;
 	PathParams.MaxSimTime = MaxRecordTime;		//we never need to predict a path beyond the sever max record time
 	PathParams.LaunchVelocity = InitialVelocity;
 	PathParams.StartLocation = TraceStart;
@@ -436,6 +437,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	PathParams.ActorsToIgnore.Add(GetOwner());
 	PathParams.DrawDebugTime = 5.f;
 	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+	PathParams.OverrideGravityZ = 1;
 
 	FPredictProjectilePathResult PathResult;
 
@@ -607,6 +609,22 @@ void ULagCompensationComponent::ServerShotgunScoreRequest_Implementation(const T
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
 			TotalDamage,
+			BlasterCharacter->GetController(),		//the controller of the shooter charcter
+			BlasterCharacter->GetEquippedWeapon(),
+			UDamageType::StaticClass()
+		);
+	}
+}
+
+void ULagCompensationComponent::ServerProjectileScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100 InitialVelocity, float HitTime)
+{
+	FServerSideRewindResult RewindResult = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
+
+	if (BlasterCharacter && BlasterCharacter->GetEquippedWeapon() && HitCharacter && RewindResult.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			BlasterCharacter->GetEquippedWeapon()->GetDamage(),
 			BlasterCharacter->GetController(),		//the controller of the shooter charcter
 			BlasterCharacter->GetEquippedWeapon(),
 			UDamageType::StaticClass()
