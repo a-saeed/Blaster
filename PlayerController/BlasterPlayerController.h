@@ -6,6 +6,12 @@
 #include "GameFramework/PlayerController.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "BlasterPlayerController.generated.h"
+
+/**
+ *	Delegate that a fn in the weapon class wil bind to to enable/disable SSR
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
+
 /**
  * 
  */
@@ -15,6 +21,11 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+
+	/*
+	* Create a delegate of type FhighPingDelegate; public so fns from other classes can bind to it.
+	*/
+	FHighPingDelegate HighPingDelegate;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	/*
@@ -64,7 +75,7 @@ public:
 	*/
 	void SetHUDGrenades(int32 Grenades);
 	/*
-	* Server Time & Single trip time used to for SSR
+	* Server Time & Single trip time used for SSR
 	*/
 	virtual float GetServerTime();						//synced with server world clock; NOT OVERRIDEN
 	float SingleTripTime = 0.f;
@@ -175,6 +186,9 @@ private:
 
 	void HighPingWarning();
 	void StopHighPingWarning();
+
+	UFUNCTION(Server, Reliable)
+	void ServerReportPingStatus(bool bHighPing);	//used broadcast a delegate
 
 	float HighPingRunningTime = 0.f;
 

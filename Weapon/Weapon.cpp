@@ -60,11 +60,38 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AWeapon::BindToHighPingDelegate(bool bShouldBind)
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter && bUseServerSideRewind) //weapon doesn't use SSR? don't even bind/unbind to the delegate
+	{
+		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
+		if (BlasterOwnerController && HasAuthority())
+		{
+			if (bShouldBind && !BlasterOwnerController->HighPingDelegate.IsBound()) // only bind fn to the delgate on the server where there are no other fns are bound to it.
+			{
+				BlasterOwnerController->HighPingDelegate.AddDynamic(this, &AWeapon::OnPingToohigh);
+			}
+
+			if (!bShouldBind && BlasterOwnerController->HighPingDelegate.IsBound())
+			{
+				BlasterOwnerController->HighPingDelegate.RemoveDynamic(this, &AWeapon::OnPingToohigh);
+			}
+		}
+	}
+}
+
+void AWeapon::OnPingToohigh(bool bPingTooHigh)
+{
+	bUseServerSideRewind = !bPingTooHigh;
+}
+
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState); //repilcate the weapon state enum
+	DOREPLIFETIME_CONDITION(AWeapon, bUseServerSideRewind, COND_OwnerOnly); //only matters on the server and the locally controlled client
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -198,11 +225,16 @@ void AWeapon::HandlePrimaryWeaponEquipped()
 	EnablePhysicsSMG(true);
 
 	EnableCustomDepth(false);
+
+	BindToHighPingDelegate(true);	//check if we should enable/disable SSR for this weapon based on the ping
 }
 
 void AWeapon::HandleSecondaryWeaponEquipped()
 {
-	HandlePrimaryWeaponEquipped();
+	ShowPickupWidget(false);
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetWeaponMeshPhysics(false);
+	EnablePhysicsSMG(true);
 
 	EnableCustomDepth(true);
 	if (WeaponMesh)
@@ -210,6 +242,8 @@ void AWeapon::HandleSecondaryWeaponEquipped()
 		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
 		WeaponMesh->MarkRenderStateDirty();
 	}
+
+	BindToHighPingDelegate(false);
 }
 
 void AWeapon::HandleWeaponDropped()
@@ -224,6 +258,8 @@ void AWeapon::HandleWeaponDropped()
 	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 	WeaponMesh->MarkRenderStateDirty();
 	EnableCustomDepth(true);
+
+	BindToHighPingDelegate(false);
 }
 
 /*
@@ -315,7 +351,6 @@ void AWeapon::ClientAddAmmo_Implementation(int32 ServerAmmo)
 	}
 	SetHUDAmmo();
 }
-
 
 void AWeapon::OnRep_Owner()
 {

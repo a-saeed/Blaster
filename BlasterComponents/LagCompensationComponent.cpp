@@ -101,6 +101,11 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 {
 	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
 
+	if (!FrameToCheck.Character)	//case when client is too laggy to do SSR
+	{
+		return FServerSideRewindResult();
+	}
+
 	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
 }
 
@@ -112,12 +117,23 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewin
 		FramesToCheck.Add(GetFrameToCheck(HitCharacter, HitTime));
 	}
 	
+	if (!FramesToCheck[0].Character)	//case when client is too laggy to do SSR
+	{
+		return FShotgunServerSideRewindResult();
+	}
+
 	return ShotgunConfirmHit(FramesToCheck, TraceStart, HitLocations);
 }
 
 FServerSideRewindResult ULagCompensationComponent::ProjectileServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100 InitialVelocity, const float HitTime)
 {
 	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
+
+	if (!FrameToCheck.Character)	//case when client is too laggy to do SSR
+	{
+		return FServerSideRewindResult();
+	}
+
 	return ProjectileConfirmHit(FrameToCheck, HitCharacter, TraceStart, InitialVelocity, HitTime);
 }
 

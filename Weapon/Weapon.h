@@ -108,10 +108,14 @@ protected:
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);
 
+	/*
+	*  Damage and SSR
+	*/
+
 	UPROPERTY(EditAnywhere)
 	float Damage = 10.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideRewind = false;
 
 	UPROPERTY()
@@ -119,6 +123,12 @@ protected:
 
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
+
+	// bound to BlasterPlayerController's HighPingDelegate.. need UFUNCTION to bind to the delegate
+	UFUNCTION()
+	void OnPingToohigh(bool bPingTooHigh);
+
+	void BindToHighPingDelegate(bool bShouldBind);
 
 private:
 
