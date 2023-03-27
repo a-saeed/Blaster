@@ -406,7 +406,22 @@ void ABlasterCharacter::EquipButtonPressed()
 
 	if (Combat) //only equip weapon through the server.
 	{
-		ServerEquipButtonPressed();
+		if (OverlappingWeapon || (Combat->CombatState == ECombatState::ECS_Unoccupied && Combat->ShouldSwapWeapons())) //only send rpc if u want to equip or swap weapons
+		{
+			ServerEquipButtonPressed();
+		}
+
+		bool bSwap = Combat->ShouldSwapWeapons() &&
+			!HasAuthority() &&
+			Combat->CombatState == ECombatState::ECS_Unoccupied &&
+			OverlappingWeapon == nullptr;
+
+		if (bSwap)
+		{
+			bFinishedSwapping = false; //disable FABRIK / also needs to be set for the server
+			Combat->CombatState = ECombatState::ECS_SwappingWeapons;
+			PlaySwapMontage();
+		}
 	}
 }
 
@@ -422,6 +437,7 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation() //this is an R
 		}
 		else if (Combat->ShouldSwapWeapons())
 		{
+			//handle setting the state and playing the swap animation in SwapWeapons()
 			Combat->SwapWeapons();
 		}
 	}
@@ -612,6 +628,15 @@ void ABlasterCharacter::PlayReloadMontage()
 		}	
 
 		AnimeInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ABlasterCharacter::PlaySwapMontage()
+{
+	UAnimInstance* AnimeInstance = GetMesh()->GetAnimInstance();
+	if (AnimeInstance && SwapMontage)
+	{
+		AnimeInstance->Montage_Play(SwapMontage);
 	}
 }
 

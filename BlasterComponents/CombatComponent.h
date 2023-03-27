@@ -125,6 +125,16 @@ protected:
 	bool bLocalClientSideReloading = false;
 
 	/*
+	* Swap Weapons
+	*/
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwapAttachWeapons();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwap();
+
+	/*
 	* Corsshairs
 	*/
 

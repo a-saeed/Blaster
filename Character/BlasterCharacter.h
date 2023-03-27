@@ -37,6 +37,7 @@ public:
 	void PlayElimMontage();
 	void PlayReloadMontage();
 	void PlayThrowGrenadeMontage();
+	void PlaySwapMontage();
 
 	/*
 	* ELIMINATION
@@ -58,6 +59,12 @@ public:
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
+
+	/*
+	* FABRIK Swap Weapons Locally
+	*/
+
+	bool bFinishedSwapping = false;
 
 	/*
 	* Hit boxes used for server side rewind (can be private)
@@ -223,16 +230,19 @@ private:
 	class UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	class UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	class UAnimMontage* ElimMontage;
+	UAnimMontage* ElimMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	class UAnimMontage* ReloadMontage;
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	class UAnimMontage* ThrowGrenadeMontage;
+	UAnimMontage* ThrowGrenadeMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* SwapMontage;
 
 	void PlayHitreactMontage(); //used in multicast rpc
 

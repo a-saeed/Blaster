@@ -236,7 +236,6 @@ void AWeapon::HandleSecondaryWeaponEquipped()
 	SetWeaponMeshPhysics(false);
 	EnablePhysicsSMG(true);
 
-	EnableCustomDepth(true);
 	if (WeaponMesh)
 	{
 		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
