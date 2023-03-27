@@ -355,6 +355,7 @@ void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& Trace
 		Character->PlayFireMontage(bAiming);
 		Shotgun->FireShotgun(TraceHitTargets);
 		CombatState = ECombatState::ECS_Unoccupied;		//interupt reload montage to fire montage.. set the combat state to unoccupied.
+		bLocalClientSideReloading = false;
 	}
 }
 
@@ -379,8 +380,6 @@ void UCombatComponent::FireTimerFinished()
 
 bool UCombatComponent::CanFire()
 {
-	if (bLocalClientSideReloading) return false;
-
 	bool bInterruptShotgunReload =
 		EquippedWeapon &&
 		!EquippedWeapon->IsEmpty() &&
@@ -389,6 +388,8 @@ bool UCombatComponent::CanFire()
 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
 
 	if (bInterruptShotgunReload) return true;
+
+	if (bLocalClientSideReloading) return false; 
 
 	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
