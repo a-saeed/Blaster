@@ -256,4 +256,6 @@ public:
 	FORCEINLINE EFireType GetFireType() { return FireType; }
 
 	FORCEINLINE float GetDamage() const { return Damage; }
+
+	FORCEINLINE float GetWeaponFireDelay() const { return FireDelay; }
 };
