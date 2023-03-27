@@ -23,7 +23,7 @@ void UReturnToMainMenu::MenuSetup()
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
 
-	PlayerController == nullptr ? GetWorld()->GetFirstPlayerController() : PlayerController;
+	PlayerController = PlayerController == nullptr ? GetWorld()->GetFirstPlayerController() : PlayerController;
 	if (PlayerController)
 	{
 		FInputModeGameAndUI InputModeData;
@@ -32,7 +32,7 @@ void UReturnToMainMenu::MenuSetup()
 		PlayerController->SetShowMouseCursor(true);
 	}
 
-	if (ReturnButton)
+	if (ReturnButton && !ReturnButton->OnClicked.IsBound())
 	{
 		ReturnButton->OnClicked.AddDynamic(this, &UReturnToMainMenu::ReturnButtonClicked);
 	}
@@ -52,12 +52,22 @@ void UReturnToMainMenu::MenuTearDown()
 {
 	RemoveFromParent();
 
-	PlayerController == nullptr ? GetWorld()->GetFirstPlayerController() : PlayerController;
+	PlayerController = PlayerController == nullptr ? GetWorld()->GetFirstPlayerController() : PlayerController;
 	if (PlayerController)
 	{
 		FInputModeGameOnly InputModeData;
 		PlayerController->SetInputMode(InputModeData);
 		PlayerController->SetShowMouseCursor(false);
+	}
+
+	if (ReturnButton && ReturnButton->OnClicked.IsBound())
+	{
+		ReturnButton->OnClicked.RemoveDynamic(this, &UReturnToMainMenu::ReturnButtonClicked);
+	}
+
+	if (MultiplayerSessionsSubsystem && MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.IsBound())
+	{
+		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.RemoveDynamic(this, &UReturnToMainMenu::OnDestroySession);
 	}
 }
 
@@ -76,6 +86,7 @@ void UReturnToMainMenu::OnDestroySession(bool bWasuccesful)
 	if (!bWasuccesful)
 	{
 		ReturnButton->SetIsEnabled(true);
+		return;
 	}
 
 	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode<AGameModeBase>();
@@ -83,12 +94,9 @@ void UReturnToMainMenu::OnDestroySession(bool bWasuccesful)
 	{
 		GameMode->ReturnToMainMenuHost();
 	}
-	else
+	else			//On Client
 	{
-		//On Client
-	}
-	{
-		PlayerController == nullptr ? GetWorld()->GetFirstPlayerController() : PlayerController;
+		PlayerController = PlayerController == nullptr ? GetWorld()->GetFirstPlayerController() : PlayerController;
 		if (PlayerController)
 		{
 			PlayerController->ClientReturnToMainMenuWithTextReason(FText());

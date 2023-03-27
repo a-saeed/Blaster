@@ -87,6 +87,23 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnPossess(APawn* InPawn) override;
+
+	/**
+	* Bind inputs in player controller
+	*/
+
+	virtual void SetupInputComponent() override;
+
+	void ShowReturnToMainMenu();
+
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	TSubclassOf<class UUserWidget> ReturnToMainMenuClass;
+
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
+
 	/*
 	* Sync time between client and server
 	*/
