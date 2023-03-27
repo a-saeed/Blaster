@@ -98,10 +98,14 @@ void AHitScanWeapon::PerformLineTrace(const FVector& TraceStart, const FVector& 
 {
 	FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;
 
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetOwner());
+
 	GetWorld()->LineTraceSingleByChannel(OutHitResult,
 		TraceStart,
 		End,
-		ECollisionChannel::ECC_Visibility
+		ECollisionChannel::ECC_Visibility,
+		QueryParams
 	);
 
 	FVector BeamEnd = End;
