@@ -15,6 +15,10 @@
 
 - Create a lobby map where players join before traveling to the game map using seamless travel.
 
+- Return to main menu & leaving the game.
+
+- Player BookKeeping.
+
 #### Animations
 
 - Retarget animations for the unreal learning kit character to implement movement functionality. including Crouching, Jumping, Aiming, Throwing greandes. etc..
@@ -49,6 +53,8 @@ and **HitScan weapons** that use line trace ( Shotgun, Sniper, SMG, pistol ).
 
 - Match time is synced among all palyers so all display the time on the server.
 
+- Add swap animation between primary and secondary weapon.
+
 #### Buffs & Pickups
 
 - Buff the player with pickups that spawn randomly in different places to boost the player's attributes for a configurable amount of time.                             
@@ -66,13 +72,15 @@ and **HitScan weapons** that use line trace ( Shotgun, Sniper, SMG, pistol ).
 
 - Apply client-side prediction on Ammo count, reloading animation, Aiming.
 
+- Apply server-side rewinding                                                                                                                                           
+> **Problem**: Limiting SSR by only depending on FrameHistory's MaxRecordTime is simple; but players above accepted lag won't cause damage when shooting.       
+> **Solution**: Make the shooter character wait for the server to spawn bullets and cause damage (more complicated/bad gameplay experience) by:                         
+        -**1**: Creating a function that disables SSR on the currently equipped weapon.                                                                               
+        -**2**: Bind this function to a delegate the gets broadcasted when the ping is above the accepeted levels in PlayerController class.
+     
 ## TODOs
 
 #### Game
-
-- Return to main menu & leaving the game.
-
-- Player BookKeeping.
 
 - Elimination announcements.
 
@@ -88,10 +96,4 @@ and **HitScan weapons** that use line trace ( Shotgun, Sniper, SMG, pistol ).
 
 #### Weapons
 
-- Add swap animation between primary and secondary weapon.
-
 - Apply headshot damage.
-
-#### Lag Compenstion
-
-- Apply server-side rewinding
