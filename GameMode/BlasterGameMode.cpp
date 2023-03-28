@@ -102,7 +102,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 
 	if (ElimmedCharacter)
 	{
-		ElimmedCharacter->Eliminate();
+		ElimmedCharacter->Eliminate(false);
 	}
 }
 
@@ -118,6 +118,24 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		AActor* PlayerStart = FindPlayerStartWithLeastPlayersInrange();
 
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStart); //character gets destroyed.. but the controller still exists to posses another.
+	}
+}
+
+void ABlasterGameMode::PlayerLeftGame(class ABlasterPlayerState* LeavingPlayerState)
+{
+	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	if (BlasterGameState && LeavingPlayerState)
+	{
+		if (BlasterGameState->TopScoringPlayers.Contains(LeavingPlayerState))	//remove from top scoring players
+		{
+			BlasterGameState->TopScoringPlayers.Remove(LeavingPlayerState);
+		}
+		//	player is leaving the game
+		ABlasterCharacter* LeavingCharacter = Cast<ABlasterCharacter>(LeavingPlayerState->GetPawn());
+		if (LeavingCharacter)
+		{
+			LeavingCharacter->Eliminate(true);
+		}
 	}
 }
 

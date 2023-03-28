@@ -27,6 +27,10 @@ protected:
 	UFUNCTION()
 	void OnDestroySession(bool bWasuccesful);
 
+	// Callback when bound to the delegate when a player leaves the game.
+	UFUNCTION()
+	void OnPlayerLeftGame();
+
 private:
 
 	UPROPERTY(meta = (BindWidget))

@@ -21,7 +21,7 @@ public:
 	void UpdateTopScore(class ABlasterPlayerState* ScoringPlayer);
 
 	UPROPERTY(Replicated)												//so all clients know who the top scoring players are and show them in the announcement widget
-		TArray <ABlasterPlayerState*> TopScoringPlayers;
+	TArray <ABlasterPlayerState*> TopScoringPlayers;
 
 private:
 	

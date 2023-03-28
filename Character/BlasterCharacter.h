@@ -11,6 +11,11 @@
 
 #include "BlasterCharacter.generated.h"
 
+/**
+* Delegate that return menu will bind to when player leaves the game
+*/
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -40,18 +45,26 @@ public:
 	void PlaySwapMontage();
 
 	/*
-	* ELIMINATION
+	* ELIMINATION / LEAVING THE GAME
 	*/
 
-	void Eliminate(); //only on the server
+	void Eliminate(bool bPlayerLeftGame); //only on the server
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastEliminate();
+	void MulticastEliminate(bool bPlayerLeftGame);
 
 	virtual void Destroyed() override;
 
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
+	
+	//Leaving Game
+	bool bLeftGame = false;
+
+	FOnLeftGame OnLeftGame;
+
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
 
 	/*
 	* HUD Health / Shield

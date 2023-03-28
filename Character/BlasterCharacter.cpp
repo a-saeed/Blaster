@@ -788,7 +788,10 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+			if (BlasterGameMode && AttackerController)
+			{
+				BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+			}
 		}
 	}
 }
@@ -837,10 +840,10 @@ void ABlasterCharacter::UpdateHUDShield()
 }
 
 /*
-* ELIMINATION
+* ELIMINATION / LEAVING THE GAME
 */
 
-void ABlasterCharacter::Eliminate()//only called on server
+void ABlasterCharacter::Eliminate(bool bPlayerLeftGame)//only called on server
 {
 	if (Combat)
 	{
@@ -856,17 +859,12 @@ void ABlasterCharacter::Eliminate()//only called on server
 		if (StartingWeapon && StartingWeapon->GetOwner() == nullptr) StartingWeapon->Destroy();
 	}
 
-	MulticastEliminate();
-	//set timer that wil trigger respawn
-	GetWorldTimerManager().SetTimer(
-		ElimTimerHandle,
-		this,
-		&ABlasterCharacter::ElimTimerFinished,
-		ElimDelay);
+	MulticastEliminate(bPlayerLeftGame);
 }
 
-void ABlasterCharacter::MulticastEliminate_Implementation()
+void ABlasterCharacter::MulticastEliminate_Implementation(bool bPlayerLeftGame)
 {
+	bLeftGame = bPlayerLeftGame;	//Did player leave the game?
 	bElimed = true;
 	/*if character is elimmed, set the ammo HUD to zero*/
 	if (BlasterPlayerController)
@@ -922,13 +920,40 @@ void ABlasterCharacter::MulticastEliminate_Implementation()
 	{
 		Combat->DrawSniperScope(false);
 	}
+
+	//set timer that wil trigger respawn
+	GetWorldTimerManager().SetTimer(
+		ElimTimerHandle,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
 {
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-	//destroy then respawn player
-	BlasterGameMode->RequestRespawn(this, Controller);
+	//Only request a respawn if the player didn't leave the game.. 
+	if (BlasterGameMode && !bLeftGame)
+	{
+		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+	//Broadcast the OnleftDelegte so that ReturnMenu can use its callback
+	if (bLeftGame && IsLocallyControlled())
+	{
+		OnLeftGame.Broadcast();
+	}
+}
+
+void ABlasterCharacter::ServerLeaveGame_Implementation()
+{
+	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;	//leaving player state
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+
+	if (BlasterGameMode && BlasterPlayerState)
+	{
+		BlasterGameMode->PlayerLeftGame(BlasterPlayerState);	//checks to see if leaving player is among the top scoring players
+	}
 }
 
 void ABlasterCharacter::Destroyed()
