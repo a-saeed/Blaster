@@ -23,6 +23,9 @@
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Components/BoxComponent.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Blaster/GameState/BlasterGameState.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -245,6 +248,13 @@ void ABlasterCharacter::PollInit()
 			//init score to 0
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+
+			// a character died but still in the lead; respawn with crown
+			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(GetWorld()));
+			if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
+			{
+				MultiCastGainedTheLead();
+			}
 		}
 	}
 }
@@ -839,6 +849,36 @@ void ABlasterCharacter::UpdateHUDShield()
 	}
 }
 
+/**
+* Gain/Lose the lead
+*/
+
+void ABlasterCharacter::MultiCastGainedTheLead_Implementation()
+{
+	//only spawn the crown 
+	if (CrownSystem && CrownComponent == nullptr)
+	{
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 120.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+}
+
+void ABlasterCharacter::MultiCastLostTheLead_Implementation()
+{
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+		CrownComponent = nullptr;
+	}
+}
+
 /*
 * ELIMINATION / LEAVING THE GAME
 */
@@ -872,6 +912,12 @@ void ABlasterCharacter::MulticastEliminate_Implementation(bool bPlayerLeftGame)
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
 		BlasterPlayerController->SetHUDCarriedAmmo(0);
 		BlasterPlayerController->SetHUDWeaponType(FText::FromString(" "));
+	}
+
+	// Destroy crown if player in lead
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
 	}
 
 	PlayElimMontage();

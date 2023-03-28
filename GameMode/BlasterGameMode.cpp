@@ -91,8 +91,37 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	/*if the player didn't eliminate himself, add to his score*/
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState)
 	{
+		// before updating score.. check players currently in the lead.
+		TArray<ABlasterPlayerState*> PlayersCurrentlyInTheLead;
+		PlayersCurrentlyInTheLead = BlasterGameState->TopScoringPlayers;
+
+		// update score
 		AttackerPlayerState->AddToScore(1.f);
 		BlasterGameState->UpdateTopScore(AttackerPlayerState);
+
+		// new leader if found on TopScoring array and not found in previous TopScoring players
+		if (BlasterGameState->TopScoringPlayers.Contains(AttackerPlayerState) && !PlayersCurrentlyInTheLead.Contains(AttackerPlayerState))
+		{
+			ABlasterCharacter* Leader = Cast<ABlasterCharacter>(AttackerPlayerState->GetPawn());
+			if (Leader)
+			{
+				Leader->MultiCastGainedTheLead();
+			}
+		}
+
+		// check if any player(s) lost the lead
+		for (int32 i = 0; i < PlayersCurrentlyInTheLead.Num(); i++)
+		{
+			// if a former leader doesn't exist in the new leaders array
+			if (!BlasterGameState->TopScoringPlayers.Contains(PlayersCurrentlyInTheLead[i]))
+			{
+				ABlasterCharacter* LeadLoser = Cast<ABlasterCharacter>(PlayersCurrentlyInTheLead[i]->GetPawn());
+				if (LeadLoser)
+				{
+					LeadLoser->MultiCastLostTheLead();
+				}
+			}
+		}
 	}
 
 	if (VictimPlayerState)

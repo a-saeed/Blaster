@@ -80,6 +80,16 @@ public:
 	bool bFinishedSwapping = false;
 
 	/*
+	* Gain/Lose the lead
+	*/
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastGainedTheLead();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastLostTheLead();
+
+	/*
 	* Hit boxes used for server side rewind (can be private)
 	*/
 
@@ -344,6 +354,16 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	class USoundCue* SpawnSound;
+
+	/*
+	* Crown Effects
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Crown")
+	class UNiagaraSystem* CrownSystem;
+
+	UPROPERTY()
+	class UNiagaraComponent* CrownComponent;
 
 public:	
 
