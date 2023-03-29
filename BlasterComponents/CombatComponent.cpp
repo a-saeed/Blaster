@@ -557,6 +557,11 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 
 	//reduce character speed if we're aiming (it'll be set locally, but the movement compoenet takes care of replication..still, we can set in the server as well)
+	if (bIsAiming)
+	{
+		BaseWalkSpeed = Character->GetCharacterMovement()->MaxWalkSpeed; // save current speed before changing to aim walk speed (as we may be buffed and want to restore our speed after we've aimed)
+	}
+
 	Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 
 	/*Sniper rifle scope*/
@@ -571,6 +576,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 					
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
+	/*
 	bAiming = bIsAiming;
 
 	if (Character)
@@ -578,6 +584,17 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 		//reduce character speed if we're aiming
 		Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
+*/
+	if (!Character) return;
+
+	bAiming = bIsAiming;
+
+	if (bIsAiming)
+	{
+		BaseWalkSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
+	}
+
+	Character->GetCharacterMovement()->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
 }
 
 void UCombatComponent::OnRep_Aiming()
