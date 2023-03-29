@@ -6,6 +6,7 @@
 #include "CharacterOverlay.h"
 #include "Announcement.h"
 #include "SniperScope.h"
+#include "ElimAnnouncement.h"
 
 void ABlasterHUD::BeginPlay()
 {
@@ -109,5 +110,19 @@ void ABlasterHUD::AddSniperScope()
 	{
 		SniperScope = CreateWidget<USniperScope>(PlayerController, SniperScopeClass);
 		SniperScope->AddToViewport();
+	}
+}
+
+void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
+{
+	OwnerPlayerController = OwnerPlayerController == nullptr ? GetOwningPlayerController() : OwnerPlayerController;
+	if(OwnerPlayerController && ElimAnnouncementClass)
+	{
+		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwnerPlayerController, ElimAnnouncementClass);
+		if (ElimAnnouncementWidget)
+		{
+			ElimAnnouncementWidget->SetElimAnnouncementText(Attacker, Victim);
+			ElimAnnouncementWidget->AddToViewport();
+		}
 	}
 }

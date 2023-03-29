@@ -45,6 +45,7 @@ public:
 	void AddCharacterOverlay(); //called by the player controller
 	void AddAnnouncement();
 	void AddSniperScope();
+	void AddElimAnnouncement(FString Attacker, FString Victim);
 
 protected:
 
@@ -53,6 +54,9 @@ protected:
 private:
 
 	FHUDPackage HUDPackage;
+
+	UPROPERTY()
+	class APlayerController* OwnerPlayerController;
 
 	UPROPERTY(EditAnywhere)
 		float CrosshairsSpreadMax = 16.f;
@@ -82,6 +86,13 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Sniper Scope")
 		TSubclassOf<class UUserWidget> SniperScopeClass;
+
+	/*
+	* Elim Announcement Widget
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "ElimAnnouncement")
+	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 
 public:
 

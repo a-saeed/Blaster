@@ -80,6 +80,12 @@ public:
 	virtual float GetServerTime();						//synced with server world clock; NOT OVERRIDEN
 	float SingleTripTime = 0.f;
 
+	/*
+	* Broadcast Eliminations
+	*/
+
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -138,6 +144,13 @@ protected:
 
 	UFUNCTION(Client, Reliable)							//send match state and timers information from server to all clients once when they join. 														
 	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartTime);
+
+	/*
+	* Broadcast Eliminations
+	*/
+
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 private:
 
