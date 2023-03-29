@@ -48,7 +48,13 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	//set is aiming
 	bAiming = BlasterCharacter->isAiming();
+/*
+	//set is spriniting
+	bSpriniting = BlasterCharacter->IsSpriniting();
 
+	//set is moving forward
+	bMovingForward = BlasterCharacter->IsMOvingForward();
+*/
 	//Offset Yaw for strafing
 	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation(); //this is the rotation of aiming (Controller rotation) regardless the player rotation
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity()); //this is the rotation of the player regardless the rotation of the aiming

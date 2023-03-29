@@ -277,6 +277,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
+	//PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ABlasterCharacter::SprintButtonPressed);
+	//PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ABlasterCharacter::SprintButtonReleased);
 
 	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ABlasterCharacter::GrenadeButtonPressed);
 }
@@ -326,6 +328,8 @@ void ABlasterCharacter::MoveForward(float value)
 {
 	if (bDisableGameplay) return;
 
+	//bMovingForward = value > 0.f ? true : false;	
+	
 	if (Controller != nullptr && value != 0)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -333,10 +337,28 @@ void ABlasterCharacter::MoveForward(float value)
 		AddMovementInput(Direction, value);
 	}
 }
+/*
+void ABlasterCharacter::SprintButtonPressed()
+{
+	if (bMovingForward && Combat && !Combat->bAiming)
+	{
+		bSprinting = true;
+		GetCharacterMovement()->MaxWalkSpeed *= 1.8;
+	}
+}
 
+void ABlasterCharacter::SprintButtonReleased()
+{
+	if (bSprinting)
+	{
+		bSprinting = false;
+		GetCharacterMovement()->MaxWalkSpeed /= 1.8;
+	}
+}
+*/
 void ABlasterCharacter::moveRight(float value)
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay /* || bSprinting*/) return;
 
 	if (Controller != nullptr && value != 0)
 	{
