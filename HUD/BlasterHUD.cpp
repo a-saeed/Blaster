@@ -7,6 +7,9 @@
 #include "Announcement.h"
 #include "SniperScope.h"
 #include "ElimAnnouncement.h"
+#include"Blueprint/WidgetLayoutLibrary.h"
+#include "Components/HorizontalBox.h"
+#include "Components/CanvasPanelSlot.h"
 
 void ABlasterHUD::BeginPlay()
 {
@@ -80,9 +83,11 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 		CrosshairsColor
 	);
 }
+
 /*
 * OVERLAY WIDGETS
 */
+
 void ABlasterHUD::AddCharacterOverlay()
 {
 	APlayerController* PlayerController = GetOwningPlayerController();
@@ -113,6 +118,10 @@ void ABlasterHUD::AddSniperScope()
 	}
 }
 
+/*
+* Elim Announcement Widget
+*/
+
 void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
 {
 	OwnerPlayerController = OwnerPlayerController == nullptr ? GetOwningPlayerController() : OwnerPlayerController;
@@ -123,6 +132,48 @@ void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
 		{
 			ElimAnnouncementWidget->SetElimAnnouncementText(Attacker, Victim);
 			ElimAnnouncementWidget->AddToViewport();
+
+			/* Move all old Elim messages up before adding a new message */
+			for (UElimAnnouncement* ElimMsg : ElimMessagesArray)
+			{
+				if (ElimMsg && ElimMsg->AnnouncementBox)
+				{
+					UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(ElimMsg->AnnouncementBox);
+					if (CanvasSlot)
+					{
+						FVector2d BoxPosition = CanvasSlot->GetPosition();	//position of the canvas slot associated with the horizontal box
+						// move up by height of the box
+						FVector2d NewPosition(
+							BoxPosition.X,
+							BoxPosition.Y - CanvasSlot->GetSize().Y		// (-) means up
+						);
+
+						CanvasSlot->SetPosition(NewPosition);
+					}
+
+				}
+			}
+			// Add New ELimMsg
+			ElimMessagesArray.Add(ElimAnnouncementWidget);
+
+			/* Start a local timer for each Annoucement once it's added to the viewport */
+			FTimerHandle ElimMsgTimerHandle;
+			FTimerDelegate ElimMsgDelegate;		// the function we eant to bind takes a paramater
+			ElimMsgDelegate.BindUFunction(this, FName("ElimAnnouncementTimerFinished"), ElimAnnouncementWidget);	// bind with delegate
+
+			GetWorldTimerManager().SetTimer(ElimMsgTimerHandle,
+				ElimMsgDelegate,
+				ElimAnnouncementTime,
+				false
+			);
 		}
+	}
+}
+
+void ABlasterHUD::ElimAnnouncementTimerFinished(UElimAnnouncement* MsgToRemove)
+{
+	if (MsgToRemove)
+	{
+		MsgToRemove->RemoveFromParent();
 	}
 }
