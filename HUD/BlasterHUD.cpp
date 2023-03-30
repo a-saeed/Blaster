@@ -174,6 +174,7 @@ void ABlasterHUD::ElimAnnouncementTimerFinished(UElimAnnouncement* MsgToRemove)
 {
 	if (MsgToRemove)
 	{
+		ElimMessagesArray.Remove(MsgToRemove);
 		MsgToRemove->RemoveFromParent();
 	}
 }

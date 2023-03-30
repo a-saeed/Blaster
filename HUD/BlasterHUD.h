@@ -100,6 +100,7 @@ private:
 	UFUNCTION()
 	void ElimAnnouncementTimerFinished(UElimAnnouncement* MsgToRemove);
 
+	UPROPERTY()
 	TArray<UElimAnnouncement*> ElimMessagesArray;
 
 public:
