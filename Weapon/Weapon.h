@@ -115,6 +115,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float Damage = 10.f;
 
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 40.f;
+
 	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideRewind = false;
 
@@ -256,6 +259,7 @@ public:
 	FORCEINLINE EFireType GetFireType() { return FireType; }
 
 	FORCEINLINE float GetDamage() const { return Damage; }
+	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
 
 	FORCEINLINE float GetWeaponFireDelay() const { return FireDelay; }
 };

@@ -28,6 +28,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 	const FVector Start = SocketTransform.GetLocation();
  
 		TMap<ABlasterCharacter*, uint32> HitMap;
+		TMap<ABlasterCharacter*, uint32> HeadShotsMap;
 
 		for (FVector_NetQuantize HitTarget : HitTargets)
 		{
@@ -37,14 +38,19 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHitResult.GetActor());
 			if (BlasterCharacter)
 			{
-				if (HitMap.Contains(BlasterCharacter))
+				const bool bHeadShot = FireHitResult.BoneName.ToString() == FString("head") ? true : false;
+
+				if (bHeadShot)
 				{
-					HitMap[BlasterCharacter]++;
+					if (HeadShotsMap.Contains(BlasterCharacter)) HeadShotsMap[BlasterCharacter]++;
+					else HeadShotsMap.Emplace(BlasterCharacter, 1);
 				}
-				else
+				else    // Not a headshot
 				{
-					HitMap.Emplace(BlasterCharacter, 1);
+					if (HitMap.Contains(BlasterCharacter)) HitMap[BlasterCharacter]++;
+					else HitMap.Emplace(BlasterCharacter, 1);
 				}
+
 				PlayCharacterEffects(FireHitResult);
 			}
 			else if (FireHitResult.bBlockingHit)
@@ -54,26 +60,52 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		}
 
 		
-		TArray<ABlasterCharacter*> HitCharacters;
-	
-		for (TPair<ABlasterCharacter*, uint32> HitPair : HitMap)
+		TArray<ABlasterCharacter*> HitCharacters;	// Array to send hitcharacters for SSR
+		TMap<ABlasterCharacter*, float> DamageMap;	// Maps hitCharacter to Total damage
+
+		// Calculate body shot damage by multiplying times hit x Damage - store in damage map
+		for (auto& HitPair : HitMap)
 		{
-			if (HitPair.Key && InstigatorController)
+			if (HitPair.Key)
 			{
-				bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
-				if (HasAuthority() && bCauseAuthDamage)
+				DamageMap.Emplace(HitPair.Key, HitPair.Value * Damage);
+
+				HitCharacters.AddUnique(HitPair.Key);
+			}
+		}
+
+		// Calculate head shot damage by multiplying times hit x HeadShotDamage - store in damage map
+		for (auto& HeadShotPair : HeadShotsMap)
+		{
+			if (HeadShotPair.Key)
+			{
+				//chratacer sustained body shots; accumulate damage
+				if (DamageMap.Contains(HeadShotPair.Key)) DamageMap[HeadShotPair.Key] += HeadShotPair.Value * HeadShotDamage;
+				//charcater only sustained head shot damage
+				else DamageMap.Emplace(HeadShotPair.Key, HeadShotPair.Value * HeadShotDamage);
+
+				HitCharacters.AddUnique(HeadShotPair.Key);
+			}
+		}
+
+		//if on the server.. loop through damage map to apply total damage for each character
+		bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+		if (HasAuthority() && bCauseAuthDamage)
+		{
+			for (auto& DamagePair : DamageMap)
+			{
+				if (DamagePair.Key && InstigatorController)
 				{
 					UGameplayStatics::ApplyDamage(
-						HitPair.Key,							//Character that was hit
-						Damage * HitPair.Value,					//damage * how many times this character got hit
+						DamagePair.Key,						//Character that was hit
+						DamagePair.Value,					//damage calculated in the two for loops above
 						InstigatorController,
 						this,
 						UDamageType::StaticClass());
 				}
-				
-				HitCharacters.Add(HitPair.Key);
 			}
 		}
+		
 		/*this is a client machine..Call server-side rewind */
 		if (!HasAuthority() && bUseServerSideRewind)
 		{
