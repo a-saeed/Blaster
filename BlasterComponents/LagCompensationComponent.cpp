@@ -584,17 +584,18 @@ void ULagCompensationComponent::EnableCharacterMeshCollision(ABlasterCharacter* 
 * The RPC that will be used by other classes to request server side rewind
 */
 
-void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
+void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
 	FServerSideRewindResult RewindResult = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 
-	if (BlasterCharacter && HitCharacter && DamageCauser && RewindResult.bHitConfirmed)
+	if (BlasterCharacter && HitCharacter && BlasterCharacter->GetEquippedWeapon() && RewindResult.bHitConfirmed)
 	{
+		const float DamageToCause = RewindResult.bHeadShot ? BlasterCharacter->GetEquippedWeapon()->GetHeadShotDamage() : BlasterCharacter->GetEquippedWeapon()->GetDamage();
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			DamageCauser->GetDamage(),
+			DamageToCause,
 			BlasterCharacter->GetController(),		//the controller of the shooter charcter
-			DamageCauser,
+			BlasterCharacter->GetEquippedWeapon(),
 			UDamageType::StaticClass()
 		);
 	}
@@ -612,7 +613,7 @@ void ULagCompensationComponent::ServerShotgunScoreRequest_Implementation(const T
 
 		if (ShotgunResult.HeadShotsMap.Contains(HitCharacter))
 		{
-			float HeadShotDamage = ShotgunResult.HeadShotsMap[HitCharacter] * BlasterCharacter->GetEquippedWeapon()->GetDamage();
+			float HeadShotDamage = ShotgunResult.HeadShotsMap[HitCharacter] * BlasterCharacter->GetEquippedWeapon()->GetHeadShotDamage();
 			TotalDamage += HeadShotDamage;
 		}
 
@@ -638,9 +639,10 @@ void ULagCompensationComponent::ServerProjectileScoreRequest_Implementation(ABla
 
 	if (BlasterCharacter && BlasterCharacter->GetEquippedWeapon() && HitCharacter && RewindResult.bHitConfirmed)
 	{
+		const float DamageToCause = RewindResult.bHeadShot ? BlasterCharacter->GetEquippedWeapon()->GetHeadShotDamage() : BlasterCharacter->GetEquippedWeapon()->GetDamage();
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			BlasterCharacter->GetEquippedWeapon()->GetDamage(),
+			DamageToCause,
 			BlasterCharacter->GetController(),		//the controller of the shooter charcter
 			BlasterCharacter->GetEquippedWeapon(),
 			UDamageType::StaticClass()

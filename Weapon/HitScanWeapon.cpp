@@ -67,8 +67,8 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						BlasterCharacter,
 						Start,
 						FireHitResult.ImpactPoint,
-						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,  //the time corresponding to when the victim character was where we thought it was when we fired..
-						this);
+						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime  //the time corresponding to when the victim character was where we thought it was when we fired..
+					);
 				}
 			}
 
