@@ -49,6 +49,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impac
 					SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnedProjectile->bUseServerSideRewind = false;		// projectile won't send a server score request
 					SpawnedProjectile->Damage = Damage;						// set projectile damage to the damage of its weapon
+					SpawnedProjectile->HeadShotDamage = HeadShotDamage;
 				}
 				else										// server, client controlled - spawn non-replicated projectile / use SSR
 				{
@@ -80,6 +81,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget) //hit target is the impac
 				SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 				SpawnedProjectile->bUseServerSideRewind = false;		
 				SpawnedProjectile->Damage = Damage;
+				SpawnedProjectile->HeadShotDamage = HeadShotDamage;
 			}
 		}
 	}

@@ -33,7 +33,13 @@ public:
 	* DAMAGE
 	*/
 
-	float Damage = 20.f;		//projectiles will get their damage amount from their respective spawning weapon
+	// only set this for rockets and grenades
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+	// Doesn't matter for rockets and grenades
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 20.f;
 
 protected:
 	
