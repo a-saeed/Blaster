@@ -15,6 +15,8 @@
 
 - Create a lobby map where players join before traveling to the game map using seamless travel.
 
+- Game has a Type-Chat system in which players can send texts that will appear on all players screen before disappearing.
+
 - Return to main menu & leaving the game.
 
 - Player BookKeeping.
