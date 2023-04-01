@@ -134,7 +134,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 		ElimmedCharacter->Eliminate(false);
 	}
 
-	//Broadcat Elimination. 
+	//Broadcat Elimination Announcement. 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
 	{
 		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
