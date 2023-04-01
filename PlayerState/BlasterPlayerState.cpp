@@ -5,6 +5,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "Blaster/HUD/BlasterHUD.h"
 
 void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -67,6 +68,22 @@ void ABlasterPlayerState::UpdateHUDDefeats()
 		if (BlasterController)
 		{
 			BlasterController->SetHUDDefeats(PlayerDefeats);
+		}
+	}
+}
+
+/**
+* Chat Widget
+*/
+
+void ABlasterPlayerState::MulticastShowChatMessage_Implementation(const FText& Text)
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
+	{
+		ABlasterHUD* HUD = Cast<ABlasterHUD>(It->Get()->GetHUD());
+		if (HUD)
+		{
+			HUD->AddChatMessage(GetPlayerName(), Text.ToString());
 		}
 	}
 }

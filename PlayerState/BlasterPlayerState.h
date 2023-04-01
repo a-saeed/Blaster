@@ -34,6 +34,13 @@ public:
 	*/
 	void AddToDefeats(int32 Defeat);
 
+	/**
+	* Chat Widget
+	*/
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShowChatMessage(const FText& Text);	// called from Player controller
+
 private:
 
 	UPROPERTY()

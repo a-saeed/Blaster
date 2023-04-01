@@ -20,6 +20,8 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "Components/Image.h"
 #include "Blaster/HUD/ReturnToMainMenu.h"
+#include "Blaster/HUD/ChatWidget.h"
+#include "Components/EditableText.h"
 
 void ABlasterPlayerController::SetupInputComponent()
 {
@@ -28,6 +30,7 @@ void ABlasterPlayerController::SetupInputComponent()
 	if (!InputComponent) return;
 
 	InputComponent->BindAction("Quit", IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
+	InputComponent->BindAction("Chat", IE_Pressed, this, &ABlasterPlayerController::ShowChatWidget);
 }
 
 void ABlasterPlayerController::ShowReturnToMainMenu()
@@ -51,6 +54,16 @@ void ABlasterPlayerController::ShowReturnToMainMenu()
 		{
 			ReturnToMainMenu->MenuTearDown();
 		}
+	}
+}
+
+void ABlasterPlayerController::ShowChatWidget()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		bChatTextFocus = !bChatTextFocus;
+		BlasterHUD->AddChatWidget(bChatTextFocus);
 	}
 }
 
@@ -782,5 +795,18 @@ void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerStat
 				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), Victim->GetPlayerName());
 			}
 		}
+	}
+}
+
+/*
+* Broadcast Chat
+*/
+
+void ABlasterPlayerController::ServerShowChatMessage_Implementation(const FText& Text)
+{
+	ABlasterPlayerState* Self = Cast<ABlasterPlayerState>(GetPlayerState<APlayerState>());
+	if (Self)
+	{
+		Self->MulticastShowChatMessage(Text);
 	}
 }

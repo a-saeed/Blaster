@@ -86,6 +86,13 @@ public:
 
 	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 
+	/*
+	* Broadcast Chat Message
+	*/
+
+	UFUNCTION(Server, Reliable)
+	void ServerShowChatMessage(const FText& Text);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -100,6 +107,8 @@ protected:
 
 	virtual void SetupInputComponent() override;
 
+	// return menu
+
 	void ShowReturnToMainMenu();
 
 	UPROPERTY(EditAnywhere, Category = "HUD")
@@ -109,6 +118,12 @@ protected:
 	class UReturnToMainMenu* ReturnToMainMenu;
 
 	bool bReturnToMainMenuOpen = false;
+
+	// Chat Box
+
+	void ShowChatWidget();
+
+	bool bChatTextFocus = false;
 
 	/*
 	* Sync time between client and server
@@ -234,4 +249,6 @@ private:
 	float HighPingThreshold = 50.f;
 
 public:
+
+	FORCEINLINE void SetChatTextFocus(bool bFocus) { bChatTextFocus = bFocus; }
 };

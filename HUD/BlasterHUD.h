@@ -46,6 +46,8 @@ public:
 	void AddAnnouncement();
 	void AddSniperScope();
 	void AddElimAnnouncement(FString Attacker, FString Victim);
+	void AddChatWidget(bool bFocusOnText);
+	void AddChatMessage(FString PalyerName, FString Msg);
 
 protected:
 
@@ -103,6 +105,31 @@ private:
 	UPROPERTY()
 	TArray<UElimAnnouncement*> ElimMessagesArray;
 
+	/*
+	* Chat Widget
+	*/
+
+	UPROPERTY()
+	class UChatWidget* ChatWidget;
+
+	UPROPERTY(EditAnywhere, Category = "Chat")
+	TSubclassOf<UChatWidget> ChatClass;
+
+	UPROPERTY(EditAnywhere, Category = "Chat")
+	TSubclassOf<class UChatMessageWidget> ChatMessageClass;
+
+	UPROPERTY(EditAnywhere, Category = "Chat")
+	float ChatMessageTime = 2.5f;
+
+	UPROPERTY()
+	TArray<UChatMessageWidget*> ChatMessagesArray;
+
+	UFUNCTION()
+	void OnEnterMsg(const FText& Text, ETextCommit::Type CommitMethod);
+
+	UFUNCTION()
+	void ChatTimerFinished(UChatMessageWidget* MsgToRemove);
+
 public:
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
@@ -112,4 +139,6 @@ public:
 	FORCEINLINE UAnnouncement* GetAnnouncement(){ return Announcement; }
 
 	FORCEINLINE USniperScope* GetSniperScope() { return SniperScope; }
+
+	FORCEINLINE UChatWidget* GetChatWidget() const { return ChatWidget; }
 };
