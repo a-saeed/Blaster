@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterPlayerState.generated.h"
 
 /**
@@ -66,4 +67,16 @@ private:
 		void OnRep_PlayerDefeats();
 
 	void UpdateHUDDefeats();
+
+	/**
+	* Player Team
+	*/
+
+	UPROPERTY(Replicated)
+	ETeam Team = ETeam::ET_NoTeam;	// NoTeam unless we specify otherwise.
+
+public:
+
+	FORCEINLINE ETeam GetTeam() const { return Team; }
+	FORCEINLINE void SetTeam(ETeam TeamToSet) { Team = TeamToSet; }
 };

@@ -23,6 +23,30 @@ public:
 	UPROPERTY(Replicated)												//so all clients know who the top scoring players are and show them in the announcement widget
 	TArray <ABlasterPlayerState*> TopScoringPlayers;
 
+	/**
+	* Teams
+	*/
+
+	//Blue
+
+	TArray <ABlasterPlayerState*> BlueTeam;
+
+	UPROPERTY(ReplicatedUsing = OnRep_BlueTeamScore)
+	float BlueTeamScore = 0.f;
+
+	UFUNCTION()
+	void OnRep_BlueTeamScore();
+
+	//Red
+
+	TArray <ABlasterPlayerState*> RedTeam;
+
+	UPROPERTY(ReplicatedUsing = OnRep_RedTeamScore)
+	float RedTeamScore = 0.f;
+
+	UFUNCTION()
+	void OnRep_RedTeamScore();
+
 private:
 	
 	float TopScore = 0.f;
