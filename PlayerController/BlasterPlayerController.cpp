@@ -23,6 +23,10 @@
 #include "Blaster/HUD/ChatWidget.h"
 #include "Components/EditableText.h"
 
+/**
+*  Controller input key bindings
+*/
+
 void ABlasterPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -187,6 +191,7 @@ void ABlasterPlayerController::PollInit()
 				if(bInitializeDefeats) SetHUDDefeats(HUDDefeats);
 				if(bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
 				if(bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
+				if(bInitializeWeaponType) SetHUDWeaponType(HUDWeaponTypeText);
 
 				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
 				if (BlasterCharacter && BlasterCharacter->GetCombatComponent())
@@ -558,6 +563,11 @@ void ABlasterPlayerController::SetHUDWeaponType(FText WeaponTypeText)
 	if (bHUDValid)
 	{
 		BlasterHUD->GetCharacterOverlay()->GetWeaponTypeText()->SetText(WeaponTypeText);
+	}
+	else
+	{
+		bInitializeWeaponType = true;
+		HUDWeaponTypeText = WeaponTypeText;
 	}
 }
 

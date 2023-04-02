@@ -211,6 +211,8 @@ private:
 	bool bInitializeWeaponAmmo = false;
 	int32 HUDCarriedAmmo;
 	bool bInitializeCarriedAmmo = false;
+	FText HUDWeaponTypeText;
+	bool bInitializeWeaponType = false;
 	/*
 	* Timer Blink / Sound
 	*/
