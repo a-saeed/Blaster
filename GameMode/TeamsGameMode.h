@@ -13,4 +13,17 @@ UCLASS()
 class BLASTER_API ATeamsGameMode : public ABlasterGameMode
 {
 	GENERATED_BODY()
+	
+public:
+
+	// handle players joining mid-game
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+	//handle players leaving
+	virtual void Logout(AController* Exiting) override;
+
+protected:
+
+	// match just begun
+	virtual void HandleMatchHasStarted() override;
 };
