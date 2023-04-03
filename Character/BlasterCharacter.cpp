@@ -774,6 +774,10 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->SetVisibility(false);
 		}
+		if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+		{
+			Combat->SecondaryWeapon->GetWeaponMesh()->SetVisibility(false);
+		}
 	}
 	else
 	{
@@ -781,6 +785,10 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->SetVisibility(true);
+		}
+		if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+		{
+			Combat->SecondaryWeapon->GetWeaponMesh()->SetVisibility(true);
 		}
 	}
 }
@@ -882,7 +890,7 @@ void ABlasterCharacter::MultiCastGainedTheLead_Implementation()
 	{
 		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			CrownSystem,
-			GetRootComponent(),
+			GetMesh(),
 			FName(),
 			GetActorLocation() + FVector(0.f, 0.f, 120.f),
 			GetActorRotation(),
