@@ -8,6 +8,7 @@
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/BlasterTypes/Team.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -88,6 +89,13 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastLostTheLead();
+
+
+	/**
+	* Team color
+	*/
+	
+	void SetTeamColor(ETeam Team);
 
 	/*
 	* Hit boxes used for server side rewind (can be private)
@@ -336,13 +344,32 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Elimination") //dynamic instance we can change at runtime
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
-	UPROPERTY(EditAnywhere, Category = "Elimination") //material instance set on the blueprint, used with the dyncamic material instance
+	UPROPERTY(VisibleAnywhere, Category = "Elimination") //material instance used with the dynamic material instance. Set based on the player's team
 	UMaterialInstance* DissolveMaterialInstance;
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
 
 	void StartDissolve();
+
+	/**
+	* Team Colors
+	*/
+
+	UPROPERTY(EditAnywhere, Category = "Elimination")
+	UMaterialInstance* RedDissolveMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category = "Elimination")
+	UMaterialInstance* RedMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "Elimination")		// used for both original & blue disslove
+	UMaterialInstance* BlueDissolveMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category = "Elimination")
+	UMaterialInstance* BlueMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "Elimination")		// No Team
+	UMaterialInstance* OriginalMaterial;
 
 	/*
 	* ELIM BOT

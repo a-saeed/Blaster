@@ -248,6 +248,8 @@ void ABlasterCharacter::PollInit()
 			//init score to 0
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+			// set color based on team
+			SetTeamColor(BlasterPlayerState->GetTeam());
 
 			// a character died but still in the lead; respawn with crown
 			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(GetWorld()));
@@ -549,6 +551,36 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
 	if(!Combat){ return nullptr; }
 	return Combat->EquippedWeapon;
+}
+
+/**
+* Team Color
+*/
+
+void ABlasterCharacter::SetTeamColor(ETeam Team)
+{
+	if (!GetMesh() || !OriginalMaterial) return;
+
+	switch (Team) 
+	{
+	case ETeam::ET_NoTeam:
+		GetMesh()->SetMaterial(0, OriginalMaterial);
+		DissolveMaterialInstance = BlueDissolveMaterialInstance;
+		break;
+
+	case ETeam::ET_BlueTeam:
+		GetMesh()->SetMaterial(0, BlueMaterial);
+		DissolveMaterialInstance = BlueDissolveMaterialInstance;
+		break;
+
+	case ETeam::ET_RedTeam:
+		GetMesh()->SetMaterial(0, RedMaterial);
+		DissolveMaterialInstance = RedDissolveMaterialInstance;
+		break;
+
+	case ETeam::ET_MAX:
+		break;
+	}
 }
 
 /*
