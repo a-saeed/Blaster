@@ -583,6 +583,12 @@ void ABlasterCharacter::SetTeamColor(ETeam Team)
 	}
 }
 
+ETeam ABlasterCharacter::GetPlayerTeam() const	// used to prevent friendly fire
+{
+	if (BlasterPlayerState) return BlasterPlayerState->GetTeam();
+	else return ETeam::ET_NoTeam;
+}
+
 /*
 * Default Weapon
 */
@@ -590,7 +596,7 @@ void ABlasterCharacter::SetTeamColor(ETeam Team)
 void ABlasterCharacter::SpawnDefaultWeapon()
 {
 	/*only spawn a default weapon in a map that is controlled by blaster game mode*/
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 
 	if (BlasterGameMode && !bElimed && DefaultWeaponClass)	//GmaeMode is only valid on the server.. so we spawn on server only
 	{
@@ -831,25 +837,30 @@ void ABlasterCharacter::HideCameraIfCharatcterClose()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCausor)
 {
-	if (bElimed) return;	//already eliminated, don't receive danage.
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
+	if (bElimed || !BlasterGameMode) return;
+	
+	Damage = BlasterGameMode->CalculateDamage(InstigatorController, Controller, Damage);
 
-	if (Shield > Damage)
+	float DamageToHealth = Damage;
+	if (Shield > 0.f)
 	{
-		Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
-		UpdateHUDShield();
-	}
-	else
-	{
-		Health = FMath::Clamp(Health - Damage + Shield, 0.f, MaxHealth);
-		UpdateHUDHealth();
-
-		if (Shield != 0.f)
+		if (Shield >= Damage)
 		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
 			Shield = 0.f;
-			UpdateHUDShield();
 		}
 	}
 
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+
+	UpdateHUDHealth();
+	UpdateHUDShield();
 	PlayHitreactMontage();
 
 	if (Health == 0.f)
@@ -857,7 +868,6 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 		if (BlasterPlayerController)
 		{
-			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 
 			if (BlasterGameMode && AttackerController)
@@ -1040,7 +1050,7 @@ void ABlasterCharacter::MulticastEliminate_Implementation(bool bPlayerLeftGame)
 
 void ABlasterCharacter::ElimTimerFinished()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	//Only request a respawn if the player didn't leave the game.. 
 	if (BlasterGameMode && !bLeftGame)
 	{
@@ -1056,7 +1066,7 @@ void ABlasterCharacter::ElimTimerFinished()
 void ABlasterCharacter::ServerLeaveGame_Implementation()
 {
 	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;	//leaving player state
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 
 	if (BlasterGameMode && BlasterPlayerState)
 	{
@@ -1074,7 +1084,7 @@ void ABlasterCharacter::Destroyed()
 		ElimBotComponent->DestroyComponent();
 	}
 
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 
 	bool bShouldAlsoDestroyWeapon =
 		Combat &&

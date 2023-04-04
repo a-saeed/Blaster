@@ -22,6 +22,9 @@ public:
 	//handle players leaving
 	virtual void Logout(AController* Exiting) override;
 
+	// NUllify friendly fire
+	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage) override;
+
 protected:
 
 	// match just begun

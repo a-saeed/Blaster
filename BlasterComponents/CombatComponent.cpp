@@ -407,9 +407,13 @@ bool UCombatComponent::CanFire()
 		CombatState == ECombatState::ECS_Reloading &&
 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
 
+	bool bInSameTeam = HUDPackage.CrosshairsColor == FLinearColor::Green;
+
 	if (bInterruptShotgunReload) return true;
 
 	if (bLocalClientSideReloading) return false; 
+
+	if (bInSameTeam) return false;
 
 	return EquippedWeapon && !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
@@ -685,10 +689,22 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 void UCombatComponent::SetCrosshairsColor(FHitResult& TraceHitResult)
 {
-	//check if the ator we hit implements the IInteractWithCrosshairsInterface
+	if (!Character) return;
+
+	//check if the actor we hit implements the IInteractWithCrosshairsInterface
 	if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
 	{
-		HUDPackage.CrosshairsColor = FLinearColor::Red;
+		ABlasterCharacter* Victim = Cast<ABlasterCharacter>(TraceHitResult.GetActor());
+		if (Victim)
+		{
+			if (Character->GetPlayerTeam() == Victim->GetPlayerTeam() &&
+				Victim->GetPlayerTeam() != ETeam::ET_NoTeam)
+			{
+				HUDPackage.CrosshairsColor = FLinearColor::Green;
+			} 
+			
+			else HUDPackage.CrosshairsColor = FLinearColor::Red;
+		}
 	}
 	else
 	{
@@ -747,6 +763,12 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime) //called in tick
 
 void UCombatComponent::SetCrosshairsSpread(float DeltaTime)
 {
+	if (HUDPackage.CrosshairsColor == FLinearColor::Green)	// don't apply on teammates
+	{
+		HUDPackage.CrosshairSpread = 0.5f;
+		return;
+	}
+
 	//Calculate Crosshairs Spread
 	//[0, maxWalkSpeed] -> [0,1]
 	FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);

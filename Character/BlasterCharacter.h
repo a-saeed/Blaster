@@ -96,6 +96,7 @@ public:
 	*/
 	
 	void SetTeamColor(ETeam Team);
+	ETeam GetPlayerTeam() const;
 
 	/*
 	* Hit boxes used for server side rewind (can be private)
@@ -203,6 +204,9 @@ private:
 
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
+
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
 
 	void LimitPitchView();
 

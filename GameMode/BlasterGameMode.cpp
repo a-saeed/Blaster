@@ -212,3 +212,11 @@ AActor* ABlasterGameMode::FindPlayerStartWithLeastPlayersInrange()
 
 	return PlayerStarts[LeastPlayerStartIndex];
 }
+
+/*
+*  Nullify friendly fire
+*/
+float ABlasterGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
+{
+	return BaseDamage;
+}
