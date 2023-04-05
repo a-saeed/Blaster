@@ -882,12 +882,12 @@ void ABlasterPlayerController::SetHUDRedTeamScore(int32 RedScore)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->GetCharacterOverlay() &&
-		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText();
+		BlasterHUD->GetCharacterOverlay()->GetRedScoreText();
 
 	if (bHUDValid)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), RedScore);
-		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText()->SetText(FText::FromString(ScoreText));
+		BlasterHUD->GetCharacterOverlay()->GetRedScoreText()->SetText(FText::FromString(ScoreText));
 	}
 }
 

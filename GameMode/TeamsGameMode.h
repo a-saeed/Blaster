@@ -16,6 +16,8 @@ class BLASTER_API ATeamsGameMode : public ABlasterGameMode
 	
 public:
 
+	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimPlayerController, ABlasterPlayerController* AttackerPlayerController);
+
 	// handle players joining mid-game
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 

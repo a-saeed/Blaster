@@ -5,6 +5,44 @@
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Kismet/GamePlayStatics.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/Character/BlasterCharacter.h"
+
+void ATeamsGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimPlayerController, ABlasterPlayerController* AttackerPlayerController)
+{
+	// could call super version here but we don't want to add to any individual's player score nor defeats..
+
+	ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+	ABlasterPlayerState* AttackerPlayerState = AttackerPlayerController ? Cast<ABlasterPlayerState>(AttackerPlayerController->PlayerState) : nullptr;
+	ABlasterPlayerState* VictimPlayerState = VictimPlayerController ? Cast<ABlasterPlayerState>(VictimPlayerController->PlayerState) : nullptr;
+	
+	if (BlasterGameState && AttackerPlayerState)
+	{
+		if (AttackerPlayerState->GetTeam() == ETeam::ET_BlueTeam)
+		{
+			BlasterGameState->AddToBlueTeamScore();
+		}
+		if (AttackerPlayerState->GetTeam() == ETeam::ET_RedTeam)
+		{
+			BlasterGameState->AddToRedTeamScore();
+		}
+	}
+
+	if (ElimmedCharacter)
+	{
+		ElimmedCharacter->Eliminate(false);
+	}
+
+	//Broadcat Elimination Announcement. 
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
+	{
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayerController && AttackerPlayerState && VictimPlayerState)
+		{
+			BlasterPlayerController->BroadcastElim(AttackerPlayerState, VictimPlayerState);
+		}
+	}
+}
 
 void ATeamsGameMode::PostLogin(APlayerController* NewPlayer)
 {
@@ -94,6 +132,8 @@ float ATeamsGameMode::CalculateDamage(AController* Attacker, AController* Victim
 	ABlasterPlayerState* VictimPlayerState = Victim->GetPlayerState<ABlasterPlayerState>();
 	if (AttackerPlayerState && VictimPlayerState)
 	{
+		if (AttackerPlayerState == VictimPlayerState) return BaseDamage;
+		
 		if (AttackerPlayerState->GetTeam() == VictimPlayerState->GetTeam()) return 0.f;
 	}
 
