@@ -245,9 +245,6 @@ void ABlasterCharacter::PollInit()
 		//on the frame that player state is not null
 		if (BlasterPlayerState)
 		{
-			//init score to 0
-			BlasterPlayerState->AddToScore(0.f);
-			BlasterPlayerState->AddToDefeats(0);
 			// set color based on team
 			SetTeamColor(BlasterPlayerState->GetTeam());
 

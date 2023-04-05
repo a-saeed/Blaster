@@ -9,6 +9,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "Blaster/GameMode/TeamsGameMode.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/HUD/Announcement.h"
 #include "Blaster/HUD/SniperScope.h"
@@ -79,6 +80,7 @@ void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+	DOREPLIFETIME(ABlasterPlayerController, bTeamsMatch);
 }
 
 void ABlasterPlayerController::BeginPlay()
@@ -86,6 +88,8 @@ void ABlasterPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());			//set the BlasterHUD
+
+	if (Cast<ATeamsGameMode>(GetWorld()->GetAuthGameMode())) bTeamsMatch = true;
 
 	ServerCheckMatchState();							//once a client joins, set its match state and timers
 }
@@ -309,15 +313,22 @@ void ABlasterPlayerController::OnRep_MatchState()
 
 void ABlasterPlayerController::HandleMatchHasStarted()
 {
-	/* -Check for blasterHUD -Add character overlay -Hide Announcement */
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD)
 	{
 		if(BlasterHUD->GetCharacterOverlay() == nullptr) BlasterHUD->AddCharacterOverlay();	   //Don't add character overlay twice
 
-		if (BlasterHUD->GetAnnouncement())
+		if (BlasterHUD->GetAnnouncement()) BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);  //hide announcemenet widget when game starts.
+
+		if (bTeamsMatch)
 		{
-			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Hidden);				//hide announcemenet widget when game starts.
+			InitTeamScores();
+			HidePlayerScoreDefeats();
+		}
+		else
+		{
+			InitPlayerScoreDefeats();
+			HideTeamScores();
 		}
 	}
 }
@@ -468,19 +479,59 @@ void ABlasterPlayerController::SetHUDShield(float Shield, float MaxShield)
 	}
 }
 
+void ABlasterPlayerController::HidePlayerScoreDefeats()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetScoreText() &&
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsText();
+
+	if (bHUDValid)
+	{
+		BlasterHUD->GetCharacterOverlay()->GetScoreText()->SetText(FText());
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsText()->SetText(FText());
+	}
+}
+
+void ABlasterPlayerController::InitPlayerScoreDefeats()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetScoreText() &&
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsText() &&
+		BlasterHUD->GetCharacterOverlay()->GetScoreAmount() &&
+	    BlasterHUD->GetCharacterOverlay()->GetDefeatsAmount();
+
+	if (bHUDValid)
+	{
+		FString ScoreText("Score:");
+		FString DefeatsText("Defeats:");
+		FString Zero("0");
+
+		BlasterHUD->GetCharacterOverlay()->GetScoreText()->SetText(FText::FromString(ScoreText));
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsText()->SetText(FText::FromString(DefeatsText));
+		BlasterHUD->GetCharacterOverlay()->GetScoreAmount()->SetText(FText::FromString(Zero));
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsAmount()->SetText(FText::FromString(Zero));
+	}
+}
+
 void ABlasterPlayerController::SetHUDScore(float Score)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->GetCharacterOverlay() &&
-		BlasterHUD->GetCharacterOverlay()->GetScoreText();
+		BlasterHUD->GetCharacterOverlay()->GetScoreAmount();
 
 	if (bHUDValid)
 	{
 		/*set Score text*/
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::CeilToInt(Score));
-		BlasterHUD->GetCharacterOverlay()->GetScoreText()->SetText(FText::FromString(ScoreText));
+		BlasterHUD->GetCharacterOverlay()->GetScoreAmount()->SetText(FText::FromString(ScoreText));
 	}
 	else
 	{
@@ -495,13 +546,13 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->GetCharacterOverlay() &&
-		BlasterHUD->GetCharacterOverlay()->GetDefeatsText();
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsAmount();
 
 	if (bHUDValid)
 	{
 		/*set Defeats text*/
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
-		BlasterHUD->GetCharacterOverlay()->GetDefeatsText()->SetText(FText::FromString(DefeatsText));
+		BlasterHUD->GetCharacterOverlay()->GetDefeatsAmount()->SetText(FText::FromString(DefeatsText));
 	}
 	else
 	{
@@ -760,6 +811,84 @@ void ABlasterPlayerController::StopHighPingWarning()
 void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
 {
 	HighPingDelegate.Broadcast(bHighPing);
+}
+
+/**
+* Team Score
+*/
+
+void ABlasterPlayerController::OnRep_TeamsMatch()
+{
+	bTeamsMatch = true;
+}
+
+void ABlasterPlayerController::HideTeamScores()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText() && 
+		BlasterHUD->GetCharacterOverlay()->GetRedScoreText() && 
+		BlasterHUD->GetCharacterOverlay()->GetScoreSpacerText();
+
+	if (bHUDValid)
+	{
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText()->SetText(FText());
+		BlasterHUD->GetCharacterOverlay()->GetRedScoreText()->SetText(FText());
+		BlasterHUD->GetCharacterOverlay()->GetScoreSpacerText()->SetText(FText());
+	}
+}
+
+void ABlasterPlayerController::InitTeamScores()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText() &&
+		BlasterHUD->GetCharacterOverlay()->GetRedScoreText() &&
+		BlasterHUD->GetCharacterOverlay()->GetScoreSpacerText();
+
+	if (bHUDValid)
+	{
+		FString Zero("0");
+		FString Spacer("|");
+
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText()->SetText(FText::FromString(Zero));
+		BlasterHUD->GetCharacterOverlay()->GetRedScoreText()->SetText(FText::FromString(Zero));
+		BlasterHUD->GetCharacterOverlay()->GetScoreSpacerText()->SetText(FText::FromString(Spacer));
+	}
+}
+
+void ABlasterPlayerController::SetHUDBlueTeamScore(int32 BlueScore)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText();
+
+	if (bHUDValid)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), BlueScore);
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText()->SetText(FText::FromString(ScoreText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDRedTeamScore(int32 RedScore)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->GetCharacterOverlay() &&
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText();
+
+	if (bHUDValid)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), RedScore);
+		BlasterHUD->GetCharacterOverlay()->GetBlueScoreText()->SetText(FText::FromString(ScoreText));
+	}
 }
 
 /*

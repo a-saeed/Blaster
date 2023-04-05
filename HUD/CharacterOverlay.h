@@ -30,12 +30,19 @@ private:
 	* SCORE
 	*/
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* ScoreAmount;
+	UTextBlock* ScoreAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ScoreText;
 	/*
 	* DEFEATS
 	*/
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* DefeatsAmount;
+	UTextBlock* DefeatsAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DefeatsText;
+
 	/*
 	* Ammo
 	*/
@@ -69,15 +76,30 @@ private:
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* HIghPingAnimation;
 
+	/*
+	* Teams
+	*/
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* BlueTeamScore;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* RedTeamScore;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ScoreSpacer;
+
 public:
 
 	FORCEINLINE UProgressBar* GetHealthBar() const { return HealthBar; }
 	FORCEINLINE UTextBlock* GetHealthText() const { return HealthText; }
 	FORCEINLINE UProgressBar* GetShieldBar() const { return ShieldBar; }
 
-	FORCEINLINE UTextBlock* GetScoreText() const { return ScoreAmount; }
+	FORCEINLINE UTextBlock* GetScoreAmount() const { return ScoreAmount; }
+	FORCEINLINE UTextBlock* GetScoreText() const { return ScoreText; }
 
-	FORCEINLINE UTextBlock* GetDefeatsText() const { return DefeatsAmount; }
+	FORCEINLINE UTextBlock* GetDefeatsAmount() const { return DefeatsAmount; }
+	FORCEINLINE UTextBlock* GetDefeatsText() const { return DefeatsText; }
 
 	FORCEINLINE UTextBlock* GetAmmoText() const { return WeaponAmmoAmount; }
 	FORCEINLINE UTextBlock* GetCarriedAmmoText() const { return CarriedAmmoAmount; }
@@ -90,4 +112,8 @@ public:
 
 	FORCEINLINE UImage* GetWifiImage() const { return HighPingImage; }
 	FORCEINLINE UWidgetAnimation* GetWifiAnimation() const { return HIghPingAnimation; }
+
+	FORCEINLINE UTextBlock* GetBlueScoreText() const { return BlueTeamScore; }
+	FORCEINLINE UTextBlock* GetRedScoreText() const { return RedTeamScore; }
+	FORCEINLINE UTextBlock* GetScoreSpacerText() const { return ScoreSpacer; }
 };

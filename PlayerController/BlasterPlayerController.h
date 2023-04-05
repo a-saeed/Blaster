@@ -36,8 +36,11 @@ public:
 	/*
 	* Player state HUD
 	*/
-	void SetHUDScore(float Score);
 
+	void HidePlayerScoreDefeats();
+	void InitPlayerScoreDefeats();
+
+	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	/*
 	* Ammo HUD
@@ -74,6 +77,22 @@ public:
 	* Grenades
 	*/
 	void SetHUDGrenades(int32 Grenades);
+
+	/**
+	* Team Score
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_TeamsMatch)
+	bool bTeamsMatch = false;
+
+	UFUNCTION()
+	void OnRep_TeamsMatch();
+
+	void HideTeamScores();
+	void InitTeamScores();
+
+	void SetHUDBlueTeamScore(int32 BlueScore);
+	void SetHUDRedTeamScore(int32 RedScore);
+
 	/*
 	* Server Time & Single trip time used for SSR
 	*/
