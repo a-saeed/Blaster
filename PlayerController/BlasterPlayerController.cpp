@@ -23,6 +23,7 @@
 #include "Blaster/HUD/ReturnToMainMenu.h"
 #include "Blaster/HUD/ChatWidget.h"
 #include "Components/EditableText.h"
+#include "Blaster/BlasterTypes/EndgameAnnouncement.h"
 
 /**
 *  Controller input key bindings
@@ -344,40 +345,18 @@ void ABlasterPlayerController::HandleCooldown()
 		{
 			BlasterHUD->GetAnnouncement()->SetVisibility(ESlateVisibility::Visible);
 
-			FString AnnouncementText("New Match Starts In: ");
+			FString AnnouncementText = EndgameAnnouncement::NewMatchStartsIn;
 			SetHUDAnnouncementText(AnnouncementText);
 
 			/*Show the top scoring players in the Announ. widget*/
 			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(GetWorld()));
-			ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
 
-			if (BlasterGameState && BlasterPlayerState)
+			if (BlasterGameState)
 			{
 				TArray<ABlasterPlayerState*> TopPlayers = BlasterGameState->TopScoringPlayers;
-				FString InfoTextString;
+				FString CooldownInfoTextString = bTeamsMatch ? GetCooldownTeamsInfoText(BlasterGameState) : GetCooldownInfoText(TopPlayers);
 
-				if (TopPlayers.Num() == 0)
-				{
-					InfoTextString = FString("No One Scored A Single Kill..");
-				}
-				else if (TopPlayers.Num() == 1 && TopPlayers[0] == BlasterPlayerState)
-				{
-					InfoTextString = FString("You Are The Top Scorer..");
-				}
-				else if (TopPlayers.Num() == 1)
-				{
-					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
-				}
-				else if(TopPlayers.Num() > 1)
-				{
-					InfoTextString = FString("Players Tied For The Win: \n");
-
-					for (ABlasterPlayerState* TiedPlayer : TopPlayers)
-					{
-						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
-					}
-				}
-				SetHUDAnnouncementInfoText(InfoTextString);
+				SetHUDAnnouncementInfoText(CooldownInfoTextString);
 			}
 		}
 	}
@@ -388,6 +367,74 @@ void ABlasterPlayerController::HandleCooldown()
 		BlasterCharacter->bDisableGameplay = true;
 		BlasterCharacter->GetCombatComponent()->FireButtonPressed(false);						//stop if firing once cooldown state is reached.
 	}
+}
+
+FString ABlasterPlayerController::GetCooldownInfoText(TArray<ABlasterPlayerState*>& TopPlayers)
+{
+	ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+	if (!BlasterPlayerState) return FString();
+
+	FString InfoTextString;
+
+	if (TopPlayers.Num() == 0)
+	{
+		InfoTextString = EndgameAnnouncement::ThereIsNoWinner;
+	}
+	else if (TopPlayers.Num() == 1 && TopPlayers[0] == BlasterPlayerState)
+	{
+		InfoTextString = EndgameAnnouncement::YouAreTheWinner;
+	}
+	else if (TopPlayers.Num() == 1)
+	{
+		InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
+	}
+	else if (TopPlayers.Num() > 1)
+	{
+		InfoTextString = EndgameAnnouncement::PlayersTiedForTheWin;
+		InfoTextString.Append(FString("\n"));
+
+		for (ABlasterPlayerState* TiedPlayer : TopPlayers)
+		{
+			InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+		}
+	}
+
+	return InfoTextString;
+}
+
+FString ABlasterPlayerController::GetCooldownTeamsInfoText(ABlasterGameState* GameState)
+{
+	if (!GameState) return FString();
+
+	FString InfoText;
+	int32 RedTeamScore = GameState->RedTeamScore;
+	int32 BlueTeamScore = GameState->BlueTeamScore;
+
+	if (RedTeamScore == 0 && BlueTeamScore == 0)
+	{
+		InfoText = EndgameAnnouncement::ThereIsNoWinner;
+	}
+
+	else if (RedTeamScore == BlueTeamScore)
+	{
+		InfoText = EndgameAnnouncement::TeamsTiedForTheWin;
+	}
+
+	else if (RedTeamScore > BlueTeamScore)
+	{
+		InfoText = EndgameAnnouncement::RedTeamWins;
+		InfoText.Append(TEXT("\n\n"));
+		InfoText.Append(FString::Printf(TEXT("%s:\t%d \t\t\t %s:\t%d\n"), *EndgameAnnouncement::Reds, RedTeamScore, *EndgameAnnouncement::Blues, BlueTeamScore));
+	}
+
+	else if (BlueTeamScore > RedTeamScore)
+	{
+		InfoText = EndgameAnnouncement::BlueTeamWins;
+		InfoText.Append(TEXT("\n\n"));
+		InfoText.Append(FString::Printf(TEXT("%s:\t%d \t\t\t %s:\t%d\n"), *EndgameAnnouncement::Blues, BlueTeamScore, *EndgameAnnouncement::Reds, RedTeamScore));
+	}
+
+	return InfoText;
 }
 
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()

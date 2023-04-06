@@ -61,6 +61,10 @@ public:
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDAnnouncementText(FString AnnouncementText);
 	void SetHUDAnnouncementInfoText(FString InfoText);
+
+	FString GetCooldownInfoText(TArray<class ABlasterPlayerState*>& TopPlayers);
+	FString GetCooldownTeamsInfoText(class ABlasterGameState* GameState);
+
 	/*
 	* Sync time between client and server
 	*/
