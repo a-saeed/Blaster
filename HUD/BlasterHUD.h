@@ -48,6 +48,7 @@ public:
 	void AddElimAnnouncement(FString Attacker, FString Victim);
 	void AddChatWidget(bool bFocusOnText);
 	void AddChatMessage(FString PalyerName, FString Msg);
+	void AddArtifactStatus(FString ArtifactStatus, FSlateColor Color);
 
 protected:
 
@@ -129,6 +130,24 @@ private:
 
 	UFUNCTION()
 	void ChatTimerFinished(UChatMessageWidget* MsgToRemove);
+
+	/*
+	* Artifact status
+	*/
+
+	UPROPERTY()
+	class UArtifactStatus* ArtifactStatusWidget;
+
+	UPROPERTY(EditAnywhere, Category = "Artifact Status")
+	TSubclassOf<UArtifactStatus> ArtifactStatusClass;
+
+	FTimerHandle ArtifactStatusTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category = "Artifact Status")
+	float ArtifactStatusTime = 2.5f;
+
+	UFUNCTION()
+	void ArtifactStatusTimerFinished();
 
 public:
 

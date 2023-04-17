@@ -14,6 +14,7 @@
 #include "Components/EditableText.h"
 #include "Blaster/HUD/ChatMessageWidget.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "ArtifactStatus.h"
 
 void ABlasterHUD::BeginPlay()
 {
@@ -294,5 +295,40 @@ void ABlasterHUD::ChatTimerFinished(UChatMessageWidget* MsgToRemove)
 		ChatMessagesArray.Remove(MsgToRemove);
 		MsgToRemove->RemoveFromParent();
 	}
+}
+
+/*
+* Artifact status
+*/
+
+void ABlasterHUD::AddArtifactStatus(FString ArtifactStatus, FSlateColor Color)
+{
+	if (ArtifactStatusWidget && ArtifactStatusWidget->IsInViewport())
+	{
+		ArtifactStatusWidget->RemoveFromParent();
+		GetWorldTimerManager().ClearTimer(ArtifactStatusTimerHandle);
+	}
+
+	OwnerPlayerController = OwnerPlayerController == nullptr ? GetOwningPlayerController() : OwnerPlayerController;
+	if (OwnerPlayerController && ArtifactStatusClass)
+	{
+		ArtifactStatusWidget = CreateWidget<UArtifactStatus>(OwnerPlayerController, ArtifactStatusClass);
+		if (ArtifactStatusWidget)
+		{
+			ArtifactStatusWidget->SetArtifactStatusText(ArtifactStatus, Color);
+			ArtifactStatusWidget->AddToViewport();
+
+			GetWorldTimerManager().SetTimer(ArtifactStatusTimerHandle,
+				this,
+				&ABlasterHUD::ArtifactStatusTimerFinished,
+				ArtifactStatusTime
+			);
+		}
+	}
+}
+
+void ABlasterHUD::ArtifactStatusTimerFinished()
+{
+	ArtifactStatusWidget->RemoveFromParent();
 }
 

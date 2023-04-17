@@ -51,6 +51,13 @@ public:
 	UFUNCTION()
 	void OnRep_RedTeamScore();
 
+	/**
+	* Broadcast Artifact status
+	*/
+
+	UFUNCTION(NetMultiCast, Reliable)
+	void MultiCastBroadcastStatus(class ABlasterCharacter* BlasterCharacter, EArtifactState ArtifactState);
+
 private:
 	
 	float TopScore = 0.f;
