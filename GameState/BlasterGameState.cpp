@@ -34,9 +34,11 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 	}
 }
 
-void ABlasterGameState::AddToBlueTeamScore()
+void ABlasterGameState::AddToBlueTeamScore(bool bWing)
 {
-	++BlueTeamScore;
+	if (bWing) BlueTeamScore += 10;
+	else ++BlueTeamScore;
+	
 	ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PlayerController)
 	{
@@ -53,9 +55,11 @@ void ABlasterGameState::OnRep_BlueTeamScore()
 	}
 }
 
-void ABlasterGameState::AddToRedTeamScore()
+void ABlasterGameState::AddToRedTeamScore(bool bWing)
 {
-	++RedTeamScore;
+	if (bWing) RedTeamScore += 10;
+	else ++RedTeamScore;
+	
 	ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PlayerController)
 	{

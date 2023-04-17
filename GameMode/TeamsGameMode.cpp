@@ -20,11 +20,11 @@ void ATeamsGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlas
 	{
 		if (AttackerPlayerState->GetTeam() == ETeam::ET_BlueTeam)
 		{
-			BlasterGameState->AddToBlueTeamScore();
+			BlasterGameState->AddToBlueTeamScore(false);	//false means wing is not equipped
 		}
 		if (AttackerPlayerState->GetTeam() == ETeam::ET_RedTeam)
 		{
-			BlasterGameState->AddToRedTeamScore();
+			BlasterGameState->AddToRedTeamScore(false);
 		}
 	}
 
