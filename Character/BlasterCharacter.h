@@ -181,11 +181,12 @@ protected:
 	void FireButtonReleased();
 	void ReloadButtonPressed();
 	void GrenadeButtonPressed();
-	//void SprintButtonPressed();
-	//void SprintButtonReleased();
+	void SprintButtonPressed();
+	void SprintButtonReleased();
 
-	//bool bSprinting = false;
-	//bool bMovingForward = false;
+	bool bSprinting = false;
+	bool bMovingForward = false;
+
 	/*poll for ane relevant classes(player state) and once they're available, initialize our HUD*/
 	void PollInit();
 
@@ -416,8 +417,8 @@ public:
 
 	bool isAiming() const;
 
-	//FORCEINLINE bool IsSpriniting() const { return bSprinting; }
-	//FORCEINLINE bool IsMOvingForward() const { return bMovingForward; }
+	FORCEINLINE bool IsSpriniting() const { return bSprinting; }
+	FORCEINLINE bool IsMOvingForward() const { return bMovingForward; }
 
 	FORCEINLINE float GetAo_Yaw() { return AO_Yaw;} //used in anime instance class
 	FORCEINLINE float GetAo_Pitch() { return AO_Pitch;} //used in anime instance class
