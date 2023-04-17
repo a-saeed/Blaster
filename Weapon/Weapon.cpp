@@ -44,7 +44,7 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
@@ -100,6 +100,7 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter)
 	{
+		if (BlasterCharacter->IsHoldingArtifact()) return;
 		BlasterCharacter->SetOverlappingWeapon(this); //C7_5
 	}
 }
@@ -110,6 +111,7 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter)
 	{
+		if (BlasterCharacter->IsHoldingArtifact()) return;
 		BlasterCharacter->SetOverlappingWeapon(nullptr);
 	}
 }
