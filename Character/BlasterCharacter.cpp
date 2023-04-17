@@ -26,6 +26,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Blaster/GameState/BlasterGameState.h"
+#include "Blaster/Pickups/Artifact.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -357,7 +358,7 @@ void ABlasterCharacter::SprintButtonReleased()
 */
 void ABlasterCharacter::moveRight(float value)
 {
-	if (bDisableGameplay /* || bSprinting*/) return;
+	if (bDisableGameplay || bSprinting) return;
 
 	if (Controller != nullptr && value != 0)
 	{
@@ -954,6 +955,8 @@ void ABlasterCharacter::MultiCastLostTheLead_Implementation()
 
 void ABlasterCharacter::Eliminate(bool bPlayerLeftGame)//only called on server
 {
+	bElimed = true; // set on server first.. to not equip artifact on elimmed characters
+
 	if (Combat)
 	{
 		if (Combat->EquippedWeapon)
@@ -963,6 +966,12 @@ void ABlasterCharacter::Eliminate(bool bPlayerLeftGame)//only called on server
 		if (Combat->SecondaryWeapon)
 		{
 			Combat->SecondaryWeapon->Dropped();
+		}
+
+		if (Combat && Combat->Artifact)
+		{
+			Combat->Artifact->Dropped();
+			SetArtifact(nullptr);
 		}
 
 		if (StartingWeapon && StartingWeapon->GetOwner() == nullptr) StartingWeapon->Destroy();
@@ -1142,4 +1151,44 @@ ECombatState ABlasterCharacter::GetCombatState()
 bool ABlasterCharacter::bIsLocallyReloading()
 {
 	return Combat && Combat->bLocalClientSideReloading;
+}
+/*
+* Function called by other classes.. Usually to access BlasterCharacter's components
+*/
+
+// called by the artifact to attach to backpack
+void ABlasterCharacter::SetArtifact(AActor* Actor)
+{
+	if (!Combat) return;
+
+	AArtifact* Artifact = Cast<AArtifact>(Actor);
+	if (Artifact)
+	{
+		Combat->Artifact = Artifact;
+		Combat->AttachActorToBackpack(Actor);
+
+		SetMovementMode(EMovementMode::MOVE_Flying);
+	}
+	else
+	{
+		Combat->Artifact = nullptr; 
+		SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+}
+
+bool ABlasterCharacter::IsHoldingArtifact() const
+{
+	return (Combat && Combat->Artifact);
+}
+
+AArtifact* ABlasterCharacter::GetArtifact()
+{
+	if (!Combat) return nullptr;
+
+	return Combat->Artifact;
+}
+
+void ABlasterCharacter::SetMovementMode(EMovementMode Mode)
+{
+	GetCharacterMovement()->SetMovementMode(Mode);
 }

@@ -445,4 +445,13 @@ public:
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 
 	bool bIsLocallyReloading();
+
+	// called by the artifact to attach to backpack
+	void SetArtifact(AActor* Actor);
+
+	bool IsHoldingArtifact() const;
+
+	class AArtifact* GetArtifact();
+
+	void SetMovementMode(EMovementMode Mode);
 };
