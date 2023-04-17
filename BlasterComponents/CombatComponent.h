@@ -188,7 +188,7 @@ private:
 	float AimWalkSpeed = 300;
 
 	/*
-	*	Equipped Weapon	/ Secondary Weapon
+	*	Equipped Weapon	/ Secondary Weapon / Artifact
 	*/
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
@@ -209,6 +209,10 @@ private:
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void AttachActorToBackpack(AActor* ActorToAttach);
+
+	void HandleAttachingArtifact(AActor* ActorToAttach);
+
+	class AArtifact* Artifact;
 
 	/*
 	*	CROSSHAIRS AND HUD

@@ -13,6 +13,7 @@
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/Weapon/Projectile.h"
 #include "Blaster/Weapon/Shotgun.h"
+#include "Blaster/Pickups/Artifact.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -73,7 +74,10 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (!Character || !WeaponToEquip || CombatState != ECombatState::ECS_Unoccupied) return;
+	if (!Character ||
+		!WeaponToEquip ||
+		CombatState != ECombatState::ECS_Unoccupied ||
+		Artifact) return;	// don't equip weapon if you're holding artifact
 
 	if (EquippedWeapon && !SecondaryWeapon)
 	{
@@ -200,11 +204,59 @@ void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
 void UCombatComponent::AttachActorToBackpack(AActor* ActorToAttach)
 {
 	if (!Character || !ActorToAttach || !Character->GetMesh()) return;
-
-	const USkeletalMeshSocket* BackpackSocket = Character->GetMesh()->GetSocketByName(FName("BackpackSocket"));
-	if (BackpackSocket)
+	
+	if (Artifact)
 	{
-		BackpackSocket->AttachActor(ActorToAttach, Character->GetMesh());
+		HandleAttachingArtifact(ActorToAttach);
+	}
+	else
+	{
+		const USkeletalMeshSocket* BackpackSocket = Character->GetMesh()->GetSocketByName(FName("BackpackSocket"));
+		if (BackpackSocket)
+		{
+			BackpackSocket->AttachActor(ActorToAttach, Character->GetMesh());
+		}
+	}
+}
+
+void UCombatComponent::HandleAttachingArtifact(AActor* ActorToAttach)
+{
+	/* All machines will run this code for the locally controlled character */
+
+	if (!Character) return;
+
+	if (Character->HasAuthority())
+	{
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->Dropped();
+			EquippedWeapon = nullptr;
+		}
+
+		if (SecondaryWeapon)
+		{
+			SecondaryWeapon->Dropped();
+			SecondaryWeapon = nullptr;
+		}
+	}
+
+	const USkeletalMeshSocket* ArtifactSocket = Character->GetMesh()->GetSocketByName(FName("ArtifactSocket"));
+	if (ArtifactSocket)
+	{
+		ArtifactSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+
+	// only the locally controlled charcater will run this code.. 
+	// PlayerController of this character isn't defined for other characters
+	if (!Character->Controller) return;
+
+	BlasterController = BlasterController == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : BlasterController;
+
+	if (BlasterController)
+	{
+		BlasterController->SetHUDWeaponAmmo(0);
+		BlasterController->SetHUDCarriedAmmo(0);
+		BlasterController->SetHUDWeaponType(FText::FromString(" "));
 	}
 }
 
