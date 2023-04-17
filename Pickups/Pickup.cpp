@@ -14,22 +14,21 @@ APickup::APickup()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
-	OverlapSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Overlap Sphere"));
-	OverlapSphere->SetupAttachment(RootComponent);
-	OverlapSphere->SetSphereRadius(80.f);
-	OverlapSphere->AddLocalOffset(FVector(0.f, 0.f, 90.f));														//raise it off the ground
-	OverlapSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);											//no collisions, only overlaps
-	OverlapSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	OverlapSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn ,ECollisionResponse::ECR_Overlap); //Overlap only pawns
-
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pickup mesh"));
-	PickupMesh->SetupAttachment(OverlapSphere);
+	SetRootComponent(PickupMesh);
+
 	PickupMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);											//Purely visual
 	PickupMesh->SetRenderCustomDepth(true);
 	PickupMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_PURPLE);
-	PickupMesh->SetRelativeScale3D(FVector(4.5f, 4.5f, 4.5f));
+	//PickupMesh->SetRelativeScale3D(FVector(4.5f, 4.5f, 4.5f));
+
+	OverlapSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Overlap Sphere"));
+	OverlapSphere->SetupAttachment(RootComponent);
+	OverlapSphere->SetSphereRadius(25.f);
+	//OverlapSphere->AddLocalOffset(FVector(0.f, 0.f, 90.f));														//raise it off the ground
+	OverlapSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);											//no collisions, only overlaps
+	OverlapSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	OverlapSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); //Overlap only pawns
 
 	PickupEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupEffectComponent"));
 	PickupEffectComponent->SetupAttachment(RootComponent);

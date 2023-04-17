@@ -32,13 +32,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BaseTurnRate = 90.f;
 
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* PickupMesh;
+
 private:
 
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* OverlapSphere;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* PickupMesh;
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* PickupSound;
@@ -54,4 +54,6 @@ private:
 	void BindOverlapTimerFinished();
 
 public:	
+
+	USphereComponent* GetOverlapSphere() const { return OverlapSphere; }
 };
