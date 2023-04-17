@@ -232,6 +232,13 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		return;
 	}
+
+	if (GetCharacterMovement()->GetMovementName() == FString("Flying"))
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+
 	AimOffset(DeltaTime);
 
 	HideCameraIfCharatcterClose();
@@ -266,6 +273,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABlasterCharacter::Jump);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveUp", this, &ABlasterCharacter::MoveUp);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::moveRight);
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
 	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
@@ -337,7 +345,17 @@ void ABlasterCharacter::MoveForward(float value)
 		AddMovementInput(Direction, value);
 	}
 }
-/*
+
+void ABlasterCharacter::MoveUp(float value)
+{
+	if (bDisableGameplay) return;
+
+	FVector InputVelocity = FVector(0.0f, 0.0f, value);
+
+	AddMovementInput(InputVelocity, true);
+}
+
+
 void ABlasterCharacter::SprintButtonPressed()
 {
 	if (bMovingForward && Combat && !Combat->bAiming)
@@ -477,7 +495,7 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation() //this is an R
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || !Combat || Combat->Artifact) return;
 
 	if (bIsCrouched) //bIsCrouched, Crouch, unCrouch ae all memebers of character movement comp.
 	{
@@ -896,23 +914,16 @@ void ABlasterCharacter::OnRep_Shield(float LastShield)
 
 void ABlasterCharacter::UpdateHUDHealth()
 {
-	if (Controller && !BlasterPlayerController)
-	{
-		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-	}
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 	{
-		//set hud health values
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
 }
 
 void ABlasterCharacter::UpdateHUDShield()
 {
-	if (Controller && !BlasterPlayerController)
-	{
-		BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-	}
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDShield(Shield, MaxShield);

@@ -165,6 +165,8 @@ protected:
 
 	//input Functions.. protected as they might be needed if a class inherits from character
 	void MoveForward(float value);
+	void MoveUp(float value);
+	bool bIsMovingUp = false;
 	void moveRight(float value);
 	void LookUp(float value);
 	void Turn(float value);
