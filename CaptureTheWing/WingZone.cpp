@@ -44,18 +44,13 @@ void AWingZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		OverlappingCharacter->GetPlayerTeam() == ZoneTeam &&
 		OverlappingCharacter->IsHoldingArtifact();
 
-	if (bShouldScore && WingGameMode)
+	if (bShouldScore)
 	{
-		WingGameMode->ArtifactCaptured(OverlappingCharacter);
+		if(WingGameMode) WingGameMode->ArtifactCaptured(OverlappingCharacter);
 
-		if (CaptureParticles)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CaptureParticles, GetActorLocation(), GetActorRotation());
-		}
-		if (CasptureSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), CasptureSound, GetActorLocation());
-		}
+		if (CaptureParticles) UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), CaptureParticles, GetActorLocation(), GetActorRotation());
+		
+		if (CasptureSound) UGameplayStatics::PlaySoundAtLocation(GetWorld(), CasptureSound, GetActorLocation());
 	}
 }
 
