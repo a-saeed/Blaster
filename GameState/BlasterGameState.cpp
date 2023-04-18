@@ -94,12 +94,12 @@ void ABlasterGameState::MultiCastBroadcastStatus_Implementation(class ABlasterCh
 		if (BlasterCharacter->GetPlayerTeam() == ETeam::ET_RedTeam)
 		{
 			ArtifactStatus = "Red Team Has The Wings..";
-			Color = FSlateColor(FLinearColor::Red);
+			Color = FSlateColor(FLinearColor(255.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f));
 		}
 		else if (BlasterCharacter->GetPlayerTeam() == ETeam::ET_BlueTeam)
 		{
 			ArtifactStatus = "Blue Team Has The Wings..";
-			Color = FSlateColor(FLinearColor::Blue);
+			Color = FSlateColor(FLinearColor(4.0f / 255.0f, 55.0f / 255.0f, 242.0f / 255.0f));
 		}
 		break;
 
@@ -108,12 +108,12 @@ void ABlasterGameState::MultiCastBroadcastStatus_Implementation(class ABlasterCh
 		if (BlasterCharacter->GetPlayerTeam() == ETeam::ET_RedTeam)
 		{
 			ArtifactStatus = "Red Team Dropped The Wings..";
-			Color = FSlateColor(FLinearColor::Red);
+			Color = FSlateColor(FLinearColor(255.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f));
 		}
 		else if (BlasterCharacter->GetPlayerTeam() == ETeam::ET_BlueTeam)
 		{
 			ArtifactStatus = "Blue Team Dropped The Wings..";
-			Color = FSlateColor(FLinearColor::Blue);
+			Color = FSlateColor(FLinearColor(4.0f / 255.0f, 55.0f / 255.0f, 242.0f / 255.0f));
 		}
 		break;
 
@@ -122,12 +122,12 @@ void ABlasterGameState::MultiCastBroadcastStatus_Implementation(class ABlasterCh
 		if (BlasterCharacter->GetPlayerTeam() == ETeam::ET_RedTeam)
 		{
 			ArtifactStatus = "Red Team Captured The Wings..";
-			Color = FSlateColor(FLinearColor::Red);
+			Color = FSlateColor(FLinearColor(255.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f));
 		}
 		else if (BlasterCharacter->GetPlayerTeam() == ETeam::ET_BlueTeam)
 		{
 			ArtifactStatus = "Blue Team Captured The Wings..";
-			Color = FSlateColor(FLinearColor::Blue);
+			Color = FSlateColor(FLinearColor(4.0f / 255.0f, 55.0f / 255.0f, 242.0f / 255.0f));
 		}
 		break;
 	}
@@ -135,14 +135,12 @@ void ABlasterGameState::MultiCastBroadcastStatus_Implementation(class ABlasterCh
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Checking HUD"));
 		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
 		if (BlasterPlayerController)
 		{
 			ABlasterHUD* BlasterHUD = Cast<ABlasterHUD>(BlasterPlayerController->GetHUD());
 			if (BlasterHUD)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HUD Valid"));
 				BlasterHUD->AddArtifactStatus(ArtifactStatus, Color);
 			}
 		}
