@@ -184,7 +184,15 @@ protected:
 	void SprintButtonPressed();
 	void SprintButtonReleased();
 
+	UPROPERTY(ReplicatedUsing = OnRep_Sprinting)
 	bool bSprinting = false;
+
+	UFUNCTION()
+	void OnRep_Sprinting();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSprint(bool bSprint);
+
 	bool bMovingForward = false;
 
 	/*poll for ane relevant classes(player state) and once they're available, initialize our HUD*/
@@ -418,7 +426,6 @@ public:
 	bool isAiming() const;
 
 	FORCEINLINE bool IsSpriniting() const { return bSprinting; }
-	FORCEINLINE bool IsMOvingForward() const { return bMovingForward; }
 
 	FORCEINLINE float GetAo_Yaw() { return AO_Yaw;} //used in anime instance class
 	FORCEINLINE float GetAo_Pitch() { return AO_Pitch;} //used in anime instance class

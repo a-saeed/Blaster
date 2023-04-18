@@ -193,6 +193,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterCharacter, Health);
 	DOREPLIFETIME(ABlasterCharacter, Shield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
+	DOREPLIFETIME(ABlasterCharacter, bSprinting);
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -366,25 +367,47 @@ void ABlasterCharacter::MoveUp(float value)
 	AddMovementInput(InputVelocity, true);
 }
 
-
 void ABlasterCharacter::SprintButtonPressed()
 {
-	if (bMovingForward && Combat && !Combat->bAiming)
-	{
-		bSprinting = true;
-		GetCharacterMovement()->MaxWalkSpeed *= 1.8;
-	}
+	bool bShouldSprint = bMovingForward &&
+		Combat &&
+		!Combat->bAiming &&
+		Combat->EquippedWeapon;
+
+	if (bShouldSprint) ServerSprint(true);
 }
 
 void ABlasterCharacter::SprintButtonReleased()
 {
-	if (bSprinting)
+	if (bSprinting) ServerSprint(false);
+}
+
+void ABlasterCharacter::ServerSprint_Implementation(bool bSprint)
+{
+	if (bSprint)
+	{
+		bSprinting = true;
+		GetCharacterMovement()->MaxWalkSpeed *= 1.4;
+	}
+	else
 	{
 		bSprinting = false;
-		GetCharacterMovement()->MaxWalkSpeed /= 1.8;
+		GetCharacterMovement()->MaxWalkSpeed /= 1.4;
 	}
 }
-*/
+
+void ABlasterCharacter::OnRep_Sprinting()
+{
+	if (bSprinting)
+	{
+		GetCharacterMovement()->MaxWalkSpeed *= 1.4;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed /= 1.4;
+	}
+}
+
 void ABlasterCharacter::moveRight(float value)
 {
 	if (bDisableGameplay || bSprinting) return;
