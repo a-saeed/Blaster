@@ -27,7 +27,7 @@
 
 - Preventing friendly fire.
 
-- Create a Capture the flag Game mode. 
+- Create a Capture the wing Game mode. See [Demo](https://www.youtube.com/watch?v=gnSvRupp4DU) Video.
 
 #### Animations
 
