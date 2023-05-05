@@ -1,6 +1,6 @@
 # Blaster
 
-###Check out video Demos of the game here:
+### Check out video Demos of the game here:                                                                                                                             
 -[Server Side Rewind](https://www.youtube.com/watch?v=xzcl_C_N8d8)                                                                                                     
 -[Capture the wing game mode](https://www.youtube.com/watch?v=gnSvRupp4DU)                                                                                             
 -[Multiple weapon types](https://www.youtube.com/watch?v=mwLA-sYW70U)                                                                                                   
