@@ -1,10 +1,10 @@
 # Blaster
 
-Check out video Demos of the game here:
--[Server Side Rewind](https://www.youtube.com/watch?v=xzcl_C_N8d8)
--[Capture the wing game mode](https://www.youtube.com/watch?v=gnSvRupp4DU)
--[Multiple weapon types](https://www.youtube.com/watch?v=mwLA-sYW70U)
--
+###Check out video Demos of the game here:
+-[Server Side Rewind](https://www.youtube.com/watch?v=xzcl_C_N8d8)                                                                                                     
+-[Capture the wing game mode](https://www.youtube.com/watch?v=gnSvRupp4DU)                                                                                             
+-[Multiple weapon types](https://www.youtube.com/watch?v=mwLA-sYW70U)                                                                                                   
+
 #### A 3rd person view fast-paced multiplayer shooter game built with c++ and Unreal Engine 5
 ![Thumbnail](https://user-images.githubusercontent.com/31377230/220782391-63a9c5bb-3eca-45f2-b595-02e0d1db586c.png)
 
