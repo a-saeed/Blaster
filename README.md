@@ -21,6 +21,14 @@
 
 - Player BookKeeping.
 
+- Elimination announcements.
+
+- Create a Teams Game mode.
+
+- Preventing friendly fire.
+
+- Create a Capture the flag Game mode. 
+
 #### Animations
 
 - Retarget animations for the unreal learning kit character to implement movement functionality. including Crouching, Jumping, Aiming, Throwing greandes. etc..
@@ -57,6 +65,8 @@ and **HitScan weapons** that use line trace ( Shotgun, Sniper, SMG, pistol ).
 
 - Add swap animation between primary and secondary weapon.
 
+- Headshots deal extra damage.
+
 #### Buffs & Pickups
 
 - Buff the player with pickups that spawn randomly in different places to boost the player's attributes for a configurable amount of time.                             
@@ -84,18 +94,6 @@ and **HitScan weapons** that use line trace ( Shotgun, Sniper, SMG, pistol ).
 
 #### Game
 
-- Elimination announcements.
-
-- Create a Teams Game mode.
-
-- Preventing friendly fire.
-
-- Create a Capture the flag Game mode. 
-
 - Selecting match type.
 
 - Add a packaged build and play test with some friends.
-
-#### Weapons
-
-- Apply headshot damage.
